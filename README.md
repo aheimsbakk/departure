@@ -1,6 +1,6 @@
 # Kollektiv.Sanntid.org
 
-Real-time public transport departure board for Norway. Track buses, trams, trains, and ferries with live departure times from any station or stop across the country.
+Real-time public transport departure board for Norway. Track buses, trams, metro, rail, ferries, and coaches with live departure times from any station or stop across the country.
 
 ## About
 
@@ -18,11 +18,11 @@ This app uses [Entur's API](https://developer.entur.org/) to show live departure
 
 Your departure board will now show live times for the next departures from your chosen station.
 
-To save the station to your favorites, click the **❤️ heart button** to the left of the station name on the departure board. The heart turns grey once the station is already saved.
+To save the station to your favorites, click the **❤️ heart button** to the left of the station name on the departure board. The heart shows red when the station is not yet saved ("Save to favorites"). Once saved, the heart turns white (light theme) or black (dark theme) with the tooltip "Remove from favorites" — clicking it again removes the station from your favorites.
 
 ### Using Favorites
 
-Click the **station name** at the top of the screen to open your favorites list. This shows your recently viewed stations with their transport filters. Click any favorite to instantly switch to that station.
+Click the **station name** at the top of the screen to open your favorites list. This shows your saved stations with their transport filters. Click any favorite to instantly switch to that station.
 
 Your favorites list stores up to 7 stations with all their settings. The most recently used station appears at the top.
 
