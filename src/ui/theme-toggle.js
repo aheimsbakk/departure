@@ -14,6 +14,27 @@ const ICONS = {
   dark: UI_EMOJIS.themeDark
 };
 
+/** Background start colors matching tokens.css gradients */
+const THEME_COLORS = {
+  light: '#f5f7fa',
+  dark:  '#0b0f1a',
+};
+
+/**
+ * Update <meta name="theme-color"> to match the resolved (effective) theme.
+ * @param {boolean} isDark - true if the effective theme is dark
+ */
+function updateThemeColorMeta(isDark) {
+  const color = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
+  let meta = document.querySelector('meta[name="theme-color"]');
+  if (!meta) {
+    meta = document.createElement('meta');
+    meta.name = 'theme-color';
+    document.head.appendChild(meta);
+  }
+  meta.content = color;
+}
+
 /**
  * Get current theme from localStorage or default to 'auto'
  */
@@ -38,26 +59,30 @@ function getNextTheme(current) {
 }
 
 /**
- * Apply theme to document
+ * Apply theme to document and sync <meta name="theme-color">.
  */
 function applyTheme(theme) {
   const root = document.documentElement;
-  
+  let isDark;
+
   if (theme === 'light') {
-    // Force light theme
     root.classList.add('theme-light');
+    isDark = false;
   } else if (theme === 'dark') {
-    // Force dark theme
     root.classList.remove('theme-light');
+    isDark = true;
   } else {
-    // Auto mode: use system preference
+    // Auto mode: follow system preference
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (prefersDark) {
       root.classList.remove('theme-light');
     } else {
       root.classList.add('theme-light');
     }
+    isDark = prefersDark;
   }
+
+  updateThemeColorMeta(isDark);
 }
 
 /**

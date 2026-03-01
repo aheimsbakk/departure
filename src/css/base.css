@@ -21,3 +21,8 @@ body {
   color: var(--text-primary);
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
 }
+
+::selection {
+  background-color: var(--highlight-bg);
+  color: var(--highlight-fg);
+}
