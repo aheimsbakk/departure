@@ -4,8 +4,17 @@
  * Responsibilities:
  *   - Resolve stop ID (from DEFAULTS or via geocoder lookup)
  *   - Fetch departures and re-render the list
- *   - Manage the periodic auto-refresh interval
- *   - Drive the per-second countdown ticker (departure chips + status chip)
+ *   - Drive a single unified 1-second interval that:
+ *       • ticks all departure countdown chips
+ *       • decrements the "update in" status chip counter
+ *       • triggers doRefresh() exactly when the counter reaches 0
+ *
+ * Design: one interval, one counter.
+ *   ticksUntilRefresh counts DOWN from FETCH_INTERVAL to 1.
+ *   On every tick it is decremented first, then checked.
+ *   When it reaches 0 a fetch is triggered and the counter resets.
+ *   This guarantees the departure countdowns and the "update in" chip
+ *   are always in sync — they share the same clock tick.
  */
 
 import { DEFAULTS } from '../config.js';
@@ -14,11 +23,14 @@ import { formatCountdown } from '../time.js';
 import { t, getLanguage } from '../i18n.js';
 import { renderDepartures } from './render.js';
 
-/** Epoch-ms timestamp of the next scheduled automatic refresh */
-let nextRefreshAt = Date.now();
+/** Ticks remaining until the next automatic refresh (counts down to 0) */
+let ticksUntilRefresh = DEFAULTS.FETCH_INTERVAL;
 
-/** setInterval handle for the periodic refresh loop */
-let refreshTimerId = null;
+/** setInterval handle for the unified 1-second loop */
+let loopTimerId = null;
+
+/** Guard: prevents a second concurrent fetch if the previous one is still running */
+let fetchInFlight = false;
 
 /** The most recently fetched departure data (kept for re-render on settings change) */
 export let data = [];
@@ -26,10 +38,13 @@ export let data = [];
 /**
  * Fetch live departures and re-render the list.
  * On failure the error is logged and any previous data is left in place.
+ * Resets ticksUntilRefresh to the current FETCH_INTERVAL when complete.
  *
  * @param {HTMLElement} listEl - The departure list container
  */
 export async function doRefresh(listEl) {
+  if (fetchInFlight) return;
+  fetchInFlight = true;
   try {
     let stopId = DEFAULTS.STOP_ID;
     if (!stopId) {
@@ -55,31 +70,50 @@ export async function doRefresh(listEl) {
   } catch (err) {
     console.warn('Refresh failed', err);
   } finally {
-    // Schedule the next automatic refresh from NOW so FETCH_INTERVAL changes
-    // take effect immediately after a manual settings apply.
-    nextRefreshAt = Date.now() + DEFAULTS.FETCH_INTERVAL * 1000;
+    // Always reset the countdown after a fetch attempt so the next cycle
+    // starts cleanly from the full interval, regardless of success/failure.
+    ticksUntilRefresh = DEFAULTS.FETCH_INTERVAL;
+    fetchInFlight = false;
   }
 }
 
 /**
- * (Re)start the automatic refresh interval.
+ * (Re)start the unified 1-second loop.
  * Safe to call multiple times — clears any existing interval first.
+ * Immediately fires the first tick so the UI is live without a 1-second delay.
  *
- * @param {HTMLElement} listEl - The departure list container
+ * @param {HTMLElement}      listEl   - The departure list container
+ * @param {HTMLElement|null} statusEl - The header status chip element
  */
-export function startRefreshLoop(listEl) {
-  if (refreshTimerId) clearInterval(refreshTimerId);
-  nextRefreshAt  = Date.now() + DEFAULTS.FETCH_INTERVAL * 1000;
-  refreshTimerId = setInterval(
-    () => doRefresh(listEl).catch(err => console.warn('Refresh failed', err)),
-    DEFAULTS.FETCH_INTERVAL * 1000
-  );
+export function startRefreshLoop(listEl, statusEl) {
+  if (loopTimerId) clearInterval(loopTimerId);
+
+  // Reset the counter to the full interval when the loop is (re)started.
+  // This happens after a manual settings apply so the new interval takes effect.
+  ticksUntilRefresh = DEFAULTS.FETCH_INTERVAL;
+
+  loopTimerId = setInterval(() => {
+    // 1. Decrement first so we never show FETCH_INTERVAL on the chip
+    //    (it would only appear for one frame after a fetch completes).
+    ticksUntilRefresh--;
+
+    // 2. Trigger fetch when the counter hits zero.
+    if (ticksUntilRefresh <= 0) {
+      // Reset eagerly before the async call so the chip immediately shows
+      // the full interval rather than staying at 0 for the fetch duration.
+      ticksUntilRefresh = DEFAULTS.FETCH_INTERVAL;
+      doRefresh(listEl).catch(err => console.warn('Refresh failed', err));
+    }
+
+    // 3. Tick all countdowns and update the status chip in the same frame.
+    tickCountdowns(listEl, statusEl);
+  }, 1000);
 }
 
 /**
- * Per-second ticker: updates all countdown chips and the header status chip.
- * Reads `data-epoch-ms` from each `.departure-time` element so this function
- * is pure DOM-driven and does not depend on application state beyond the board.
+ * Per-second ticker: updates all departure countdown chips and the status chip.
+ * Called once per second by the unified loop in startRefreshLoop.
+ * Can also be called directly for an immediate paint on first load.
  *
  * @param {HTMLElement}      listEl   - The departure list container
  * @param {HTMLElement|null} statusEl - The header status chip element
@@ -94,12 +128,10 @@ export function tickCountdowns(listEl, statusEl) {
     el.textContent = Number.isFinite(epoch) ? (formatCountdown(epoch, now, t) ?? '—') : '—';
   });
 
-  // Update the header status chip with seconds until next auto-refresh
+  // Update the header status chip with the tick-accurate seconds until refresh.
+  // ticksUntilRefresh is always an integer already — no ceil/floor needed.
   if (statusEl) {
-    const msLeft  = typeof nextRefreshAt === 'number'
-      ? nextRefreshAt - now
-      : DEFAULTS.FETCH_INTERVAL * 1000;
-    const secLeft = Math.max(0, Math.ceil(msLeft / 1000));
+    const secLeft = Math.max(0, ticksUntilRefresh);
     statusEl.textContent = `${t('updatingIn')} ${secLeft}${t('seconds')}`;
   }
 }
