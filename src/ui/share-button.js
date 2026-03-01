@@ -68,15 +68,20 @@ export function decodeSettings(encoded) {
       ({ n, s, m, d, i, t, l } = data);
     }
     
-    // Validate all fields
+    // Validate all fields.
+    // Optional fields (numDepartures, fetchInterval, textSize, language) are
+    // initialised to null so callers can distinguish "field was present in the
+    // URL" from "field was absent and we fell back to a hardcoded default".
+    // The 3-element new format only contains stationName / stopId / transportModes;
+    // all other fields stay null and must NOT overwrite existing localStorage data.
     const settings = {
       stationName: null,
       stopId: null,
       transportModes: [],
-      numDepartures: 5,
-      fetchInterval: 60,
-      textSize: 'large',
-      language: 'en'
+      numDepartures: null,
+      fetchInterval: null,
+      textSize: null,
+      language: null
     };
     
     // Validate station name (required string)

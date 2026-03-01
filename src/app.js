@@ -20,7 +20,6 @@ import { createBoardElements, updateFavoriteButton } from './ui/ui.js';
 import { createHeaderToggle } from './ui/header.js';
 import { createOptionsPanel } from './ui/options/index.js';
 import { getTheme } from './ui/theme-toggle.js';
-import { lookupStopId } from './entur/index.js';
 import { getRecentStations } from './ui/station-dropdown.js';
 
 import { loadSettings, applyTextSize } from './app/settings.js';
@@ -44,14 +43,19 @@ async function init() {
   loadSettings();
 
   // 2. Decode shared-board URL parameter (?b= or legacy ?board=)
-  processUrlParams();
+  //    Must run AFTER loadSettings() so that the URL payload only overwrites
+  //    fields that were actually present in the share link (not sentinel defaults).
+  //    Must run BEFORE getRecentStations() so that the imported station is NOT
+  //    overridden by the "apply first favorite" fallback below.
+  const urlImported = processUrlParams();
 
   // 3. Load favorites (triggers default import if none exist)
   // This must happen before updateFavoriteButton is called below
   const favorites = getRecentStations();
 
-  // 4. If no DEFAULTS but favorites exist, apply the first one
-  if (!DEFAULTS.STOP_ID && favorites.length > 0) {
+  // 4. If no DEFAULTS but favorites exist, apply the first one.
+  //    Skip when a URL import already set the station.
+  if (!urlImported && !DEFAULTS.STOP_ID && favorites.length > 0) {
     DEFAULTS.STATION_NAME = favorites[0].name;
     DEFAULTS.STOP_ID = favorites[0].stopId;
     DEFAULTS.TRANSPORT_MODES = favorites[0].modes || DEFAULTS.TRANSPORT_MODES;
@@ -76,22 +80,25 @@ async function init() {
   // Set initial heart button state
   updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES, getTheme());
 
-  // 6. Build action bar (share + theme + settings buttons)
-  //    Handlers need the button refs for tooltip updates, so build the bar first
-  //    and pass the refs into wireHandlers below.
+  // 6. Build action bar (share + theme + settings buttons).
+  //    The open/close callbacks reference `opts` which is declared in step 7 —
+  //    this is safe because the lambdas are only invoked after init() returns.
   const { shareComponents, themeBtn, settingsBtn } = buildActionBar(
     board,
     () => opts.open(),
     () => opts.close()
   );
 
-  // 6. Wire options panel
+  // 7. Wire handlers and options panel.
+  //    wireHandlers must receive the action-bar button refs (step 6) so it can
+  //    update their tooltips; createOptionsPanel must come after so `opts` is
+  //    available when the closures above are eventually called.
   const handlers = wireHandlers(board, shareComponents, themeBtn, settingsBtn, optsRef);
   const opts = createOptionsPanel(DEFAULTS, handlers.onApplySettings, handlers.onLanguageChange);
   optsRef.current = opts;
   document.body.appendChild(opts.panel);
 
-  // 7. Header gear icon (opens options from the station header)
+  // 8. Header gear icon (opens options from the station header)
   const headerControls = createHeaderToggle(() => opts.open());
   const headerWrap = board.el.headerWrap || board.el.querySelector('.header-wrap') || board.el;
   const headerRight = document.createElement('div');
@@ -99,25 +106,20 @@ async function init() {
   headerRight.appendChild(headerControls.el);
   headerWrap.appendChild(headerRight);
 
-  // 8. Mount board and apply initial text size
+  // 9. Mount board and apply initial text size
   ROOT.appendChild(board.el);
   applyTextSize(DEFAULTS.TEXT_SIZE || 'medium');
   try { document.title = DEFAULTS.STATION_NAME || document.title; } catch (_) {}
 
-  // 9. Register service worker
+  // 10. Register service worker
   await registerServiceWorker();
 
-  // 10. Initial data load
+  // 11. Initial data load
+  // doRefresh() internally resolves the stop ID via lookupStopId() when
+  // DEFAULTS.STOP_ID is not set — no need to duplicate that lookup here.
   if (board.status) board.status.classList.add('visible');
   try {
-    let stopId = DEFAULTS.STOP_ID;
-    if (!stopId && DEFAULTS.STATION_NAME) {
-      stopId = await lookupStopId({
-        stationName: DEFAULTS.STATION_NAME,
-        clientName:  DEFAULTS.CLIENT_NAME
-      });
-    }
-    if (stopId && DEFAULTS.API_URL) {
+    if (DEFAULTS.STOP_ID || DEFAULTS.STATION_NAME) {
       await doRefresh(board.list);
       if (board.status) board.status.textContent = t('live');
     }
@@ -129,7 +131,7 @@ async function init() {
   // Ensure an empty state is shown when the initial fetch produced nothing
   if (!data || data.length === 0) renderDepartures(board.list, []);
 
-  // 11. Start loops
+  // 12. Start loops
   startRefreshLoop(board.list);
   tickCountdowns(board.list, board.status);
   // Store the ticker ID on the root element so it can be cleared if init() is
