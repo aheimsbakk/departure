@@ -132,7 +132,10 @@ async function init() {
   // 11. Start loops
   startRefreshLoop(board.list);
   tickCountdowns(board.list, board.status);
-  setInterval(() => tickCountdowns(board.list, board.status), 1000);
+  // Store the ticker ID on the root element so it can be cleared if init() is
+  // ever called again (e.g. in tests) without leaking the previous interval.
+  if (ROOT._tickerId) clearInterval(ROOT._tickerId);
+  ROOT._tickerId = setInterval(() => tickCountdowns(board.list, board.status), 1000);
 }
 
 document.addEventListener('DOMContentLoaded', init);

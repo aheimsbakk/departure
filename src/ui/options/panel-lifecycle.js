@@ -30,15 +30,21 @@ export function createPanelLifecycle(panel, { onClose } = {}) {
   toast.className = 'options-toast';
   panel.appendChild(toast);
 
+  // Track both the fade-start and fade-end timers so rapid calls never orphan either.
+  let _toastFadeId  = null;
+  let _toastClearId = null;
+
   function showToast(msg) {
     try {
       toast.textContent = msg || t('settingsApplied');
       toast.classList.add('visible');
       toast.style.opacity = '1';
-      clearTimeout(showToast._t);
-      showToast._t = setTimeout(() => {
+      // Cancel any in-flight fade timers before starting fresh
+      clearTimeout(_toastFadeId);
+      clearTimeout(_toastClearId);
+      _toastFadeId = setTimeout(() => {
         toast.style.opacity = '0';
-        setTimeout(() => { toast.classList.remove('visible'); }, 300);
+        _toastClearId = setTimeout(() => { toast.classList.remove('visible'); }, 300);
       }, 1400);
     } catch (e) { /* ignore */ }
   }
@@ -91,5 +97,17 @@ export function createPanelLifecycle(panel, { onClose } = {}) {
 
   btnClose.addEventListener('click', () => closePanel());
 
-  return { btnClose, actions, toast, open: openPanel, close: closePanel, showToast };
+  /**
+   * Hard teardown: remove all document-level listeners and cancel pending
+   * toast timers. Call this if the panel element is removed from the DOM
+   * without going through the normal close flow.
+   */
+  function destroy() {
+    document.removeEventListener('keydown', _trap);
+    document.removeEventListener('keydown', _escClose);
+    clearTimeout(_toastFadeId);
+    clearTimeout(_toastClearId);
+  }
+
+  return { btnClose, actions, toast, open: openPanel, close: closePanel, showToast, destroy };
 }

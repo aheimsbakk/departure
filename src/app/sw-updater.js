@@ -53,9 +53,17 @@ async function showUpdateNotification(worker) {
   }, 1000);
 
   // Tell the waiting worker to activate after 5 s
-  setTimeout(() => {
+  const skipWaitingId = setTimeout(() => {
     if (worker) worker.postMessage({ type: 'SKIP_WAITING' });
   }, 5000);
+
+  // Cancel both timers if the page is hidden/unloaded before they fire
+  // to avoid operating on detached DOM nodes or stale worker references.
+  function _cancelTimers() {
+    clearInterval(countdownId);
+    clearTimeout(skipWaitingId);
+  }
+  window.addEventListener('pagehide', _cancelTimers, { once: true });
 }
 
 /**
