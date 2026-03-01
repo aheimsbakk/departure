@@ -164,6 +164,33 @@ export function isStationInFavorites(stopId, modes) {
 }
 
 /**
+ * Remove a station (by stopId + modes combo) from favorites without changing order of others.
+ * @param {string} stopId - Station stop ID to remove
+ * @param {Array<string>} [modes] - Transport modes to match
+ * @returns {boolean} true if an entry was removed, false if not found
+ */
+export function removeFromFavorites(stopId, modes) {
+  if (!stopId) return false;
+  let recent;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    recent = stored ? JSON.parse(stored) : [];
+  } catch (e) {
+    console.error('Failed to load recent stations:', e);
+    return false;
+  }
+  const before = recent.length;
+  recent = recent.filter(s => !(s.stopId === stopId && modesEqual(s.modes, modes)));
+  if (recent.length === before) return false;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(recent));
+  } catch (e) {
+    console.error('Failed to save recent stations:', e);
+  }
+  return true;
+}
+
+/**
  * Create station dropdown component
  * @param {string} currentStationName - Current station name
  * @param {Function} onStationSelect - Callback when station is selected (receives {name, stopId})

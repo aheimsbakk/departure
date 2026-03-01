@@ -183,24 +183,24 @@ function mockBtn() {
   assert.equal(btn.disabled, false, 'Should be enabled when not in favorites');
 }
 
-// Test 9: In favorites with matching modes + light theme → white heart, disabled
+// Test 9: In favorites with matching modes + light theme → white heart, enabled (click to remove)
 {
   localStorage.clear();
   addRecentStation('Oslo S', 'NSR:StopPlace:59872', ['bus']);
   const btn = mockBtn();
   updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus'], 'light');
   assert.equal(btn.textContent, UI_EMOJIS.heartSavedLight, 'Should show white heart in light theme');
-  assert.equal(btn.disabled, true, 'Should be disabled when in favorites');
+  assert.equal(btn.disabled, false, 'Should be ENABLED when in favorites (to allow removal)');
 }
 
-// Test 10: In favorites with matching modes + dark theme → black heart, disabled
+// Test 10: In favorites with matching modes + dark theme → black heart, enabled (click to remove)
 {
   localStorage.clear();
   addRecentStation('Oslo S', 'NSR:StopPlace:59872', ['bus']);
   const btn = mockBtn();
   updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus'], 'dark');
   assert.equal(btn.textContent, UI_EMOJIS.heartSavedDark, 'Should show black heart in dark theme');
-  assert.equal(btn.disabled, true, 'Should be disabled when in favorites');
+  assert.equal(btn.disabled, false, 'Should be ENABLED when in favorites (to allow removal)');
 }
 
 // Test 11: In favorites but DIFFERENT modes → red heart, enabled (not a match)
@@ -213,14 +213,14 @@ function mockBtn() {
   assert.equal(btn.disabled, false, 'Different modes should be enabled');
 }
 
-// Test 12: In favorites + auto theme with light preference → white heart
+// Test 12: In favorites + auto theme with light preference → white heart, enabled
 {
   localStorage.clear();
   addRecentStation('Oslo S', 'NSR:StopPlace:59872', ['bus']);
   const btn = mockBtn();
   updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus'], 'auto');
   assert.equal(btn.textContent, UI_EMOJIS.heartSavedLight, 'Auto theme with light preference should show white heart');
-  assert.equal(btn.disabled, true);
+  assert.equal(btn.disabled, false);
 }
 
 // Test 13: Null btn does not throw
@@ -230,7 +230,7 @@ function mockBtn() {
   updateFavoriteButton(undefined, 'NSR:StopPlace:59872', ['bus'], 'dark');
 }
 
-// Test 14: In favorites + auto theme with dark preference → black heart
+// Test 14: In favorites + auto theme with dark preference → black heart, enabled
 {
   localStorage.clear();
   addRecentStation('Oslo S', 'NSR:StopPlace:59872', ['bus']);
@@ -241,21 +241,22 @@ function mockBtn() {
   });
   updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus'], 'auto');
   assert.equal(btn.textContent, UI_EMOJIS.heartSavedDark, 'Auto theme with dark preference should show black heart');
-  assert.equal(btn.disabled, true);
+  assert.equal(btn.disabled, false);
   global.window.matchMedia = origMatchMedia;
 }
 
-// Test 15: Changing modes makes heart go from disabled to enabled
+// Test 15: Changing modes makes heart go from in-favorites (enabled) to not-in-favorites (red, enabled)
 {
   localStorage.clear();
   addRecentStation('Oslo S', 'NSR:StopPlace:59872', ['bus']);
   const btn = mockBtn();
-  // With matching modes: disabled
+  // With matching modes: enabled, shows saved heart
   updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus'], 'light');
-  assert.equal(btn.disabled, true, 'Matching modes: disabled');
-  // Change modes: now enabled
+  assert.equal(btn.disabled, false, 'Matching modes: enabled (can remove)');
+  assert.equal(btn.textContent, UI_EMOJIS.heartSavedLight, 'Matching modes: saved heart');
+  // Change modes: now shows red heart (different modes = not a saved combo)
   updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus', 'metro'], 'light');
-  assert.equal(btn.disabled, false, 'Changed modes: enabled again');
+  assert.equal(btn.disabled, false, 'Changed modes: still enabled (can save)');
   assert.equal(btn.textContent, UI_EMOJIS.heartSave, 'Changed modes: red heart');
 }
 

@@ -41,6 +41,7 @@ const translations = {
     filtersUpdated: 'Filters updated',
     textSizeUpdated: 'Text size updated',
     savedToFavorites: 'Saved to favorites',
+    removedFromFavorites: 'Removed from favorites',
     languageChanged: 'Language changed',
 
     // Update toast
@@ -68,6 +69,7 @@ const translations = {
     // Favorite button
     saveToFavorites: 'Save to favorites',
     alreadyInFavorites: 'Already in favorites',
+    removeFromFavorites: 'Remove from favorites',
 
     // Transport mode toggle
     toggleAllModes: 'Toggle all transport modes'
@@ -113,6 +115,7 @@ const translations = {
     filtersUpdated: 'Filter oppdatert',
     textSizeUpdated: 'Tekststørrelse oppdatert',
     savedToFavorites: 'Lagret i favoritter',
+    removedFromFavorites: 'Fjernet fra favoritter',
     languageChanged: 'Språk endret',
 
     // Update toast
@@ -140,6 +143,7 @@ const translations = {
     // Favorite button
     saveToFavorites: 'Lagre i favoritter',
     alreadyInFavorites: 'Allerede i favoritter',
+    removeFromFavorites: 'Fjern fra favoritter',
 
     // Transport mode toggle
     toggleAllModes: 'Velg/fjern alle transportmidler'
@@ -185,6 +189,7 @@ const translations = {
     filtersUpdated: 'Filter aktualisiert',
     textSizeUpdated: 'Textgröße aktualisiert',
     savedToFavorites: 'In Favoriten gespeichert',
+    removedFromFavorites: 'Aus Favoriten entfernt',
     languageChanged: 'Sprache geändert',
 
     // Update toast
@@ -212,6 +217,7 @@ const translations = {
     // Favorite button
     saveToFavorites: 'In Favoriten speichern',
     alreadyInFavorites: 'Bereits in Favoriten',
+    removeFromFavorites: 'Aus Favoriten entfernen',
 
     // Transport mode toggle
     toggleAllModes: 'Alle Verkehrsmittel auswählen/abwählen'
@@ -257,6 +263,7 @@ const translations = {
     filtersUpdated: 'Filtros actualizados',
     textSizeUpdated: 'Tamaño de texto actualizado',
     savedToFavorites: 'Guardado en favoritos',
+    removedFromFavorites: 'Eliminado de favoritos',
     languageChanged: 'Idioma cambiado',
 
     // Update toast
@@ -284,6 +291,7 @@ const translations = {
     // Favorite button
     saveToFavorites: 'Guardar en favoritos',
     alreadyInFavorites: 'Ya en favoritos',
+    removeFromFavorites: 'Eliminar de favoritos',
 
     // Transport mode toggle
     toggleAllModes: 'Seleccionar/deseleccionar todos los modos'
@@ -329,6 +337,7 @@ const translations = {
     filtersUpdated: 'Filtri aggiornati',
     textSizeUpdated: 'Dimensione testo aggiornata',
     savedToFavorites: 'Salvato nei preferiti',
+    removedFromFavorites: 'Rimosso dai preferiti',
     languageChanged: 'Lingua cambiata',
 
     // Update toast
@@ -356,6 +365,7 @@ const translations = {
     // Favorite button
     saveToFavorites: 'Salva nei preferiti',
     alreadyInFavorites: 'Già nei preferiti',
+    removeFromFavorites: 'Rimuovi dai preferiti',
 
     // Transport mode toggle
     toggleAllModes: 'Seleziona/deseleziona tutti i mezzi'
@@ -401,6 +411,7 @@ const translations = {
     filtersUpdated: 'Τα φίλτρα ενημερώθηκαν',
     textSizeUpdated: 'Το μέγεθος κειμένου ενημερώθηκε',
     savedToFavorites: 'Αποθηκεύτηκε στα αγαπημένα',
+    removedFromFavorites: 'Αφαιρέθηκε από τα αγαπημένα',
     languageChanged: 'Η γλώσσα άλλαξε',
 
     // Update toast
@@ -428,6 +439,7 @@ const translations = {
     // Favorite button
     saveToFavorites: 'Αποθήκευση στα αγαπημένα',
     alreadyInFavorites: 'Ήδη στα αγαπημένα',
+    removeFromFavorites: 'Αφαίρεση από τα αγαπημένα',
 
     // Transport mode toggle
     toggleAllModes: 'Επιλογή/αποεπιλογή όλων των μέσων'
@@ -473,6 +485,7 @@ const translations = {
     filtersUpdated: 'فیلترها به‌روزرسانی شد',
     textSizeUpdated: 'اندازه متن به‌روزرسانی شد',
     savedToFavorites: 'در علاقه‌مندی‌ها ذخیره شد',
+    removedFromFavorites: 'از علاقه‌مندی‌ها حذف شد',
     languageChanged: 'زبان تغییر کرد',
 
     // Update toast
@@ -500,6 +513,7 @@ const translations = {
     // Favorite button
     saveToFavorites: 'ذخیره در علاقه‌مندی‌ها',
     alreadyInFavorites: 'قبلاً در علاقه‌مندی‌ها',
+    removeFromFavorites: 'حذف از علاقه‌مندی‌ها',
 
     // Transport mode toggle
     toggleAllModes: 'انتخاب/عدم انتخاب همه وسایل نقلیه'
@@ -545,6 +559,7 @@ const translations = {
     filtersUpdated: 'फ़िल्टर अपडेट किए गए',
     textSizeUpdated: 'पाठ का आकार अपडेट किया गया',
     savedToFavorites: 'पसंदीदा में सहेजा गया',
+    removedFromFavorites: 'पसंदीदा से हटाया गया',
     languageChanged: 'भाषा बदली गई',
 
     // Update toast
@@ -572,6 +587,7 @@ const translations = {
     // Favorite button
     saveToFavorites: 'पसंदीदा में सहेजें',
     alreadyInFavorites: 'पहले से पसंदीदा में है',
+    removeFromFavorites: 'पसंदीदा से हटाएं',
 
     // Transport mode toggle
     toggleAllModes: 'सभी परिवहन साधन चुनें/हटाएं'
@@ -617,6 +633,7 @@ const translations = {
     filtersUpdated: 'Síur uppfærðar',
     textSizeUpdated: 'Textastærð uppfærð',
     savedToFavorites: 'Vistað í eftirlæti',
+    removedFromFavorites: 'Fjarlægt úr eftirlæti',
     languageChanged: 'Tungumáli breytt',
 
     // Update toast
@@ -644,6 +661,7 @@ const translations = {
     // Favorite button
     saveToFavorites: 'Vista í eftirlæti',
     alreadyInFavorites: 'Þegar í eftirlætum',
+    removeFromFavorites: 'Fjarlægja úr eftirlæti',
 
     // Transport mode toggle
     toggleAllModes: 'Velja/afvelja allar samgöngur'
@@ -689,6 +707,7 @@ const translations = {
     filtersUpdated: 'Фільтри оновлено',
     textSizeUpdated: 'Розмір тексту оновлено',
     savedToFavorites: 'Збережено в обране',
+    removedFromFavorites: 'Видалено з обраного',
     languageChanged: 'Мову змінено',
 
     // Update toast
@@ -716,6 +735,7 @@ const translations = {
     // Favorite button
     saveToFavorites: 'Зберегти в обране',
     alreadyInFavorites: 'Вже в обраному',
+    removeFromFavorites: 'Видалити з обраного',
 
     // Transport mode toggle
     toggleAllModes: 'Вибрати/зняти всі засоби транспорту'
@@ -761,6 +781,7 @@ const translations = {
     filtersUpdated: 'Filtres mis à jour',
     textSizeUpdated: 'Taille du texte mise à jour',
     savedToFavorites: 'Enregistré dans les favoris',
+    removedFromFavorites: 'Supprimé des favoris',
     languageChanged: 'Langue modifiée',
 
     // Update toast
@@ -788,6 +809,7 @@ const translations = {
     // Favorite button
     saveToFavorites: 'Enregistrer dans les favoris',
     alreadyInFavorites: 'Déjà dans les favoris',
+    removeFromFavorites: 'Supprimer des favoris',
 
     // Transport mode toggle
     toggleAllModes: 'Sélectionner/désélectionner tous les modes'
@@ -833,6 +855,7 @@ const translations = {
     filtersUpdated: 'Filtry zaktualizowane',
     textSizeUpdated: 'Rozmiar tekstu zaktualizowany',
     savedToFavorites: 'Zapisano w ulubionych',
+    removedFromFavorites: 'Usunięto z ulubionych',
     languageChanged: 'Język zmieniony',
 
     // Update toast
@@ -860,6 +883,7 @@ const translations = {
     // Favorite button
     saveToFavorites: 'Zapisz w ulubionych',
     alreadyInFavorites: 'Już w ulubionych',
+    removeFromFavorites: 'Usuń z ulubionych',
 
     // Transport mode toggle
     toggleAllModes: 'Zaznacz/odznacz wszystkie środki transportu'

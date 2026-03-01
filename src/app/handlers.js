@@ -14,7 +14,7 @@
 import { DEFAULTS } from '../config.js';
 import { t, getLanguage } from '../i18n.js';
 import { updateFooterTranslations, updateFavoriteButton } from '../ui/ui.js';
-import { addRecentStation } from '../ui/station-dropdown.js';
+import { addRecentStation, removeFromFavorites, isStationInFavorites } from '../ui/station-dropdown.js';
 import { getTheme } from '../ui/theme-toggle.js';
 import { saveSettings, applyTextSize } from './settings.js';
 import { doRefresh, startRefreshLoop } from './fetch-loop.js';
@@ -86,16 +86,21 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
   }
 
   /**
-   * Called when the user clicks the heart button to save to favorites.
+   * Called when the user clicks the heart button.
+   * If already in favorites: removes it. If not: adds it.
    */
   function handleFavoriteToggle() {
     if (DEFAULTS.STATION_NAME && DEFAULTS.STOP_ID) {
-      addRecentStation(DEFAULTS.STATION_NAME, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES, {
-        numDepartures: DEFAULTS.NUM_DEPARTURES,
-        fetchInterval: DEFAULTS.FETCH_INTERVAL,
-        textSize:      DEFAULTS.TEXT_SIZE,
-        language:      getLanguage()
-      });
+      if (isStationInFavorites(DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES)) {
+        removeFromFavorites(DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
+      } else {
+        addRecentStation(DEFAULTS.STATION_NAME, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES, {
+          numDepartures: DEFAULTS.NUM_DEPARTURES,
+          fetchInterval: DEFAULTS.FETCH_INTERVAL,
+          textSize:      DEFAULTS.TEXT_SIZE,
+          language:      getLanguage()
+        });
+      }
       if (board.stationDropdown) board.stationDropdown.refresh();
       updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES, getTheme());
     }
