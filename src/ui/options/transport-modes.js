@@ -141,5 +141,11 @@ export function createModesSection(defaults, { onApply, showToast, t }) {
     }
   });
 
-  return { rowModes, modesWrap, modesLabelEl: lblModes, toggleAllCb, getChecked, setChecked, updateToggleAllState, checkAll };
+  /** Cancel any pending debounce timer. Call on component teardown. */
+  function destroy() {
+    clearTimeout(debounceTimer);
+    debounceTimer = null;
+  }
+
+  return { rowModes, modesWrap, modesLabelEl: lblModes, toggleAllCb, getChecked, setChecked, updateToggleAllState, checkAll, destroy };
 }

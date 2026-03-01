@@ -223,10 +223,22 @@ export function createOptionsPanel(defaults, onApply, onLanguageChange) {
     };
   }
 
+  /**
+   * Hard teardown: cancel all pending timers and remove document-level
+   * listeners. Call this if the panel is removed from the DOM without going
+   * through the normal close flow.
+   */
+  function destroy() {
+    lifecycle.destroy();
+    stationAC.destroy();
+    modes.destroy();
+  }
+
   return {
     panel,
     open: () => lifecycle.open(updateFields),
     close: lifecycle.close,
     updateFields,
+    destroy,
   };
 }

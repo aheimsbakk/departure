@@ -40,10 +40,12 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
   // Internal state
   let acList = null;
   let acTimer = null;
+  let blurTimer = null;
   let lastQuery = '';
   let highlighted = -1;
   let lastCandidates = [];
   let updatingField = false;
+  let _destroyed = false;
 
   function clearAutocomplete() {
     try {
@@ -166,9 +168,13 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
     inpStation.select();
   });
 
-  // Blur: auto-select first candidate if user was typing
+  // Blur: auto-select first candidate if user was typing.
+  // The timeout is stored so it can be cancelled on destroy() or if the panel
+  // closes before the 150 ms window elapses (prevents spurious onSelect calls).
   inpStation.addEventListener('blur', () => {
-    setTimeout(() => {
+    clearTimeout(blurTimer);
+    blurTimer = setTimeout(() => {
+      if (_destroyed) return;
       if (acList && acList.classList.contains('open') && lastCandidates.length > 0 && !inpStation.dataset.stopId) {
         selectCandidateIndex(0);
       }
@@ -194,5 +200,13 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
     updatingField = false;
   }
 
-  return { rowStation, acWrap, inpStation, getValue, getStopId, reset, updateField };
+  /** Cancel all pending timers and prevent any further async callbacks. */
+  function destroy() {
+    _destroyed = true;
+    clearTimeout(acTimer);
+    clearTimeout(blurTimer);
+    clearAutocomplete();
+  }
+
+  return { rowStation, acWrap, inpStation, getValue, getStopId, reset, updateField, destroy };
 }
