@@ -17,4 +17,6 @@ import './options-autocomplete.test.mjs';
 import './search-filtering.test.mjs';
 import './sw.test.mjs';
 import './sw-api-caching.test.mjs';
+import './fetch-loop.test.mjs';
+import './sw-updater.test.mjs';
 console.log('All tests completed');

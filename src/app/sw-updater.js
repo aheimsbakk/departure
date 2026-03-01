@@ -6,63 +6,74 @@
  *   - Detect a waiting/installing worker and show a 5-second countdown toast
  *   - Send SKIP_WAITING to activate the new worker
  *   - Hard-reload the page on controllerchange with a cache-bust timestamp
+ *
+ * Timer design: a single setInterval drives both the countdown display AND
+ * the skipWaiting trigger. This prevents the Firefox bug where two independent
+ * timers (one for the toast, one for skipWaiting) drifted — the toast froze
+ * at 1s and the reload never fired in background/throttled tabs.
  */
 
 import { VERSION } from '../config.js';
 import { t } from '../i18n.js';
 
+/** Reload the page, stripping any existing query params and adding a cache-bust. */
+function reloadWithCacheBust() {
+  window.location.href = window.location.pathname + `?t=${Date.now()}`;
+}
+
 /**
  * Show a 5-second countdown toast, then trigger skipWaiting so the new
  * service worker activates and the page reloads with fresh assets.
  *
- * @param {ServiceWorker} worker - The waiting or installing worker
+ * A single setInterval drives both the toast update and the skipWaiting call —
+ * they cannot drift apart. The waiting worker is re-queried from `reg` at the
+ * moment of sending (not captured early) to avoid the stale-reference race
+ * that Firefox exposes more readily than Chrome.
+ *
+ * @param {ServiceWorkerRegistration} reg - The active SW registration
+ * @param {string} newVersion             - New version string for display
  */
-async function showUpdateNotification(worker) {
-  // Avoid stacking multiple toasts
+function showUpdateNotification(reg, newVersion) {
+  // Avoid stacking multiple toasts if called more than once
   if (document.getElementById('sw-update-toast')) return;
 
   // Temporarily hide the footer version during the update countdown
   const footer = document.querySelector('.app-footer');
   if (footer) footer.style.display = 'none';
 
-  // Try to read the new version string from the incoming SW script
-  let newVersion = 'new version';
-  try {
-    const swText = await fetch('./sw.js').then(r => r.text());
-    const match  = swText.match(/VERSION\s*=\s*['"]([^'"]+)['"]/);
-    if (match) newVersion = match[1];
-  } catch (_) { /* use fallback string */ }
-
   const toast = document.createElement('div');
   toast.id = 'sw-update-toast';
+  document.body.appendChild(toast);
 
   let countdown = 5;
-  const updateToast = () => {
+
+  const renderToast = () => {
     toast.innerHTML =
       `<div>${t('newVersionAvailable')}</div>` +
       `<div>${t('upgradingFrom')} ${VERSION} ${t('to')} ${newVersion}</div>` +
       `<div>${t('updatingIn')} ${countdown}${t('seconds')}</div>`;
   };
-  updateToast();
-  document.body.appendChild(toast);
+  renderToast();
 
-  const countdownId = setInterval(() => {
+  const timerId = setInterval(() => {
     countdown--;
-    if (countdown > 0) updateToast();
-    else clearInterval(countdownId);
-  }, 1000);
+    renderToast(); // always update — including the 0s frame
 
-  // Tell the waiting worker to activate after 5 s, then fall back to a
-  // direct reload in case the controllerchange event is missed (e.g. the
-  // listener was not yet wired when the event fired).
-  setTimeout(() => {
-    if (worker) worker.postMessage({ type: 'SKIP_WAITING' });
-    // Fallback: if controllerchange does not trigger a reload within 2 s,
-    // reload directly. The SW will have already cleared old caches by then.
-    setTimeout(() => {
-      window.location.href = window.location.href.split('?')[0];
-    }, 2000);
-  }, 5000);
+    if (countdown <= 0) {
+      clearInterval(timerId);
+
+      // Re-query reg.waiting at trigger time — avoids the stale-reference race
+      // where reg.waiting was null when the statechange fired but is set by now.
+      const worker = reg.waiting;
+      if (worker) {
+        worker.postMessage({ type: 'SKIP_WAITING' });
+      }
+
+      // Fallback reload: if controllerchange does not fire within 2 s
+      // (e.g. the SW was already active, or the event was missed), reload directly.
+      setTimeout(reloadWithCacheBust, 2000);
+    }
+  }, 1000);
 }
 
 /**
@@ -79,23 +90,40 @@ export async function registerServiceWorker() {
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
       reloading = true;
-      window.location.href = window.location.href.split('?')[0];
+      reloadWithCacheBust();
     });
 
     const reg = await navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
     // Check for a newer SW immediately on load
     reg.update().catch(() => {});
 
+    // Try to read the new version string from the incoming SW script.
+    // Fetched lazily once so showUpdateNotification can display it.
+    // Done with cache:'reload' to bypass the SW's own cache and get the real new file.
+    let newVersion = 'new version';
+    const fetchNewVersion = async () => {
+      try {
+        const swText = await fetch('./sw.js', { cache: 'reload' }).then(r => r.text());
+        const match  = swText.match(/VERSION\s*=\s*['"]([^'"]+)['"]/);
+        if (match) newVersion = match[1];
+      } catch (_) { /* keep fallback */ }
+    };
+
     // If there is already a waiting worker (e.g. page was open in background)
-    if (reg.waiting) showUpdateNotification(reg.waiting);
+    if (reg.waiting) {
+      await fetchNewVersion();
+      showUpdateNotification(reg, newVersion);
+    }
 
     // Watch for a newly installed worker becoming ready
     reg.addEventListener('updatefound', () => {
       const installing = reg.installing;
       if (!installing) return;
-      installing.addEventListener('statechange', () => {
+      installing.addEventListener('statechange', async () => {
+        // 'installed' + existing controller = new SW waiting to take over
         if (installing.state === 'installed' && navigator.serviceWorker.controller) {
-          showUpdateNotification(reg.waiting || installing);
+          await fetchNewVersion();
+          showUpdateNotification(reg, newVersion);
         }
       });
     });

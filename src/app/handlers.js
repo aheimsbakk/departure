@@ -73,10 +73,10 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
     // Update the browser tab title
     try { document.title = station.name || document.title; } catch (_) {}
 
-    // Kick off a refresh with the new station then restart the interval
+    // Kick off a refresh with the new station then restart the unified loop
     doRefresh(board.list)
       .catch(err => console.warn('Station change refresh failed', err))
-      .finally(() => startRefreshLoop(board.list));
+      .finally(() => startRefreshLoop(board.list, board.status));
 
     // Persist updated settings
     saveSettings();
@@ -129,10 +129,10 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
     applyTextSize(newOpts.TEXT_SIZE);
     updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES, getTheme());
 
-    // Fetch with new settings then restart the loop so the new interval is used
+    // Fetch with new settings then restart the unified loop so the new interval is used
     doRefresh(board.list)
       .catch(err => console.warn('Manual refresh failed', err))
-      .finally(() => startRefreshLoop(board.list));
+      .finally(() => startRefreshLoop(board.list, board.status));
   }
 
   /**
