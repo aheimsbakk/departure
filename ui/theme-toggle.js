@@ -92,14 +92,21 @@ export function createThemeToggle(onChange) {
     if (typeof onChange === 'function') onChange(currentTheme);
   });
   
-  // Listen for system preference changes when in auto mode
+  // Listen for system preference changes when in auto mode.
+  // Keep a named reference so the listener can be removed if the button is destroyed.
   const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-  mediaQuery.addEventListener('change', () => {
+  function _onMediaChange() {
     if (currentTheme === 'auto') {
       applyTheme(currentTheme);
     }
-  });
-  
+  }
+  mediaQuery.addEventListener('change', _onMediaChange);
+
+  /** Remove the MediaQueryList listener and release references. */
+  button.destroy = function () {
+    mediaQuery.removeEventListener('change', _onMediaChange);
+  };
+
   return button;
 }
 

@@ -195,11 +195,20 @@ export function createStationDropdown(currentStationName, onStationSelect) {
   let isOpen = false;
   let selectedIndex = -1;
   
+  // Explicitly remove listeners from existing menu children before clearing
+  function _clearMenuItems() {
+    Array.from(menu.children).forEach(child => {
+      const clone = child.cloneNode(false);
+      child.replaceWith(clone);
+    });
+    menu.innerHTML = '';
+  }
+
   // Populate menu with recent stations
   function populateMenu() {
     const recent = getRecentStations();
-    menu.innerHTML = '';
-    
+    _clearMenuItems();
+
     if (recent.length === 0) {
       const emptyMsg = document.createElement('div');
       emptyMsg.className = 'station-dropdown-empty';
@@ -351,28 +360,38 @@ export function createStationDropdown(currentStationName, onStationSelect) {
     titleBtn.appendChild(arrow);
   }
   
+  // Named outside-click handler so it can be removed on destroy
+  function _onDocClick(e) {
+    if (!container.contains(e.target)) {
+      closeDropdown();
+    }
+  }
+
   // Event listeners
   titleBtn.addEventListener('click', (e) => {
     e.stopPropagation();
     toggleDropdown();
   });
-  
+
   titleBtn.addEventListener('keydown', handleKeyDown);
-  
+
   // Close on outside click
-  document.addEventListener('click', (e) => {
-    if (!container.contains(e.target)) {
-      closeDropdown();
-    }
-  });
-  
+  document.addEventListener('click', _onDocClick);
+
   // Assemble component
   container.appendChild(titleBtn);
   container.appendChild(menu);
-  
+
   // Expose methods
   container.updateTitle = updateTitle;
   container.refresh = populateMenu;
-  
+
+  /** Remove the document-level listener and release DOM references. */
+  container.destroy = function () {
+    document.removeEventListener('click', _onDocClick);
+    titleBtn.removeEventListener('keydown', handleKeyDown);
+    _clearMenuItems();
+  };
+
   return container;
 }
