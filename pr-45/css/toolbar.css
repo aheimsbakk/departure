@@ -1,0 +1,25 @@
+/* ======================================================================
+   GLOBAL TOOLBAR
+   Fixed top-right action bar (share, theme, settings).
+   Mirrors: src/app/action-bar.js
+   ====================================================================== */
+
+.global-gear {
+  position: fixed;
+  right: 18px;
+  top: 18px;
+  z-index: var(--z-global-gear);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Toolbar buttons get .header-btn sizing from buttons.css.
+   Only the scale hover/active effects are unique to this context. */
+.global-gear button:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.global-gear button:active:not(:disabled) {
+  transform: scale(0.95);
+}
