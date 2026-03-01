@@ -1,4 +1,4 @@
-const VERSION = '1.34.3';
+const VERSION = '1.34.4';
 const CACHE_NAME = `departures-v${VERSION}`;
 const ASSETS = [
   './',
@@ -69,16 +69,14 @@ self.addEventListener('install', (ev) => {
   ev.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
 });
 
-// Activate: remove old caches, claim clients, then notify all windows that
-// the new SW is fully active and safe to reload into.
+// Activate: remove old caches, then claim clients.
+// controllerchange fires on the client only after claim() resolves, which
+// guarantees old caches are gone before the page reloads into new assets.
 self.addEventListener('activate', (ev) => {
   ev.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys.map(k => { if (k !== CACHE_NAME) return caches.delete(k); }));
     await clients.claim();
-    // Tell every open window: old caches are gone, reload is now safe.
-    const allClients = await clients.matchAll({ type: 'window' });
-    allClients.forEach(c => c.postMessage({ type: 'SW_ACTIVATED' }));
   })());
 });
 
