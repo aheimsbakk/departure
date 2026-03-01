@@ -39,13 +39,15 @@ export function processUrlParams() {
     const shared = decodeSettings(boardParam);
     if (!shared) return false;
 
-    // Apply all decoded fields to DEFAULTS
-    DEFAULTS.STATION_NAME    = shared.stationName;
-    DEFAULTS.STOP_ID         = shared.stopId;
-    DEFAULTS.TRANSPORT_MODES = shared.transportModes;
-    DEFAULTS.NUM_DEPARTURES  = shared.numDepartures;
-    DEFAULTS.FETCH_INTERVAL  = shared.fetchInterval;
-    DEFAULTS.TEXT_SIZE       = shared.textSize;
+    // Only apply fields that were actually present in the share link.
+    // A null value means the field was absent (e.g. new 3-element format) —
+    // leave the current app value untouched so the user's own settings survive.
+    if (shared.stationName    != null) DEFAULTS.STATION_NAME    = shared.stationName;
+    if (shared.stopId         != null) DEFAULTS.STOP_ID         = shared.stopId;
+    if (shared.transportModes != null) DEFAULTS.TRANSPORT_MODES = shared.transportModes;
+    if (shared.numDepartures  != null) DEFAULTS.NUM_DEPARTURES  = shared.numDepartures;
+    if (shared.fetchInterval  != null) DEFAULTS.FETCH_INTERVAL  = shared.fetchInterval;
+    if (shared.textSize       != null) DEFAULTS.TEXT_SIZE       = shared.textSize;
 
     // Persist the imported language so it survives a reload
     if (shared.language) {
