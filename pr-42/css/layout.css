@@ -1,0 +1,27 @@
+/* ======================================================================
+   MAIN LAYOUT
+   Page-level skeleton: app root, board container, panel-open body shift.
+   ====================================================================== */
+
+.app-root {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+/* Shift content left when options panel is open */
+body.options-open .app-root {
+  transform: translateX(calc(-1 * var(--options-panel-width)));
+  transition: transform var(--transition-panel);
+}
+
+.board {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--header-gap);
+  text-align: center;
+  max-width: 90vw;
+}
