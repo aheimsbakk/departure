@@ -1,0 +1,119 @@
+/**
+ * Theme Toggle Component
+ * Manages light/auto/dark theme switching
+ */
+
+import { t } from '../i18n.js';
+import { UI_EMOJIS } from '../config.js';
+
+const THEME_KEY = 'kollektiv-theme';
+const THEMES = ['light', 'auto', 'dark'];
+const ICONS = {
+  light: UI_EMOJIS.themeLight,
+  auto: UI_EMOJIS.themeAuto,
+  dark: UI_EMOJIS.themeDark
+};
+
+/**
+ * Get current theme from localStorage or default to 'auto'
+ */
+export function getTheme() {
+  const stored = localStorage.getItem(THEME_KEY);
+  return THEMES.includes(stored) ? stored : 'auto';
+}
+
+/**
+ * Save theme to localStorage
+ */
+function saveTheme(theme) {
+  localStorage.setItem(THEME_KEY, theme);
+}
+
+/**
+ * Get next theme in cycle: light → auto → dark → light
+ */
+function getNextTheme(current) {
+  const idx = THEMES.indexOf(current);
+  return THEMES[(idx + 1) % THEMES.length];
+}
+
+/**
+ * Apply theme to document
+ */
+function applyTheme(theme) {
+  const root = document.documentElement;
+  
+  if (theme === 'light') {
+    // Force light theme
+    root.classList.add('theme-light');
+  } else if (theme === 'dark') {
+    // Force dark theme
+    root.classList.remove('theme-light');
+  } else {
+    // Auto mode: use system preference
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (prefersDark) {
+      root.classList.remove('theme-light');
+    } else {
+      root.classList.add('theme-light');
+    }
+  }
+}
+
+/**
+ * Create and return theme toggle button
+ * @param {Function} [onChange] - Optional callback invoked after theme changes, receives the new theme string
+ */
+export function createThemeToggle(onChange) {
+  const button = document.createElement('button');
+  // Use same header button class so layout matches favorite and language flags
+  button.className = 'theme-toggle-btn header-btn';
+  button.type = 'button';
+  button.title = t('themeTooltip');
+  
+  let currentTheme = getTheme();
+  
+  // Update button icon based on current theme
+  function updateButton() {
+    button.textContent = ICONS[currentTheme];
+    button.title = t('themeTooltip');
+  }
+  
+  // Initialize
+  applyTheme(currentTheme);
+  updateButton();
+  
+  // Handle clicks
+  button.addEventListener('click', () => {
+    currentTheme = getNextTheme(currentTheme);
+    saveTheme(currentTheme);
+    applyTheme(currentTheme);
+    updateButton();
+    if (typeof onChange === 'function') onChange(currentTheme);
+  });
+  
+  // Listen for system preference changes when in auto mode.
+  // Keep a named reference so the listener can be removed if the button is destroyed.
+  const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+  function _onMediaChange() {
+    if (currentTheme === 'auto') {
+      applyTheme(currentTheme);
+    }
+  }
+  mediaQuery.addEventListener('change', _onMediaChange);
+
+  /** Remove the MediaQueryList listener and release references. */
+  button.destroy = function () {
+    mediaQuery.removeEventListener('change', _onMediaChange);
+  };
+
+  return button;
+}
+
+/**
+ * Initialize theme on app load (call this before creating the toggle button)
+ */
+export function initTheme() {
+  const theme = getTheme();
+  applyTheme(theme);
+}
