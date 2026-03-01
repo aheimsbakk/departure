@@ -1,4 +1,4 @@
-const VERSION = '1.34.5';
+const VERSION = '1.34.6';
 const CACHE_NAME = `departures-v${VERSION}`;
 const ASSETS = [
   './',
@@ -63,10 +63,16 @@ const ASSETS = [
   './icons/icon-512.svg'
 ];
 
-// Install: cache core assets. Do NOT call skipWaiting here so we can
-// prompt users before activating a new worker.
+// Install: cache core assets, bypassing the HTTP cache so that a new
+// versioned cache never contains stale responses from a previous deploy.
+// cache.addAll() uses the HTTP cache by default, which causes the bug
+// where the "new" cache silently stores old asset bodies.
 self.addEventListener('install', (ev) => {
-  ev.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)));
+  ev.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    const requests = ASSETS.map(url => new Request(url, { cache: 'reload' }));
+    await cache.addAll(requests);
+  })());
 });
 
 // Activate: remove old caches, then claim clients.
