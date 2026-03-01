@@ -92,16 +92,17 @@ export async function registerServiceWorker() {
       });
     });
 
-    // Reload only after the new SW has fully activated and cleared old caches.
-    // The SW posts SW_ACTIVATED after clients.claim(), guaranteeing fresh assets.
-    // Using this instead of 'controllerchange' prevents serving stale cached files
-    // during the brief window between controller change and activate completion.
+    // Reload on controllerchange, which the browser fires only after the new SW
+    // has called clients.claim() — meaning activate() has fully resolved and old
+    // caches have already been deleted. A queueMicrotask gives the activate
+    // waitUntil promise one extra tick to fully settle before the navigation.
     let reloading = false;
-    navigator.serviceWorker.addEventListener('message', (ev) => {
-      if (ev.data?.type !== 'SW_ACTIVATED') return;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
       if (reloading) return;
       reloading = true;
-      window.location.href = window.location.href.split('?')[0];
+      queueMicrotask(() => {
+        window.location.href = window.location.href.split('?')[0];
+      });
     });
   } catch (_) { /* SW registration failure is non-fatal */ }
 }
