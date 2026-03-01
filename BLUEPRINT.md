@@ -14,6 +14,7 @@ High-level constraints
 
 User-facing features
 - Station header (clickable) opens favorites dropdown (up to `NUM_FAVORITES` recent stations with saved settings; `DEFAULT_FAVORITE` pre-seeded when no favorites exist).
+- Favorite heart button (❤️) is always enabled. Red heart = not in favorites (click to add). White/dark heart = already in favorites (click to remove). `handleFavoriteToggle` in `handlers.js` performs the toggle; `removeFromFavorites` in `station-dropdown.js` handles removal.
 - Up to N upcoming departures (configurable).
 - Departure line: destination, realtime indicator (● live / ○ scheduled), line number, transport emoji, platform symbol+code.
 - Cancelled departures shown with strikethrough and reduced opacity.
@@ -149,7 +150,7 @@ PWA & Service Worker
 - `src/manifest.webmanifest`: name, icons, `display: standalone`, theme color.
 - `src/sw.js`: versioned cache name (`kollektiv-v<VERSION>`), caches all app assets on install, serves from cache with network fallback.
 - Update flow: new SW detected → 5-second countdown toast shows old→new version → `skipWaiting` → `controllerchange` triggers hard reload with `?t=<timestamp>` cache-bust.
-- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.33.0`.
+- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.34.0`.
 
 Performance & DOM update pattern
 - Render template once per departure item; keep references to text nodes for countdown and situation.
