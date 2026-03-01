@@ -7,7 +7,7 @@
  *   app/settings.js   — localStorage load/save, text-size
  *   app/url-import.js — shared-board URL decode (?b= / ?board=)
  *   app/render.js     — departure list rendering
- *   app/fetch-loop.js — doRefresh, startRefreshLoop, tickCountdowns
+ *   app/fetch-loop.js — doRefresh, startRefreshLoop(listEl, statusEl), tickCountdowns
  *   app/handlers.js   — station select, favorite toggle, apply settings, language change
  *   app/action-bar.js — share + theme + settings buttons
  *   app/sw-updater.js — service worker registration and auto-update toast
@@ -121,7 +121,6 @@ async function init() {
   try {
     if (DEFAULTS.STOP_ID || DEFAULTS.STATION_NAME) {
       await doRefresh(board.list);
-      if (board.status) board.status.textContent = t('live');
     }
   } catch (err) {
     console.warn('Initial fetch failed', err?.message ?? err);
@@ -131,13 +130,13 @@ async function init() {
   // Ensure an empty state is shown when the initial fetch produced nothing
   if (!data || data.length === 0) renderDepartures(board.list, []);
 
-  // 12. Start loops
-  startRefreshLoop(board.list);
+  // 12. Start the unified 1-second loop.
+  //     startRefreshLoop drives both the departure countdowns AND the
+  //     "update in Xs" status chip from a single setInterval — no drift.
+  //     An immediate tickCountdowns() call paints the chips without waiting
+  //     for the first 1-second tick to fire.
+  startRefreshLoop(board.list, board.status);
   tickCountdowns(board.list, board.status);
-  // Store the ticker ID on the root element so it can be cleared if init() is
-  // ever called again (e.g. in tests) without leaking the previous interval.
-  if (ROOT._tickerId) clearInterval(ROOT._tickerId);
-  ROOT._tickerId = setInterval(() => tickCountdowns(board.list, board.status), 1000);
 }
 
 document.addEventListener('DOMContentLoaded', init);

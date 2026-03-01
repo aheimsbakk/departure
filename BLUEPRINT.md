@@ -36,7 +36,7 @@ Architecture overview
   - `settings.js`        — load/save localStorage settings; applyTextSize
   - `url-import.js`      — decode ?b= / ?board= shared-board params, clean URL
   - `render.js`          — renderDepartures (departure list clear + populate)
-  - `fetch-loop.js`      — doRefresh, startRefreshLoop, tickCountdowns
+  - `fetch-loop.js`      — doRefresh, startRefreshLoop(listEl, statusEl), tickCountdowns; single unified 1-second interval drives both departure countdowns and the "update in" chip; fetch triggered when tick counter reaches 0
   - `handlers.js`        — handleStationSelect, handleFavoriteToggle, onApplySettings, onLanguageChange
   - `action-bar.js`      — share + theme + settings buttons, global-gear container
   - `sw-updater.js`      — SW registration, update toast, controllerchange reload
@@ -156,7 +156,7 @@ Performance & DOM update pattern
 - Render template once per departure item; keep references to text nodes for countdown and situation.
 - Only update the countdown text every second rather than re-paint full DOM.
 - On new fetch, diff the departure array by stable key (destination + expectedDepartureISO) and only add/remove or reorder DOM nodes as needed.
-- Use `requestAnimationFrame` sparingly for animations; timer uses `setInterval(1000)` to update times.
+- Single unified `setInterval(1000)` in `fetch-loop.js` drives both departure countdowns and the "update in" status chip. A tick counter (`ticksUntilRefresh`) decrements each second; when it reaches 0 `doRefresh()` is called and the counter resets. This guarantees zero drift between the countdown display and the actual fetch.
 
 Error handling & fallback UX
 - If station lookup fails: show error/empty state and keep previous data if available.
