@@ -72,7 +72,7 @@ export function createBoardElements(stationName, onStationSelect, onFavoriteTogg
 
 /**
  * Update the favorite heart button appearance based on whether the station is in favorites.
- * Red heart = not in favorites (clickable). White/black heart = already in favorites (disabled).
+ * Red heart = not in favorites (click to save). White/black heart = in favorites (click to remove).
  * @param {HTMLElement} btn - The favorite button element
  * @param {string} stopId - Current station's stop ID
  * @param {Array<string>} modes - Current transport modes
@@ -82,15 +82,15 @@ export function updateFavoriteButton(btn, stopId, modes, theme) {
   if (!btn) return;
   const inFavorites = isStationInFavorites(stopId, modes);
   if (inFavorites) {
-    // Already in favorites: show white/black heart, disable
+    // Already in favorites: show white/black heart, enabled — click to remove
     const isLight = theme === 'light' ||
       (theme === 'auto' && typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
     btn.textContent = isLight ? UI_EMOJIS.heartSavedLight : UI_EMOJIS.heartSavedDark;
-    btn.disabled = true;
-    btn.title = t('alreadyInFavorites');
-    btn.setAttribute('aria-label', t('alreadyInFavorites'));
+    btn.disabled = false;
+    btn.title = t('removeFromFavorites');
+    btn.setAttribute('aria-label', t('removeFromFavorites'));
   } else {
-    // Not in favorites: show red heart, enabled
+    // Not in favorites: show red heart, enabled — click to save
     btn.textContent = UI_EMOJIS.heartSave;
     btn.disabled = false;
     btn.title = t('saveToFavorites');
