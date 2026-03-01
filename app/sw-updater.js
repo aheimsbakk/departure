@@ -52,18 +52,17 @@ async function showUpdateNotification(worker) {
     else clearInterval(countdownId);
   }, 1000);
 
-  // Tell the waiting worker to activate after 5 s
-  const skipWaitingId = setTimeout(() => {
+  // Tell the waiting worker to activate after 5 s, then fall back to a
+  // direct reload in case the controllerchange event is missed (e.g. the
+  // listener was not yet wired when the event fired).
+  setTimeout(() => {
     if (worker) worker.postMessage({ type: 'SKIP_WAITING' });
+    // Fallback: if controllerchange does not trigger a reload within 2 s,
+    // reload directly. The SW will have already cleared old caches by then.
+    setTimeout(() => {
+      window.location.href = window.location.href.split('?')[0];
+    }, 2000);
   }, 5000);
-
-  // Cancel both timers if the page is hidden/unloaded before they fire
-  // to avoid operating on detached DOM nodes or stale worker references.
-  function _cancelTimers() {
-    clearInterval(countdownId);
-    clearTimeout(skipWaitingId);
-  }
-  window.addEventListener('pagehide', _cancelTimers, { once: true });
 }
 
 /**
@@ -74,6 +73,15 @@ export async function registerServiceWorker() {
   if (!('serviceWorker' in navigator)) return;
 
   try {
+    // Wire controllerchange BEFORE register() so the event cannot be missed
+    // if skipWaiting fires during the async register/update calls.
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloading) return;
+      reloading = true;
+      window.location.href = window.location.href.split('?')[0];
+    });
+
     const reg = await navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
     // Check for a newer SW immediately on load
     reg.update().catch(() => {});
@@ -89,19 +97,6 @@ export async function registerServiceWorker() {
         if (installing.state === 'installed' && navigator.serviceWorker.controller) {
           showUpdateNotification(reg.waiting || installing);
         }
-      });
-    });
-
-    // Reload on controllerchange, which the browser fires only after the new SW
-    // has called clients.claim() — meaning activate() has fully resolved and old
-    // caches have already been deleted. A queueMicrotask gives the activate
-    // waitUntil promise one extra tick to fully settle before the navigation.
-    let reloading = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (reloading) return;
-      reloading = true;
-      queueMicrotask(() => {
-        window.location.href = window.location.href.split('?')[0];
       });
     });
   } catch (_) { /* SW registration failure is non-fatal */ }
