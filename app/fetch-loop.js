@@ -32,6 +32,9 @@ let loopTimerId = null;
 /** Guard: prevents a second concurrent fetch if the previous one is still running */
 let fetchInFlight = false;
 
+/** Wall-clock timestamp (ms) of the last completed fetch attempt */
+let lastFetchAt = Date.now();
+
 /** The most recently fetched departure data (kept for re-render on settings change) */
 export let data = [];
 
@@ -73,6 +76,7 @@ export async function doRefresh(listEl) {
     // Always reset the countdown after a fetch attempt so the next cycle
     // starts cleanly from the full interval, regardless of success/failure.
     ticksUntilRefresh = DEFAULTS.FETCH_INTERVAL;
+    lastFetchAt = Date.now();
     fetchInFlight = false;
   }
 }
@@ -91,6 +95,19 @@ export function startRefreshLoop(listEl, statusEl) {
   // Reset the counter to the full interval when the loop is (re)started.
   // This happens after a manual settings apply so the new interval takes effect.
   ticksUntilRefresh = DEFAULTS.FETCH_INTERVAL;
+
+  // Wake-up guard: when the PWA resumes from background/sleep the OS freezes
+  // setInterval, leaving stale data on screen. On visibility restore, check
+  // how much wall-clock time has actually elapsed. If it exceeds the fetch
+  // interval, trigger an immediate refresh so the board is never stale.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible') return;
+    const elapsedSec = (Date.now() - lastFetchAt) / 1000;
+    if (elapsedSec >= DEFAULTS.FETCH_INTERVAL) {
+      ticksUntilRefresh = DEFAULTS.FETCH_INTERVAL; // reset chip display
+      doRefresh(listEl).catch(err => console.warn('Wake-up refresh failed', err));
+    }
+  });
 
   loopTimerId = setInterval(() => {
     // 1. Decrement first so we never show FETCH_INTERVAL on the chip

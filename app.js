@@ -139,4 +139,12 @@ async function init() {
   tickCountdowns(board.list, board.status);
 }
 
+// BFCache cold-start guard: if the OS fully kills the PWA process and restores
+// it from the back/forward cache, visibilitychange may not fire. pageshow with
+// event.persisted=true is the reliable signal for this case — a full reload
+// ensures fresh data and a clean timer state.
+window.addEventListener('pageshow', (event) => {
+  if (event.persisted) location.reload();
+});
+
 document.addEventListener('DOMContentLoaded', init);
