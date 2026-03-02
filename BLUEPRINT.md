@@ -77,6 +77,7 @@ Architecture overview
   - `footer.css`         — fixed bottom-left .app-footer
   - `debug.css`          — .debug-panel (dev-only, safe to strip)
 - `src/sw.js`            — service worker: versioned cache, offline support, skip-waiting flow
+- PWA wake-up: `visibilitychange` listener in `fetch-loop.js` detects stale data after OS freeze (compares `Date.now()` vs `lastFetchAt`); `pageshow` with `event.persisted` in `app.js` handles BFCache cold-start via full reload.
 - `src/manifest.webmanifest` — PWA manifest (icons, theme color, display mode)
 - `src/icons/`           — PWA icon assets
 - `src/ui/`
@@ -150,7 +151,8 @@ PWA & Service Worker
 - `src/manifest.webmanifest`: name, icons, `display: standalone`, theme color.
 - `src/sw.js`: versioned cache name (`kollektiv-v<VERSION>`), caches all app assets on install, serves from cache with network fallback.
 - Update flow: new SW detected → 5-second countdown toast shows old→new version → `skipWaiting` → `controllerchange` triggers hard reload with `?t=<timestamp>` cache-bust.
-- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.34.0`.
+- PWA wake-up on resume: `visibilitychange` in `fetch-loop.js` checks wall-clock elapsed time vs `FETCH_INTERVAL`; triggers immediate `doRefresh()` if stale. `pageshow` (event.persisted) in `app.js` forces full reload on BFCache cold-start.
+- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.34.9`.
 
 Performance & DOM update pattern
 - Render template once per departure item; keep references to text nodes for countdown and situation.
