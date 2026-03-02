@@ -1,12 +1,12 @@
-Overall Context: Kollektiv.Sanntid.org - Real-time Norwegian public transport departure board. Version 1.34.9.
+Overall Context: Kollektiv.Sanntid.org - Real-time Norwegian public transport departure board. Version 1.34.10.
 
-Current Goal: Fix PWA stale data on resume after background/sleep.
+Current Goal: SEO hygiene — added sitemap and project rules.
 
 Last 3 Changes:
-- PWA wake-up fix (v1.34.9): fetch-loop.js tracks lastFetchAt (wall-clock ms); visibilitychange listener compares elapsed time vs FETCH_INTERVAL and triggers immediate doRefresh() if stale; app.js adds pageshow(event.persisted) guard for BFCache cold-start via full reload
-- SW updater fix (v1.34.7): sw-updater.js single setInterval for countdown toast + skipWaiting; reg.waiting re-queried at trigger time; reload includes ?t=<timestamp> cache-bust
-- Unified fetch loop (v1.34.7): single 1s interval drives departure countdowns + "update in" chip + fetch trigger
+- Sitemap (v1.34.10): added src/sitemap.xml (single URL, lastmod only); docs/PROJECT_RULES.md rule requires lastmod update on every src/ release
+- PWA wake-up fix (v1.34.9): fetch-loop.js tracks lastFetchAt; visibilitychange triggers doRefresh() if stale; app.js pageshow guard for BFCache cold-start
+- SW updater fix (v1.34.7): single setInterval for countdown toast + skipWaiting; reload with ?t=<timestamp> cache-bust
 
 Next Steps:
-- Deploy and test on a real device after leaving the PWA inactive for >FETCH_INTERVAL seconds
+- Update src/sitemap.xml <lastmod> on every future release
 - Await user feedback or new feature requests
