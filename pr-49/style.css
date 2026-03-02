@@ -1,0 +1,31 @@
+/* ======================================================================
+   DEPARTURE BOARD — CSS ENTRY POINT
+   Import manifest only. All rules live in src/css/*.css.
+   Load order matters: tokens → base → buttons → layout → components.
+   ====================================================================== */
+
+/* --- Foundations (no component dependencies) --- */
+@import './css/tokens.css';
+@import './css/base.css';
+@import './css/buttons.css';
+@import './css/layout.css';
+@import './css/utils.css';
+
+/* --- Board components --- */
+@import './css/header.css';
+@import './css/toolbar.css';
+@import './css/departures.css';
+
+/* --- Options panel and its sub-components --- */
+@import './css/options-panel.css';
+@import './css/autocomplete.css';
+@import './css/transport-modes.css';
+@import './css/language-switcher.css';
+
+/* --- Overlays and ephemeral UI --- */
+@import './css/share-modal.css';
+@import './css/toasts.css';
+
+/* --- Chrome --- */
+@import './css/footer.css';
+@import './css/debug.css';
