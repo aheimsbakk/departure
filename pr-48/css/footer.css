@@ -1,0 +1,39 @@
+/* ======================================================================
+   APP FOOTER
+   Fixed bottom-left version and GitHub link.
+   Mirrors: src/ui/ui.js (.app-footer)
+   ====================================================================== */
+
+.app-footer {
+  position: fixed;
+  bottom: 18px;
+  left: 18px;
+  z-index: var(--z-footer);
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--overlay-medium);
+  padding: 6px 10px;
+  border-radius: var(--btn-border-radius);
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.footer-data-line,
+.footer-version-line {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+
+
+
+.app-footer a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.app-footer a:hover {
+  text-decoration: underline;
+}
