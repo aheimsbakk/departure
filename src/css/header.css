@@ -106,7 +106,6 @@
   color: var(--text-primary);
   text-align: left;
   cursor: pointer;
-  font-size: 0.9em;
   border-radius: 4px;
   transition: background var(--transition-fast), color var(--transition-fast);
   white-space: nowrap;
@@ -120,7 +119,6 @@
 
 .station-dropdown-empty {
   padding: 8px;
-  font-size: 0.9em;
   color: var(--text-secondary);
   font-style: italic;
 }

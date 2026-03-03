@@ -19,7 +19,6 @@ import { initTheme } from './ui/theme-toggle.js';
 import { createBoardElements, updateFavoriteButton } from './ui/ui.js';
 import { createHeaderToggle } from './ui/header.js';
 import { createOptionsPanel } from './ui/options/index.js';
-import { getTheme } from './ui/theme-toggle.js';
 import { getRecentStations } from './ui/station-dropdown.js';
 
 import { loadSettings, applyTextSize } from './app/settings.js';
@@ -78,7 +77,7 @@ async function init() {
   }
 
   // Set initial heart button state
-  updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES, getTheme());
+  updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
 
   // 6. Build action bar (share + theme + settings buttons).
   //    The open/close callbacks reference `opts` which is declared in step 7 —

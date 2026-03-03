@@ -1,6 +1,6 @@
 // Version is defined here and in src/sw.js (service worker)
 // Both must be kept in sync - use scripts/bump-version.sh to update both
-export const VERSION = '1.34.10';
+export const VERSION = '1.35.2';
 
 export const DEFAULTS = {
   STATION_NAME: 'Jernbanetorget, Oslo',
@@ -11,7 +11,7 @@ export const DEFAULTS = {
   TRANSPORT_MODES: ['bus','tram','metro','rail','water','coach'],
   CLIENT_NAME: 'kollektiv-sanntid-org',
   API_URL: 'https://api.entur.io/journey-planner/v3/graphql',
-  GITHUB_URL: 'https://github.com/aheimsbakk/kollektiv-sanntid-org'
+  GITHUB_URL: 'https://github.com/aheimsbakk/kollektiv-sanntid-org/#kollektivsanntidorg'
 };
 
 // Default favorite station encoded as base64 share link (minimal 3-element format)
@@ -48,9 +48,10 @@ export const UI_EMOJIS = {
   themeLight: '🌞',
   themeAuto: '🌤️',
   themeDark: '🌥️',
-  heartSave: '❤️',       // Not in favorites — click to save
-  heartSavedLight: '🤍', // Already in favorites (light theme)
-  heartSavedDark: '🖤'   // Already in favorites (dark theme)
+  heartSave: '🩶',    // Not in favorites — click to save (gray, theme-neutral)
+  heartSaved: '❤️',  // Already in favorites — click to remove
+  footerLink: '🔗',  // Entur data attribution link
+  footerReadme: '📘' // GitHub README link
 };
 
 // Cancellation display wrapper
