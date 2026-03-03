@@ -46,10 +46,10 @@ export function createBoardElements(stationName, onStationSelect, onFavoriteTogg
   enturLink.href = 'https://data.entur.no/';
   enturLink.target = '_blank';
   enturLink.rel = 'noopener noreferrer';
-  enturLink.textContent = '🔗';
+  enturLink.textContent = UI_EMOJIS.footerLink;
   dataLine.append(dataText, enturLink);
 
-  // Line 2: "Version X.Y.Z 🔗"
+  // Line 2: "Version X.Y.Z 📘"
   const versionLine = document.createElement('div'); versionLine.className='footer-version-line';
   const versionText = document.createElement('span');
   versionText.textContent = `${t('version')} ${VERSION} `;
@@ -57,7 +57,7 @@ export function createBoardElements(stationName, onStationSelect, onFavoriteTogg
   githubLink.href = DEFAULTS.GITHUB_URL || 'https://github.com/aheimsbakk/departure';
   githubLink.target = '_blank';
   githubLink.rel = 'noopener noreferrer';
-  githubLink.textContent = '🔗';
+  githubLink.textContent = UI_EMOJIS.footerReadme;
   versionLine.append(versionText, githubLink);
 
   footer.append(dataLine, versionLine);
