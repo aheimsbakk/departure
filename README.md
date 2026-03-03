@@ -18,7 +18,7 @@ This app uses [Entur's API](https://developer.entur.org/) to show live departure
 
 Your departure board will now show live times for the next departures from your chosen station.
 
-To save the station to your favorites, click the **❤️ heart button** to the left of the station name on the departure board. The heart turns red when a station is not saved. Once saved, the heart turns white (light theme) or dark (dark theme) — and remains **clickable**. Click it again to **remove** the station from your favorites.
+To save the station to your favorites, click the **🩶 heart button** to the left of the station name. The heart is gray when a station is not saved. Once saved, the heart turns red ❤️ — and remains **clickable**. Click it again to **remove** the station from your favorites.
 
 ### Using Favorites
 
@@ -26,7 +26,7 @@ Click the **station name** at the top of the screen to open your favorites list.
 
 Your favorites list stores up to 7 stations with all their settings. The most recently used station appears at the top.
 
-To remove a station from favorites, click the heart button ❤️ on the departure board while viewing that station — it will be removed immediately.
+To remove a station from favorites, click the red heart ❤️ on the departure board while viewing that station — it will be removed immediately.
 
 If you have no favorites yet, the app pre-seeds **Jernbanetorget, Oslo** as a starting point so the board is never empty on first use.
 

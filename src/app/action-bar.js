@@ -13,7 +13,7 @@ import { t } from '../i18n.js';
 import { DEFAULTS } from '../config.js';
 import { getLanguage } from '../i18n.js';
 import { createShareButton } from '../ui/share-button.js';
-import { createThemeToggle, getTheme } from '../ui/theme-toggle.js';
+import { createThemeToggle } from '../ui/theme-toggle.js';
 import { updateFavoriteButton } from '../ui/ui.js';
 
 /**
@@ -41,7 +41,7 @@ export function buildActionBar(board, onOpenSettings, onCloseSettings) {
 
   // Theme toggle button (light / auto / dark cycle)
   const themeBtn = createThemeToggle(() => {
-    updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES, getTheme());
+    updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
   });
 
   // Settings gear button (opens / closes the options panel)
