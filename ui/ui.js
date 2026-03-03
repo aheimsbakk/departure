@@ -46,10 +46,10 @@ export function createBoardElements(stationName, onStationSelect, onFavoriteTogg
   enturLink.href = 'https://data.entur.no/';
   enturLink.target = '_blank';
   enturLink.rel = 'noopener noreferrer';
-  enturLink.textContent = '🔗';
+  enturLink.textContent = UI_EMOJIS.footerLink;
   dataLine.append(dataText, enturLink);
 
-  // Line 2: "Version X.Y.Z 🔗"
+  // Line 2: "Version X.Y.Z 📘"
   const versionLine = document.createElement('div'); versionLine.className='footer-version-line';
   const versionText = document.createElement('span');
   versionText.textContent = `${t('version')} ${VERSION} `;
@@ -57,7 +57,7 @@ export function createBoardElements(stationName, onStationSelect, onFavoriteTogg
   githubLink.href = DEFAULTS.GITHUB_URL || 'https://github.com/aheimsbakk/departure';
   githubLink.target = '_blank';
   githubLink.rel = 'noopener noreferrer';
-  githubLink.textContent = '🔗';
+  githubLink.textContent = UI_EMOJIS.footerReadme;
   versionLine.append(versionText, githubLink);
 
   footer.append(dataLine, versionLine);
@@ -72,25 +72,22 @@ export function createBoardElements(stationName, onStationSelect, onFavoriteTogg
 
 /**
  * Update the favorite heart button appearance based on whether the station is in favorites.
- * Red heart = not in favorites (click to save). White/black heart = in favorites (click to remove).
+ * Gray heart = not in favorites (click to save). Red heart = in favorites (click to remove).
  * @param {HTMLElement} btn - The favorite button element
  * @param {string} stopId - Current station's stop ID
  * @param {Array<string>} modes - Current transport modes
- * @param {string} theme - Current theme ('light', 'dark', or 'auto')
  */
-export function updateFavoriteButton(btn, stopId, modes, theme) {
+export function updateFavoriteButton(btn, stopId, modes) {
   if (!btn) return;
   const inFavorites = isStationInFavorites(stopId, modes);
   if (inFavorites) {
-    // Already in favorites: show white/black heart, enabled — click to remove
-    const isLight = theme === 'light' ||
-      (theme === 'auto' && typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
-    btn.textContent = isLight ? UI_EMOJIS.heartSavedLight : UI_EMOJIS.heartSavedDark;
+    // Already in favorites: show red heart, enabled — click to remove
+    btn.textContent = UI_EMOJIS.heartSaved;
     btn.disabled = false;
     btn.title = t('removeFromFavorites');
     btn.setAttribute('aria-label', t('removeFromFavorites'));
   } else {
-    // Not in favorites: show red heart, enabled — click to save
+    // Not in favorites: show gray heart, enabled — click to save
     btn.textContent = UI_EMOJIS.heartSave;
     btn.disabled = false;
     btn.title = t('saveToFavorites');

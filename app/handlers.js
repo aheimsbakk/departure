@@ -15,7 +15,6 @@ import { DEFAULTS } from '../config.js';
 import { t, getLanguage } from '../i18n.js';
 import { updateFooterTranslations, updateFavoriteButton } from '../ui/ui.js';
 import { addRecentStation, removeFromFavorites, isStationInFavorites } from '../ui/station-dropdown.js';
-import { getTheme } from '../ui/theme-toggle.js';
 import { saveSettings, applyTextSize } from './settings.js';
 import { doRefresh, startRefreshLoop } from './fetch-loop.js';
 
@@ -39,7 +38,7 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
     shareComponents.button.setAttribute('aria-label', t('shareBoard'));
     themeBtn.title    = t('themeTooltip');
     settingsBtn.title = t('settingsTooltip');
-    updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES, getTheme());
+    updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
   }
 
   /**
@@ -82,7 +81,7 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
     saveSettings();
 
     // Update heart button state
-    updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES, getTheme());
+    updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
   }
 
   /**
@@ -102,7 +101,7 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
         });
       }
       if (board.stationDropdown) board.stationDropdown.refresh();
-      updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES, getTheme());
+      updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
     }
   }
 
@@ -127,7 +126,7 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
     try { document.title = DEFAULTS.STATION_NAME || document.title; } catch (_) {}
 
     applyTextSize(newOpts.TEXT_SIZE);
-    updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES, getTheme());
+    updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
 
     // Fetch with new settings then restart the unified loop so the new interval is used
     doRefresh(board.list)
