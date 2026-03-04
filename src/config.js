@@ -1,12 +1,12 @@
 // Version is defined here and in src/sw.js (service worker)
 // Both must be kept in sync - use scripts/bump-version.sh to update both
-export const VERSION = '1.36.3';
+export const VERSION = '1.36.4';
 
 export const DEFAULTS = {
   STATION_NAME: 'Jernbanetorget, Oslo',
   STOP_ID: null, // When set, skip lookup and use this ID directly
   NUM_DEPARTURES: 5,
-  NUM_FAVORITES: 10,
+  NUM_FAVORITES: 8,
   FETCH_INTERVAL: 60,
   TRANSPORT_MODES: ['bus','tram','metro','rail','water','coach'],
   CLIENT_NAME: 'kollektiv-sanntid-org',
@@ -130,7 +130,7 @@ export const PLATFORM_SYMBOL_RULES = [
 export const DEPARTURE_LINE_TEMPLATE = '{destination} {indicator} {lineNumber} {emoji} {platform}';
 
 // GPS nearby-stop search settings
-export const GPS_MAX_RESULTS      = 10;  // maximum stop places returned in the dropdown
+export const GPS_MAX_RESULTS      = 8;  // maximum stop places returned in the dropdown
 export const GPS_SEARCH_RADIUS_KM = 2;  // search radius for Entur Geocoder (boundary.circle.radius, unit: km)
 
 // GPS nearby-stop dropdown item template
