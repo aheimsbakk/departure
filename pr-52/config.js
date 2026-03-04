@@ -1,12 +1,12 @@
 // Version is defined here and in src/sw.js (service worker)
 // Both must be kept in sync - use scripts/bump-version.sh to update both
-export const VERSION = '1.36.0';
+export const VERSION = '1.36.2';
 
 export const DEFAULTS = {
   STATION_NAME: 'Jernbanetorget, Oslo',
   STOP_ID: null, // When set, skip lookup and use this ID directly
   NUM_DEPARTURES: 5,
-  NUM_FAVORITES: 7,
+  NUM_FAVORITES: 10,
   FETCH_INTERVAL: 60,
   TRANSPORT_MODES: ['bus','tram','metro','rail','water','coach'],
   CLIENT_NAME: 'kollektiv-sanntid-org',
@@ -128,3 +128,34 @@ export const PLATFORM_SYMBOL_RULES = [
 //
 // Note: {platform} is automatically empty if no platform info is available
 export const DEPARTURE_LINE_TEMPLATE = '{destination} {indicator} {lineNumber} {emoji} {platform}';
+
+// GPS nearby-stop search settings
+export const GPS_MAX_RESULTS      = 10;  // maximum stop places returned in the dropdown
+export const GPS_SEARCH_RADIUS_KM = 2;  // search radius for Entur Geocoder (boundary.circle.radius, unit: km)
+
+// GPS nearby-stop dropdown item template
+// Available placeholders:
+//   {name}      - Stop name (e.g. "Bergkrystallen")
+//   {modes}     - Transport mode emojis (e.g. "🚇🚌"), empty string when unknown
+//   {distance}  - Distance from current position with unit (e.g. "186m"), empty string when unavailable
+//
+// Post-processing collapses repeated spaces and strips a trailing separator when
+// {distance} is absent, so "{name} {modes} · {distance}" stays clean in all cases.
+//
+// Examples:
+//   '{name} {modes} · {distance}'     — default: "Bergkrystallen 🚇🚌 · 186m"
+//   '{distance} · {name} {modes}'     — distance first: "186m · Bergkrystallen 🚇🚌"
+//   '{modes} {name} ({distance})'     — parenthesised distance: "🚇🚌 Bergkrystallen (186m)"
+export const GPS_STOP_LINE_TEMPLATE = '{name} 🏃‍➡️ {distance} {modes}';
+
+// Favorites dropdown item template
+// Available placeholders:
+//   {name}   - Station name (e.g. "Jernbanetorget, Oslo")
+//   {modes}  - Transport mode emojis for the saved filter (e.g. "🚌🚇"),
+//              empty string when all modes are selected (the default state)
+//
+// Examples:
+//   '{name} {modes}'        — default: "Jernbanetorget, Oslo" or "Oslo S 🚅"
+//   '{modes} {name}'        — emojis first: "🚅 Oslo S"
+//   '{name} [{modes}]'      — bracketed: "Oslo S [🚅]"
+export const STATION_LINE_TEMPLATE = '{name} {modes}';

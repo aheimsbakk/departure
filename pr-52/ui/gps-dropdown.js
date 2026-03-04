@@ -11,11 +11,10 @@
  */
 
 import { fetchNearbyStops } from '../entur/gps-search.js';
-import { TRANSPORT_MODE_EMOJIS, ALL_TRANSPORT_MODES, UI_EMOJIS, DEFAULTS } from '../config.js';
+import { TRANSPORT_MODE_EMOJIS, ALL_TRANSPORT_MODES, UI_EMOJIS, DEFAULTS, GPS_STOP_LINE_TEMPLATE, GPS_MAX_RESULTS, GPS_SEARCH_RADIUS_KM } from '../config.js';
 import { t } from '../i18n.js';
 
-const GPS_MAX_RESULTS = 7;
-const KNOWN_MODES     = ['bus', 'tram', 'metro', 'rail', 'water', 'coach'];
+const KNOWN_MODES = ['bus', 'tram', 'metro', 'rail', 'water', 'coach'];
 
 /**
  * Build a mode-emoji string for the given modes array.
@@ -27,7 +26,8 @@ const KNOWN_MODES     = ['bus', 'tram', 'metro', 'rail', 'water', 'coach'];
 function getModeEmojis(modes) {
   if (!Array.isArray(modes) || modes.length === 0) return '';
   return modes
-    .filter(m => KNOWN_MODES.includes(String(m).toLowerCase()))
+    .map(m => String(m).toLowerCase())
+    .filter(m => KNOWN_MODES.includes(m))
     .map(m => TRANSPORT_MODE_EMOJIS[m] || '')
     .filter(Boolean)
     .join('');
@@ -94,26 +94,17 @@ export function createGpsButton(onStationSelect) {
     item.type      = 'button';
     item.setAttribute('role', 'option');
 
-    // Layout: {station name} {mode emojis} · {distance}m
-    const nameEl = document.createElement('span');
-    nameEl.className   = 'gps-stop-name';
-    nameEl.textContent = stop.name;
-    item.appendChild(nameEl);
-
-    const emojis = getModeEmojis(stop.modes);
-    if (emojis) {
-      const modesEl = document.createElement('span');
-      modesEl.className   = 'gps-stop-modes';
-      modesEl.textContent = emojis;
-      item.appendChild(modesEl);
-    }
-
-    if (stop.distance != null) {
-      const distEl = document.createElement('span');
-      distEl.className   = 'gps-stop-distance';
-      distEl.textContent = ` · ${stop.distance}m`;
-      item.appendChild(distEl);
-    }
+    // Render from GPS_STOP_LINE_TEMPLATE.
+    // {distance} includes the unit (e.g. "186m"); empty string when unavailable.
+    const distStr = stop.distance != null ? `${stop.distance}${t('gpsMeters')}` : '';
+    const text = GPS_STOP_LINE_TEMPLATE
+      .replace('{name}',     stop.name)
+      .replace('{modes}',    getModeEmojis(stop.modes))
+      .replace('{distance}', distStr)
+      .replace(/\s*·\s*$/, '')   // strip trailing separator when {distance} is empty
+      .replace(/[ \t]{2,}/g, ' ') // collapse double spaces when {modes} is empty
+      .trim();
+    item.textContent = text;
 
     item.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -156,6 +147,7 @@ export function createGpsButton(onStationSelect) {
             lat,
             lon,
             maxResults: GPS_MAX_RESULTS,
+            radiusKm:   GPS_SEARCH_RADIUS_KM,
             clientName: DEFAULTS.CLIENT_NAME
           });
           if (stops.length === 0) {

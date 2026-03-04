@@ -20,7 +20,7 @@
   padding: 6px;
   width: max-content;
   max-width: min(340px, calc(100vw - 36px));
-  max-height: 320px;
+  max-height: 420px;
   overflow-y: auto;
   box-shadow: 0 6px 18px var(--shadow-color);
   z-index: var(--z-dropdown);
@@ -35,9 +35,7 @@
 
 /* ── Stop items ────────────────────────────────────────────────────── */
 .gps-dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: block;
   width: 100%;
   padding: 8px 10px;
   background: transparent;
@@ -55,26 +53,6 @@
   background: var(--highlight-bg);
   color: var(--highlight-fg);
   outline: none;
-}
-
-/* Transport mode emojis */
-.gps-stop-modes {
-  flex-shrink: 0;
-  font-size: 1em;
-  letter-spacing: -1px; /* tighten emoji clusters */
-}
-
-/* Stop name */
-.gps-stop-name {
-  font-weight: 500;
-  flex: 1 1 auto;
-}
-
-/* Distance label */
-.gps-stop-distance {
-  flex-shrink: 0;
-  color: var(--text-secondary);
-  font-size: 0.82em;
 }
 
 /* ── Status / error messages ───────────────────────────────────────── */
