@@ -24,7 +24,7 @@ To save the station to your favorites, click the **🩶 heart button** to the le
 
 Click the **station name** at the top of the screen to open your favorites list. This shows your recently viewed stations with their transport filters. Click any favorite to instantly switch to that station.
 
-Your favorites list stores up to 10 stations with all their settings. The most recently used station appears at the top.
+Your favorites list stores up to 8 stations with all their settings. The most recently used station appears at the top.
 
 To remove a station from favorites, click the red heart ❤️ on the departure board while viewing that station — it will be removed immediately.
 
@@ -45,7 +45,7 @@ When someone opens your link, the station is automatically added to their favori
 Click the **🧭 compass** button in the top left to find stops near your current location:
 
 - The app requests your device's GPS position (one-time, no tracking)
-- Lists up to **10 nearest stops** within a **2 km radius**
+- Lists up to **8 nearest stops** within a **2 km radius**
 - Each result shows the stop name, distance in metres, and transport mode icons
 - Click any stop to load it immediately — then use the ❤️ heart to save it
 
