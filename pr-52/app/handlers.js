@@ -28,7 +28,7 @@ import { doRefresh, startRefreshLoop } from './fetch-loop.js';
  * @param {{ updateFields?: Function }} optsRef - Mutable ref to the options panel API
  * @returns {{ handleStationSelect, handleFavoriteToggle, onApplySettings, onLanguageChange }}
  */
-export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, optsRef) {
+export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, optsRef, gpsRef = {}) {
 
   /**
    * Keep button tooltips in sync after a language change.
@@ -38,6 +38,7 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
     shareComponents.button.setAttribute('aria-label', t('shareBoard'));
     themeBtn.title    = t('themeTooltip');
     settingsBtn.title = t('settingsTooltip');
+    if (gpsRef.current?.updateTooltip) gpsRef.current.updateTooltip();
     updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
   }
 

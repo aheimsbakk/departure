@@ -65,6 +65,7 @@ async function init() {
   // optsRef is a mutable box so handlers.js can call opts.updateFields()
   // without a circular import — it is filled in after createOptionsPanel.
   const optsRef = { current: null };
+  const gpsRef  = { current: null };
 
   const board = createBoardElements(
     DEFAULTS.STATION_NAME,
@@ -93,13 +94,14 @@ async function init() {
   //    wireHandlers must receive the action-bar button refs (step 6) so it can
   //    update their tooltips; createOptionsPanel must come after so `opts` is
   //    available when the closures above are eventually called.
-  const handlers = wireHandlers(board, shareComponents, themeBtn, settingsBtn, optsRef);
+  const handlers = wireHandlers(board, shareComponents, themeBtn, settingsBtn, optsRef, gpsRef);
   const opts = createOptionsPanel(DEFAULTS, handlers.onApplySettings, handlers.onLanguageChange);
   optsRef.current = opts;
   document.body.appendChild(opts.panel);
 
   // 7b. Mount the GPS compass bar (top-left) — uses dedicated handler that does NOT auto-save to favorites
-  buildGpsBar((station) => handlers.handleGpsStationSelect(station));
+  const { gpsContainer } = buildGpsBar((station) => handlers.handleGpsStationSelect(station));
+  gpsRef.current = gpsContainer;
 
   // 8. Header gear icon (opens options from the station header)
   const headerControls = createHeaderToggle(() => opts.open());

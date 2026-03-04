@@ -190,6 +190,12 @@ export function createGpsButton(onStationSelect) {
   document.addEventListener('keydown', _onKeyDown);
 
   /** Remove document-level listeners and release DOM references. */
+  /** Update button tooltip and aria-label to match the current language. */
+  container.updateTooltip = function () {
+    btn.title = t('gpsTooltip');
+    btn.setAttribute('aria-label', t('gpsTooltip'));
+  };
+
   container.destroy = function () {
     document.removeEventListener('click',   _onDocClick);
     document.removeEventListener('keydown', _onKeyDown);
