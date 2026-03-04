@@ -46,6 +46,8 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
   let lastCandidates = [];
   let updatingField = false;
   let _destroyed = false;
+  /** AbortController for the current in-flight station search fetch */
+  let _searchAbortCtrl = null;
 
   function clearAutocomplete() {
     try {
@@ -120,10 +122,18 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
 
     acTimer = setTimeout(async () => {
       const searchQuery = v;
+      // Cancel any previous in-flight request before starting a new one
+      if (_searchAbortCtrl) _searchAbortCtrl.abort();
+      _searchAbortCtrl = new AbortController();
+      const { signal } = _searchAbortCtrl;
       try {
-        const cands = await searchStations({ text: searchQuery, limit: 5, fetchFn: window.fetch });
+        const cands = await searchStations({ text: searchQuery, limit: 5, fetchFn: window.fetch, signal });
+        // Guard: panel may have been destroyed while the fetch was in-flight
+        if (_destroyed) return;
         if (inpStation.value === searchQuery) showCandidates(cands);
       } catch (err) {
+        if (err?.name === 'AbortError') return; // cancelled by a newer search — normal
+        if (_destroyed) return;
         clearAutocomplete();
       }
     }, 250);
@@ -185,6 +195,8 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
   // Public API
   function getValue() { return inpStation.value; }
   function getStopId() { return inpStation.dataset.stopId || ''; }
+  /** Returns true when the autocomplete dropdown is currently visible. */
+  function isOpen() { return !!(acList && acList.classList.contains('open')); }
 
   function reset() {
     lastQuery = '';
@@ -205,8 +217,9 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
     _destroyed = true;
     clearTimeout(acTimer);
     clearTimeout(blurTimer);
+    if (_searchAbortCtrl) { _searchAbortCtrl.abort(); _searchAbortCtrl = null; }
     clearAutocomplete();
   }
 
-  return { rowStation, acWrap, inpStation, getValue, getStopId, reset, updateField, destroy };
+  return { rowStation, acWrap, inpStation, getValue, getStopId, isOpen, reset, updateField, destroy };
 }

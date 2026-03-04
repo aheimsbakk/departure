@@ -55,13 +55,16 @@ export async function lookupStopId({
  * - We request a larger result set (size=50) and apply client-side relevance
  *   scoring to surface the best match first.
  * - Only 'venue' layer results (actual transport stops) are kept.
+ * - Pass an AbortSignal via `signal` to cancel an in-flight request when a
+ *   newer search supersedes it (prevents stale responses from racing).
  *
- * @param {Object}   opts
- * @param {string}   opts.text          - Search query (minimum 1 character)
- * @param {number}   [opts.limit=5]     - Maximum results to return
- * @param {Function} [opts.fetchFn]
- * @param {string}   [opts.clientName]
- * @param {string}   [opts.geocodeUrl]
+ * @param {Object}        opts
+ * @param {string}        opts.text          - Search query (minimum 1 character)
+ * @param {number}        [opts.limit=5]     - Maximum results to return
+ * @param {Function}      [opts.fetchFn]
+ * @param {string}        [opts.clientName]
+ * @param {string}        [opts.geocodeUrl]
+ * @param {AbortSignal}   [opts.signal]      - Optional AbortSignal to cancel the fetch
  * @returns {Promise<Array<{ id: string|null, title: string, raw: Object }>>}
  */
 export async function searchStations({
@@ -69,7 +72,8 @@ export async function searchStations({
   limit       = 5,
   fetchFn     = fetch,
   clientName  = 'personal-js-app',
-  geocodeUrl  = 'https://api.entur.io/geocoder/v1/autocomplete'
+  geocodeUrl  = 'https://api.entur.io/geocoder/v1/autocomplete',
+  signal      = undefined
 }) {
   if (!text || String(text).trim().length < 1) return [];
 
@@ -78,7 +82,9 @@ export async function searchStations({
   const url = `${geocodeUrl}?text=${encodeURIComponent(text)}&lang=no&size=${fetchSize}`;
 
   try {
-    const r = await fetchFn(url, { headers: { 'ET-Client-Name': clientName } });
+    const fetchOpts = { headers: { 'ET-Client-Name': clientName } };
+    if (signal) fetchOpts.signal = signal;
+    const r = await fetchFn(url, fetchOpts);
     if (!r)                                               return [];
     if (typeof r.ok !== 'undefined' && r.ok === false)    return [];
 

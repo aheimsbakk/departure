@@ -45,13 +45,19 @@ function showUpdateNotification(reg, newVersion) {
   toast.id = 'sw-update-toast';
   document.body.appendChild(toast);
 
+  // Pre-create child elements once; update only textContent on each tick
+  // so the setInterval never causes innerHTML-driven DOM teardown/rebuild.
+  const lineAvail = document.createElement('div');
+  const lineFrom  = document.createElement('div');
+  const lineCount = document.createElement('div');
+  toast.append(lineAvail, lineFrom, lineCount);
+
   let countdown = 5;
 
   const renderToast = () => {
-    toast.innerHTML =
-      `<div>${t('newVersionAvailable')}</div>` +
-      `<div>${t('upgradingFrom')} ${VERSION} ${t('to')} ${newVersion}</div>` +
-      `<div>${t('updatingIn')} ${countdown}${t('seconds')}</div>`;
+    lineAvail.textContent = t('newVersionAvailable');
+    lineFrom.textContent  = `${t('upgradingFrom')} ${VERSION} ${t('to')} ${newVersion}`;
+    lineCount.textContent = `${t('updatingIn')} ${countdown}${t('seconds')}`;
   };
   renderToast();
 
