@@ -184,17 +184,20 @@ export function createOptionsPanel(defaults, onApply, onLanguageChange) {
     if (e.key === 'Enter') { e.preventDefault(); btnClose.focus(); }
   });
 
-  // Blur validation
+  // Blur: validate then apply — covers mobile Chrome where the numeric keyboard
+  // "Done" button fires blur but not keydown Enter.
   inpNum.addEventListener('blur', () => {
     const val = inpNum.value.trim();
     if (val === '') inpNum.value = defaults.NUM_DEPARTURES || 2;
     else if (Number(val) < 1) inpNum.value = 1;
+    applyChanges();
   });
 
   inpInt.addEventListener('blur', () => {
     const val = inpInt.value.trim();
     if (val === '') inpInt.value = defaults.FETCH_INTERVAL || 60;
     else if (Number(val) < 20) inpInt.value = 20;
+    applyChanges();
   });
 
   // Focus: select-all for quick editing
