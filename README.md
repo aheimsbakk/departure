@@ -10,13 +10,13 @@ This app uses [Entur's API](https://developer.entur.org/) to show live departure
 
 ### Finding Your Station
 
-1. Open the app and click the **⚙️ settings** button in the top right
-2. In the **Station or stop name** field, start typing your station name
-3. Select your station from the dropdown suggestions
-4. Choose which transport types you want to see (bus, tram, metro, etc.)
-5. Click **Close** to apply your settings
+There are two ways to pick a station:
 
-Your departure board will now show live times for the next departures from your chosen station.
+**By name** — click the **⚙️ settings** button in the top right, type in the **Station or stop name** field, and select from the dropdown suggestions.
+
+**By location** — click the **🧭 compass** button in the top left. The app asks for your location and instantly lists the nearest stops with their distance and transport modes. Click any result to load it.
+
+Once a station is loaded, choose which transport types you want to see, then click **Close** to apply.
 
 To save the station to your favorites, click the **🩶 heart button** to the left of the station name. The heart is gray when a station is not saved. Once saved, the heart turns red ❤️ — and remains **clickable**. Click it again to **remove** the station from your favorites.
 
@@ -24,7 +24,7 @@ To save the station to your favorites, click the **🩶 heart button** to the le
 
 Click the **station name** at the top of the screen to open your favorites list. This shows your recently viewed stations with their transport filters. Click any favorite to instantly switch to that station.
 
-Your favorites list stores up to 7 stations with all their settings. The most recently used station appears at the top.
+Your favorites list stores up to 10 stations with all their settings. The most recently used station appears at the top.
 
 To remove a station from favorites, click the red heart ❤️ on the departure board while viewing that station — it will be removed immediately.
 
@@ -39,6 +39,17 @@ Click the **📋 share** button (next to the theme toggle) to copy a shareable l
 When someone opens your link, the station is automatically added to their favorites.
 
 ## Features
+
+### GPS Nearby Stops
+
+Click the **🧭 compass** button in the top left to find stops near your current location:
+
+- The app requests your device's GPS position (one-time, no tracking)
+- Lists up to **10 nearest stops** within a **2 km radius**
+- Each result shows the stop name, distance in metres, and transport mode icons
+- Click any stop to load it immediately — then use the ❤️ heart to save it
+
+The dropdown closes automatically when you select a stop or press **Escape**.
 
 ### Live Departures
 
@@ -92,8 +103,8 @@ Your theme choice is saved automatically.
 
 ### Keyboard Navigation
 
-- Press **Tab** to navigate between station dropdown, theme toggle, settings, and GitHub link
-- Press **Escape** to close the settings panel
+- Press **Tab** to navigate between station dropdown, compass button, theme toggle, settings, and GitHub link
+- Press **Escape** to close the settings panel or GPS nearby-stops dropdown
 - Tab through settings panel fields when open
 
 ## Updates
