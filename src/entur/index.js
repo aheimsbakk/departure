@@ -6,6 +6,7 @@
  * public surface.
  */
 
-export { parseEnturResponse }           from './parser.js';
-export { fetchDepartures }              from './departures.js';
-export { lookupStopId, searchStations } from './geocoder.js';
+export { parseEnturResponse }                       from './parser.js';
+export { fetchDepartures }                          from './departures.js';
+export { lookupStopId, searchStations }             from './geocoder.js';
+export { fetchNearbyStops }                         from './gps-search.js';

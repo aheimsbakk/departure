@@ -15,6 +15,7 @@ High-level constraints
 User-facing features
 - Station header (clickable) opens favorites dropdown (up to `NUM_FAVORITES` recent stations with saved settings; `DEFAULT_FAVORITE` pre-seeded when no favorites exist).
 - Favorite heart button is always enabled. Gray heart 🩶 = not in favorites (click to add, theme-neutral). Red heart ❤️ = already in favorites (click to remove). `handleFavoriteToggle` in `handlers.js` performs the toggle; `removeFromFavorites` in `station-dropdown.js` handles removal.
+- GPS compass button 🧭 (fixed top-left, same `.header-btn` style as top-right buttons). Click → requests browser geolocation → fetches up to 7 nearest stops within 2000 m via Entur Geocoder reverse API → shows a temporary dropdown listing stops as mode-emojis + name + distance. Selecting a stop sets it as the current station and closes the dropdown. The heart button is then available to save to favorites.
 - Up to N upcoming departures (configurable).
 - Departure line: destination, realtime indicator (● live / ○ scheduled), line number, transport emoji, platform symbol+code.
 - Cancelled departures shown with strikethrough and reduced opacity.
@@ -49,6 +50,7 @@ Architecture overview
   - `http.js`            — `getContentType`, `postAndParse` (network transport only)
   - `departures.js`      — `fetchDepartures` orchestration + client-side mode filter
   - `geocoder.js`        — `lookupStopId`, `searchStations` (Entur geocoder REST API)
+  - `gps-search.js`      — `fetchNearbyStops` (Geocoder reverse API, GPS nearby stops)
 - `src/time.js`          — pure utilities: iso → epoch, format countdown
 - `src/i18n.js`          — backward-compat shim → re-exports from `src/i18n/index.js`
 - `src/i18n/`
@@ -66,7 +68,7 @@ Architecture overview
   - `layout.css`         — page skeleton: .app-root, .board, body.options-open shift
   - `utils.css`          — generic a11y helpers (.visually-hidden)
   - `header.css`         — station header row, dropdown, status chip, favorite btn
-  - `toolbar.css`        — fixed top-right .global-gear action bar
+  - `toolbar.css`        — fixed top-right .global-gear + fixed top-left .gps-bar action bars
   - `departures.css`     — departure list, destination, time, platform, text-size-* utilities
   - `options-panel.css`  — slide-in panel shell, .options-row, inputs, .options-actions
   - `autocomplete.css`   — station search autocomplete list
@@ -74,6 +76,7 @@ Architecture overview
   - `language-switcher.css` — flag button row
   - `share-modal.css`    — share URL full-screen overlay
   - `toasts.css`         — ephemeral notifications: .options-toast + #sw-update-toast
+  - `gps-dropdown.css`   — GPS nearby-stops dropdown (compass button results list)
   - `footer.css`         — fixed bottom-left .app-footer
   - `debug.css`          — .debug-panel (dev-only, safe to strip)
 - `src/sw.js`            — service worker: versioned cache, offline support, skip-waiting flow
@@ -95,6 +98,7 @@ Architecture overview
   - `share-button.js`    — share button, URL encode/decode (base64 array format)
   - `station-dropdown.js`— favorites/recent stations dropdown (up to NUM_FAVORITES, with saved settings)
   - `theme-toggle.js`    — light/auto/dark theme cycle button
+  - `gps-dropdown.js`    — compass button + GPS nearby-stops temporary dropdown
 - No transpilation. Use `type="module"` for the scripts.
 
 Data flow
@@ -108,6 +112,7 @@ Data flow
 
 Entur API considerations
 - Stop lookup: `GET https://api.entur.io/geocoder/v1/autocomplete?text=...&lang=en&size=10` — filters to `StopPlace` venue type.
+- GPS nearby stops: `GET https://api.entur.io/geocoder/v1/reverse?point.lat=...&point.lon=...&size=7&layers=venue&boundary.country=NOR` — returns GeoJSON FeatureCollection; modes extracted from `properties.modes/mode/category`; distance in metres from `properties.distance`.
 - Departures: GraphQL POST to `https://api.entur.io/journey-planner/v3/graphql`.
 - Query fields: `stopPlace(id) { estimatedCalls(numberOfDepartures, whiteListedModes) { expectedDepartureTime realtime cancellation serviceJourney { journeyPattern { line { publicCode transportMode } } } destinationDisplay { frontText } quays { publicCode } } }`
 - Headers: `ET-Client-Name: kollektiv-sanntid-org`.
@@ -194,7 +199,8 @@ Current file tree (implemented)
 - `src/icons.css`
 - `src/css/`             (tokens, base, buttons, layout, utils, header, toolbar, departures, options-panel, autocomplete, transport-modes, language-switcher, share-modal, toasts, footer, debug)
 - `src/app.js`
-- `src/app/` (settings.js, url-import.js, render.js, fetch-loop.js, handlers.js, action-bar.js, sw-updater.js)
+- `src/app/` (settings.js, url-import.js, render.js, fetch-loop.js, handlers.js, action-bar.js, gps-bar.js, sw-updater.js)
+  - `gps-bar.js`         — mounts `.gps-bar` fixed top-left container with compass button
 - `src/config.js`
 - `src/entur/` (index.js, modes.js, parser.js, query.js, http.js, departures.js, geocoder.js)
 - `src/time.js`

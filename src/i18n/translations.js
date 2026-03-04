@@ -72,7 +72,16 @@ const translations = {
     removeFromFavorites: 'Remove from favorites',
 
     // Transport mode toggle
-    toggleAllModes: 'Toggle all transport modes'
+    toggleAllModes: 'Toggle all transport modes',
+
+    // GPS nearby stops
+    gpsTooltip:           'Find nearby stops',
+    gpsLocating:          'Locating…',
+    gpsNoResults:         'No stops found nearby',
+    gpsFetchError:        'Could not fetch nearby stops',
+    gpsNotSupported:      'GPS not supported in this browser',
+    gpsPermissionDenied:  'Location access denied',
+    gpsUnavailable:       'Location unavailable'
   },
 
   no: {
@@ -146,7 +155,16 @@ const translations = {
     removeFromFavorites: 'Fjern fra favoritter',
 
     // Transport mode toggle
-    toggleAllModes: 'Velg/fjern alle transportmidler'
+    toggleAllModes: 'Velg/fjern alle transportmidler',
+
+    // GPS nearby stops
+    gpsTooltip:           'Finn nærmeste holdeplasser',
+    gpsLocating:          'Finner posisjon…',
+    gpsNoResults:         'Ingen holdeplasser funnet i nærheten',
+    gpsFetchError:        'Kunne ikke hente holdeplasser',
+    gpsNotSupported:      'GPS støttes ikke i denne nettleseren',
+    gpsPermissionDenied:  'Tilgang til posisjon ble nektet',
+    gpsUnavailable:       'Posisjon utilgjengelig'
   },
 
   de: {

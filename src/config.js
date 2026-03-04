@@ -1,6 +1,6 @@
 // Version is defined here and in src/sw.js (service worker)
 // Both must be kept in sync - use scripts/bump-version.sh to update both
-export const VERSION = '1.35.3';
+export const VERSION = '1.36.0';
 
 export const DEFAULTS = {
   STATION_NAME: 'Jernbanetorget, Oslo',
@@ -51,7 +51,8 @@ export const UI_EMOJIS = {
   heartSave: '🩶',    // Not in favorites — click to save (gray, theme-neutral)
   heartSaved: '❤️',  // Already in favorites — click to remove
   footerLink: '🔗',  // Entur data attribution link
-  footerReadme: '📘' // GitHub README link
+  footerReadme: '📘', // GitHub README link
+  compass: '🧭'       // GPS nearby-stops button (top-left toolbar)
 };
 
 // Cancellation display wrapper

@@ -1,4 +1,4 @@
-const VERSION = '1.35.3';
+const VERSION = '1.36.0';
 const CACHE_NAME = `departures-v${VERSION}`;
 const ASSETS = [
   './',
@@ -19,6 +19,7 @@ const ASSETS = [
   './css/language-switcher.css',
   './css/share-modal.css',
   './css/toasts.css',
+  './css/gps-dropdown.css',
   './css/footer.css',
   './css/debug.css',
   './app.js',
@@ -28,6 +29,7 @@ const ASSETS = [
   './app/fetch-loop.js',
   './app/handlers.js',
   './app/action-bar.js',
+  './app/gps-bar.js',
   './app/sw-updater.js',
   './config.js',
   './entur/index.js',
@@ -37,6 +39,7 @@ const ASSETS = [
   './entur/http.js',
   './entur/departures.js',
   './entur/geocoder.js',
+  './entur/gps-search.js',
   './i18n.js',
   './i18n/index.js',
   './i18n/translations.js',
@@ -57,6 +60,7 @@ const ASSETS = [
   './ui/share-button.js',
   './ui/station-dropdown.js',
   './ui/theme-toggle.js',
+  './ui/gps-dropdown.js',
   './manifest.webmanifest',
   './icons/favicon.svg',
   './icons/icon-192.svg',

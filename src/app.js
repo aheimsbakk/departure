@@ -27,6 +27,7 @@ import { renderDepartures } from './app/render.js';
 import { doRefresh, startRefreshLoop, tickCountdowns, data } from './app/fetch-loop.js';
 import { wireHandlers } from './app/handlers.js';
 import { buildActionBar } from './app/action-bar.js';
+import { buildGpsBar } from './app/gps-bar.js';
 import { registerServiceWorker } from './app/sw-updater.js';
 
 // Initialise language and theme before any DOM is built so that the correct
@@ -96,6 +97,9 @@ async function init() {
   const opts = createOptionsPanel(DEFAULTS, handlers.onApplySettings, handlers.onLanguageChange);
   optsRef.current = opts;
   document.body.appendChild(opts.panel);
+
+  // 7b. Mount the GPS compass bar (top-left) — needs handleStationSelect from wireHandlers
+  buildGpsBar((station) => handlers.handleStationSelect(station));
 
   // 8. Header gear icon (opens options from the station header)
   const headerControls = createHeaderToggle(() => opts.open());
