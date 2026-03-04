@@ -24,6 +24,7 @@
   padding: 6px;
   border-radius: var(--btn-border-radius);
   overflow: auto;
+  max-height: 420px;
   background: var(--overlay-medium);
   box-shadow: 0 6px 18px var(--shadow-color);
   display: none;

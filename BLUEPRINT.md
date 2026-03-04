@@ -15,7 +15,7 @@ High-level constraints
 User-facing features
 - Station header (clickable) opens favorites dropdown (up to `NUM_FAVORITES` recent stations with saved settings; `DEFAULT_FAVORITE` pre-seeded when no favorites exist).
 - Favorite heart button is always enabled. Gray heart 🩶 = not in favorites (click to add, theme-neutral). Red heart ❤️ = already in favorites (click to remove). `handleFavoriteToggle` in `handlers.js` performs the toggle; `removeFromFavorites` in `station-dropdown.js` handles removal.
-- GPS compass button 🧭 (fixed top-left, same `.header-btn` style as top-right buttons). Click → requests browser geolocation → fetches up to 7 nearest stops within 2000 m via Entur Geocoder reverse API → shows a temporary dropdown listing stops as mode-emojis + name + distance. Selecting a stop sets it as the current station and closes the dropdown. The heart button is then available to save to favorites.
+- GPS compass button 🧭 (fixed top-left, same `.header-btn` style as top-right buttons). Click → requests browser geolocation → fetches up to `GPS_MAX_RESULTS` (10) nearest stops within `GPS_SEARCH_RADIUS_KM` (2 km) via Entur Geocoder reverse API → shows a temporary dropdown listing stops rendered from `GPS_STOP_LINE_TEMPLATE` (name + distance + mode emojis). Selecting a stop sets it as the current station and closes the dropdown. The heart button is then available to save to favorites.
 - Up to N upcoming departures (configurable).
 - Departure line: destination, realtime indicator (● live / ○ scheduled), line number, transport emoji, platform symbol+code.
 - Cancelled departures shown with strikethrough and reduced opacity.
@@ -41,7 +41,7 @@ Architecture overview
   - `handlers.js`        — handleStationSelect, handleFavoriteToggle, onApplySettings, onLanguageChange
   - `action-bar.js`      — share + theme + settings buttons, global-gear container
   - `sw-updater.js`      — SW registration, update toast, controllerchange reload
-- `src/config.js`        — all configurable constants: VERSION, DEFAULTS (includes NUM_FAVORITES, FETCH_INTERVAL, GITHUB_URL), DEFAULT_FAVORITE, ALL_TRANSPORT_MODES, REALTIME_INDICATORS, TRANSPORT_MODE_EMOJIS, UI_EMOJIS, CANCELLATION_WRAPPER, PLATFORM_SYMBOLS, PLATFORM_SYMBOL_RULES, DEPARTURE_LINE_TEMPLATE
+- `src/config.js`        — all configurable constants: VERSION, DEFAULTS (includes NUM_FAVORITES, FETCH_INTERVAL, GITHUB_URL), DEFAULT_FAVORITE, ALL_TRANSPORT_MODES, REALTIME_INDICATORS, TRANSPORT_MODE_EMOJIS, UI_EMOJIS, CANCELLATION_WRAPPER, PLATFORM_SYMBOLS, PLATFORM_SYMBOL_RULES, DEPARTURE_LINE_TEMPLATE, STATION_LINE_TEMPLATE, GPS_STOP_LINE_TEMPLATE, GPS_MAX_RESULTS, GPS_SEARCH_RADIUS_KM
 - `src/entur/`           — Entur API client (split into focused modules)
   - `index.js`           — public re-export facade (drop-in for former entur.js)
   - `modes.js`           — CANONICAL_MODE_MAP, token→canonical mapping, raw mode detection
@@ -50,7 +50,7 @@ Architecture overview
   - `http.js`            — `getContentType`, `postAndParse` (network transport only)
   - `departures.js`      — `fetchDepartures` orchestration + client-side mode filter
   - `geocoder.js`        — `lookupStopId`, `searchStations` (Entur geocoder REST API)
-  - `gps-search.js`      — `fetchNearbyStops` (Geocoder reverse API, GPS nearby stops)
+  - `gps-search.js`      — `fetchNearbyStops`, `extractModes`, `CATEGORY_TO_MODE` (Geocoder reverse API, GPS nearby stops; `distance` field is km float → multiply × 1000 for metres; `mode` is array of single-key objects)
 - `src/time.js`          — pure utilities: iso → epoch, format countdown
 - `src/i18n.js`          — backward-compat shim → re-exports from `src/i18n/index.js`
 - `src/i18n/`
@@ -112,7 +112,7 @@ Data flow
 
 Entur API considerations
 - Stop lookup: `GET https://api.entur.io/geocoder/v1/autocomplete?text=...&lang=en&size=10` — filters to `StopPlace` venue type.
-- GPS nearby stops: `GET https://api.entur.io/geocoder/v1/reverse?point.lat=...&point.lon=...&size=7&layers=venue&boundary.country=NOR` — returns GeoJSON FeatureCollection; modes extracted from `properties.modes/mode/category`; distance in metres from `properties.distance`.
+- GPS nearby stops: `GET https://api.entur.io/geocoder/v1/reverse?point.lat=...&point.lon=...&size=<GPS_MAX_RESULTS>&layers=venue&boundary.country=NOR&boundary.circle.radius=<GPS_SEARCH_RADIUS_KM>` — returns GeoJSON FeatureCollection; `properties.distance` is a **km float** (multiply × 1000 for metres); `properties.mode` is an **array of single-key objects** (e.g. `[{bus:null}]`), extract via `Object.keys()`; `properties.category` used as fallback via `CATEGORY_TO_MODE` map.
 - Departures: GraphQL POST to `https://api.entur.io/journey-planner/v3/graphql`.
 - Query fields: `stopPlace(id) { estimatedCalls(numberOfDepartures, whiteListedModes) { expectedDepartureTime realtime cancellation serviceJourney { journeyPattern { line { publicCode transportMode } } } destinationDisplay { frontText } quays { publicCode } } }`
 - Headers: `ET-Client-Name: kollektiv-sanntid-org`.
@@ -143,6 +143,7 @@ Internationalisation (i18n)
 - `t(key)` returns the string for the current language (falls back to `en`).
 - Language persisted in `localStorage` key `departure:language`.
 - Supported: `en`, `no`, `de`, `es`, `it`, `el`, `fa`, `hi`, `is`, `uk`, `fr`, `pl`.
+- All 12 languages carry the full key set including GPS keys (`gpsTooltip`, `gpsLocating`, `gpsNoResults`, `gpsFetchError`, `gpsNotSupported`, `gpsPermissionDenied`, `gpsUnavailable`, `gpsMeters`).
 - Language switcher in options panel uses flag buttons; changing language updates all translatable strings in the open panel in-place (footer and tooltips refreshed via `onLanguageChange` callback — the panel is **not** recreated).
 
 Share URL format
@@ -157,7 +158,7 @@ PWA & Service Worker
 - `src/sw.js`: versioned cache name (`kollektiv-v<VERSION>`), caches all app assets on install, serves from cache with network fallback.
 - Update flow: new SW detected → 5-second countdown toast shows old→new version → `skipWaiting` → `controllerchange` triggers hard reload with `?t=<timestamp>` cache-bust.
 - PWA wake-up on resume: `visibilitychange` in `fetch-loop.js` checks wall-clock elapsed time vs `FETCH_INTERVAL`; triggers immediate `doRefresh()` if stale. `pageshow` (event.persisted) in `app.js` forces full reload on BFCache cold-start.
-- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.34.9`.
+- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.36.1`.
 
 Performance & DOM update pattern
 - Render template once per departure item; keep references to text nodes for countdown and situation.
@@ -202,7 +203,7 @@ Current file tree (implemented)
 - `src/app/` (settings.js, url-import.js, render.js, fetch-loop.js, handlers.js, action-bar.js, gps-bar.js, sw-updater.js)
   - `gps-bar.js`         — mounts `.gps-bar` fixed top-left container with compass button
 - `src/config.js`
-- `src/entur/` (index.js, modes.js, parser.js, query.js, http.js, departures.js, geocoder.js)
+- `src/entur/` (index.js, modes.js, parser.js, query.js, http.js, departures.js, geocoder.js, gps-search.js)
 - `src/time.js`
 - `src/i18n.js` (shim)
 - `src/i18n/` (translations.js, languages.js, detect.js, store.js, index.js)

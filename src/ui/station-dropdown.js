@@ -1,5 +1,5 @@
 import { t } from '../i18n.js';
-import { TRANSPORT_MODE_EMOJIS, DEFAULTS, DEFAULT_FAVORITE } from '../config.js';
+import { TRANSPORT_MODE_EMOJIS, DEFAULTS, DEFAULT_FAVORITE, STATION_LINE_TEMPLATE } from '../config.js';
 import { decodeSettings } from './share-button.js';
 
 const STORAGE_KEY = 'recent-stations';
@@ -248,19 +248,13 @@ export function createStationDropdown(currentStationName, onStationSelect) {
       const item = document.createElement('button');
       item.className = 'station-dropdown-item';
       item.setAttribute('role', 'option');
-      
-      // Station name
-      const nameSpan = document.createElement('span');
-      nameSpan.textContent = station.name;
-      item.appendChild(nameSpan);
-      
-      // Mode icons inline after name
-      if (station.modes && station.modes.length > 0) {
-        const modesSpan = document.createElement('span');
-        modesSpan.className = 'station-modes';
-        modesSpan.textContent = ' ' + getModesDisplay(station.modes);
-        item.appendChild(modesSpan);
-      }
+
+      // Render from STATION_LINE_TEMPLATE — {modes} is '' when all modes selected
+      item.textContent = STATION_LINE_TEMPLATE
+        .replace('{name}',  station.name)
+        .replace('{modes}', getModesDisplay(station.modes))
+        .replace(/[ \t]{2,}/g, ' ')
+        .trim();
       
       item.dataset.stopId = station.stopId;
       item.dataset.name = station.name;

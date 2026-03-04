@@ -16,15 +16,17 @@ import { TRANSPORT_MODE_EMOJIS } from '../src/config.js';
 console.log('Running entur.gps-nearby.test.mjs');
 
 // ── Mock GeoJSON response (7 stops, data from gps.md repro) ─────────────────
+// Distances are in kilometres (float) as returned by the live Entur Geocoder.
+// `mode` is an array of single-key objects — the real API format.
 const MOCK_GEOJSON = {
   features: [
-    { properties: { layer: 'venue', id: 'NSR:StopPlace:58243', name: 'Bergkrystallen', distance: 186, modes: ['metro', 'bus'] } },
-    { properties: { layer: 'venue', id: 'NSR:StopPlace:5832',  name: 'Glimmerveien',   distance: 356, modes: ['bus'] } },
-    { properties: { layer: 'venue', id: 'NSR:StopPlace:5828',  name: 'Blåfjellet',     distance: 553, modes: ['bus'] } },
-    { properties: { layer: 'venue', id: 'NSR:StopPlace:5830',  name: 'Mellombølgen',   distance: 553, modes: ['bus'] } },
-    { properties: { layer: 'venue', id: 'NSR:StopPlace:5821',  name: 'Langbølgen',     distance: 612, modes: ['bus'] } },
-    { properties: { layer: 'venue', id: 'NSR:StopPlace:5834',  name: 'Feltspatveien',  distance: 615, modes: ['bus'] } },
-    { properties: { layer: 'venue', id: 'NSR:StopPlace:58244', name: 'Munkelia',        distance: 635, modes: ['metro', 'bus'] } },
+    { properties: { layer: 'venue', id: 'NSR:StopPlace:58243', name: 'Bergkrystallen', distance: 0.186, mode: [{ metro: null }, { bus: null }] } },
+    { properties: { layer: 'venue', id: 'NSR:StopPlace:5832',  name: 'Glimmerveien',   distance: 0.356, mode: [{ bus: null }] } },
+    { properties: { layer: 'venue', id: 'NSR:StopPlace:5828',  name: 'Blåfjellet',     distance: 0.553, mode: [{ bus: null }] } },
+    { properties: { layer: 'venue', id: 'NSR:StopPlace:5830',  name: 'Mellombølgen',   distance: 0.553, mode: [{ bus: null }] } },
+    { properties: { layer: 'venue', id: 'NSR:StopPlace:5821',  name: 'Langbølgen',     distance: 0.612, mode: [{ bus: null }] } },
+    { properties: { layer: 'venue', id: 'NSR:StopPlace:5834',  name: 'Feltspatveien',  distance: 0.615, mode: [{ bus: null }] } },
+    { properties: { layer: 'venue', id: 'NSR:StopPlace:58244', name: 'Munkelia',        distance: 0.635, mode: [{ metro: null }, { bus: null }] } },
   ]
 };
 
@@ -95,5 +97,19 @@ for (const [i, line] of lines.entries()) {
 // 4. Print the list (makes the output readable when running tests manually)
 console.log('  GPS results for 59.867851, 10.82448:');
 lines.forEach(l => console.log(`  ${l}`));
+
+// 5. category fallback: when `mode` is absent, fall back to `category` array
+const categoryFetch = async () => ({
+  ok: true,
+  json: async () => ({
+    features: [
+      { properties: { layer: 'venue', id: 'NSR:StopPlace:99999', name: 'TestStop', distance: 0.1, category: ['metroStation', 'onstreetBus'] } },
+    ]
+  })
+});
+const catStops = await fetchNearbyStops({ lat: 0, lon: 0, fetchFn: categoryFetch });
+assert.equal(catStops.length, 1, 'category fallback: should return 1 stop');
+assert.deepEqual(catStops[0].modes, ['metro', 'bus'], 'category fallback: modes mapped correctly');
+assert.equal(catStops[0].distance, 100, 'category fallback: distance converted to metres');
 
 console.log('entur.gps-nearby.test.mjs OK');
