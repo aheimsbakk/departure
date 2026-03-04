@@ -112,6 +112,7 @@ export async function searchStations({
     return scored.slice(0, limit).map(({ feature: f }) => ({
       id:    f?.properties?.id    ?? null,
       title: f?.properties?.label ?? f?.properties?.name ?? f?.properties?.title ?? f?.text ?? '',
+      name:  f?.properties?.name  ?? f?.properties?.title ?? f?.text ?? '',
       raw:   f
     }));
   } catch (_) {

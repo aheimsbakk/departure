@@ -91,7 +91,7 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
     if (!Array.isArray(lastCandidates) || idx == null || idx < 0 || idx >= lastCandidates.length) return;
     const c = lastCandidates[idx];
     if (!c) return;
-    inpStation.value = c.title || c.id || '';
+    inpStation.value = c.name || c.title || c.id || '';
     inpStation.dataset.stopId = String(c.id || '');
     clearAutocomplete();
     onSelect();
