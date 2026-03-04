@@ -20,7 +20,7 @@
   padding: 6px;
   width: max-content;
   max-width: min(340px, calc(100vw - 36px));
-  max-height: 420px;
+  max-height: 336px;
   overflow-y: auto;
   box-shadow: 0 6px 18px var(--shadow-color);
   z-index: var(--z-dropdown);

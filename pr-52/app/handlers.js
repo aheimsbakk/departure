@@ -85,6 +85,40 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
   }
 
   /**
+   * Called when the user selects a stop from the GPS nearby-stops dropdown.
+   * Loads the stop without adding it to favorites — that is an explicit user action.
+   *
+   * @param {Object} station - { name, stopId, modes }
+   */
+  function handleGpsStationSelect(station) {
+    DEFAULTS.STATION_NAME = station.name;
+    DEFAULTS.STOP_ID      = station.stopId;
+    if (Array.isArray(station.modes)) {
+      DEFAULTS.TRANSPORT_MODES = station.modes;
+    }
+
+    // Sync the dropdown title and, if the options panel is open, its fields
+    board.stationDropdown.updateTitle(station.name, station.modes || DEFAULTS.TRANSPORT_MODES);
+    if (document.body.classList.contains('options-open') && optsRef.current?.updateFields) {
+      optsRef.current.updateFields();
+    }
+
+    // Update the browser tab title
+    try { document.title = station.name || document.title; } catch (_) {}
+
+    // Kick off a refresh with the new station then restart the unified loop
+    doRefresh(board.list)
+      .catch(err => console.warn('GPS station change refresh failed', err))
+      .finally(() => startRefreshLoop(board.list, board.status));
+
+    // Persist updated settings (station name / stop ID / modes, but not as a favorite)
+    saveSettings();
+
+    // Update heart button state — shows gray heart since not yet in favorites
+    updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
+  }
+
+  /**
    * Called when the user clicks the heart button.
    * If already in favorites: removes it. If not: adds it.
    */
@@ -143,5 +177,5 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
     updateButtonTooltips();
   }
 
-  return { handleStationSelect, handleFavoriteToggle, onApplySettings, onLanguageChange };
+  return { handleStationSelect, handleGpsStationSelect, handleFavoriteToggle, onApplySettings, onLanguageChange };
 }

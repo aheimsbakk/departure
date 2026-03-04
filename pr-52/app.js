@@ -98,8 +98,8 @@ async function init() {
   optsRef.current = opts;
   document.body.appendChild(opts.panel);
 
-  // 7b. Mount the GPS compass bar (top-left) — needs handleStationSelect from wireHandlers
-  buildGpsBar((station) => handlers.handleStationSelect(station));
+  // 7b. Mount the GPS compass bar (top-left) — uses dedicated handler that does NOT auto-save to favorites
+  buildGpsBar((station) => handlers.handleGpsStationSelect(station));
 
   // 8. Header gear icon (opens options from the station header)
   const headerControls = createHeaderToggle(() => opts.open());
