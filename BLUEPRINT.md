@@ -13,7 +13,7 @@ High-level constraints
 - Follow agents protocol before committing: create `docs/worklogs/YYYY-MM-DD-HH-mm-{short-desc}.md` and update `CONTEXT.md` (<=20 lines).
 
 User-facing features
-- Station header (clickable) opens favorites dropdown (up to `NUM_FAVORITES` recent stations with saved settings; `DEFAULT_FAVORITE` pre-seeded when no favorites exist).
+- Station header (clickable) opens favorites dropdown (up to `NUM_FAVORITES` recent stations with saved settings). On first load with empty favorites, `getDefaultStation()` (decodes `DEFAULT_FAVORITE`) is used as the startup station — it is **not written** to the favorites list.
 - Favorite heart button is always enabled. Gray heart 🩶 = not in favorites (click to add, theme-neutral). Red heart ❤️ = already in favorites (click to remove). `handleFavoriteToggle` in `handlers.js` performs the toggle; `removeFromFavorites` in `station-dropdown.js` handles removal.
 - GPS compass button 🧭 (fixed top-left, same `.header-btn` style as top-right buttons). Click → requests browser geolocation → fetches up to `GPS_MAX_RESULTS` (10) nearest stops within `GPS_SEARCH_RADIUS_KM` (2 km) via Entur Geocoder reverse API → shows a temporary dropdown listing stops rendered from `GPS_STOP_LINE_TEMPLATE` (name + distance + mode emojis). Selecting a stop sets it as the current station and closes the dropdown. The heart button is then available to save to favorites.
 - Up to N upcoming departures (configurable).
@@ -96,7 +96,7 @@ Architecture overview
     - `language-switcher.js` — flag buttons, updateTranslations(refs)
     - `panel-lifecycle.js`   — open/close, focus trap, ESC handler, toast
   - `share-button.js`    — share button, URL encode/decode (base64 array format)
-  - `station-dropdown.js`— favorites/recent stations dropdown (up to NUM_FAVORITES, with saved settings)
+  - `station-dropdown.js`— favorites/recent stations dropdown (up to NUM_FAVORITES, with saved settings); `getDefaultStation()` decodes `DEFAULT_FAVORITE` without writing to localStorage; `getRecentStations()` is a pure localStorage read
   - `theme-toggle.js`    — light/auto/dark theme cycle button
   - `gps-dropdown.js`    — compass button + GPS nearby-stops temporary dropdown
 - No transpilation. Use `type="module"` for the scripts.
@@ -150,7 +150,7 @@ Share URL format
 - Encoding: compact JSON array `[stationName, stopId, modes[]]` (3 elements) → JSON.stringify → btoa (URL-safe: `+`→`-`, `/`→`_`, strip `=`).
 - URL param: `?b=<encoded>` (v1.24.0+). Legacy `?board=<encoded>` decoded for backward compat.
 - Decoding detects array vs object format automatically; supports legacy 7-element array `[name, stopId, modes, departures, interval, size, lang]` and legacy object format `{n, s, m, d, i, t, l}`.
-- Opening a shared link applies settings, saves to `localStorage`, adds station to favorites, then clears URL param.
+- Opening a shared link applies settings, saves to `localStorage`, sets as current station (does NOT add to favorites), then clears URL param.
 - Full spec: `docs/share_url_encoding.md`.
 
 PWA & Service Worker
@@ -158,7 +158,7 @@ PWA & Service Worker
 - `src/sw.js`: versioned cache name (`kollektiv-v<VERSION>`), caches all app assets on install, serves from cache with network fallback.
 - Update flow: new SW detected → 5-second countdown toast shows old→new version → `skipWaiting` → `controllerchange` triggers hard reload with `?t=<timestamp>` cache-bust.
 - PWA wake-up on resume: `visibilitychange` in `fetch-loop.js` checks wall-clock elapsed time vs `FETCH_INTERVAL`; triggers immediate `doRefresh()` if stale. `pageshow` (event.persisted) in `app.js` forces full reload on BFCache cold-start.
-- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.36.1`.
+- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.36.10`.
 
 Performance & DOM update pattern
 - Render template once per departure item; keep references to text nodes for countdown and situation.

@@ -16,9 +16,9 @@ function emojiForMode(mode) {
 
 // 2×3 grid layout: [row][col]
 const MODE_GRID = [
-  ['bus', 'metro'],
-  ['tram', 'rail'],
-  ['water', 'coach'],
+  ['bus',   'tram'],
+  ['coach', 'metro'],
+  ['water', 'rail'],
 ];
 
 /**
