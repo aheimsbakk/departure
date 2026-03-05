@@ -25,6 +25,7 @@
 /* --- Overlays and ephemeral UI --- */
 @import './css/share-modal.css';
 @import './css/toasts.css';
+@import './css/gps-dropdown.css';
 
 /* --- Chrome --- */
 @import './css/footer.css';

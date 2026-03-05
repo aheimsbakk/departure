@@ -4,13 +4,14 @@
  * Responsibilities:
  *   - Strip the SW cache-busting ?t= param on load
  *   - Decode ?b= / ?board= shared-board params into DEFAULTS
- *   - Seed the station into favorites
  *   - Persist imported settings and clean the URL
+ *
+ * Importing a share link does NOT add the station to favorites.
+ * The user can do that explicitly via the heart button.
  */
 
 import { DEFAULTS } from '../config.js';
 import { initLanguage } from '../i18n.js';
-import { addRecentStation } from '../ui/station-dropdown.js';
 import { decodeSettings } from '../ui/share-button.js';
 import { saveSettings } from './settings.js';
 
@@ -19,8 +20,8 @@ import { saveSettings } from './settings.js';
  *
  * - Removes the ?t= cache-bust param added by the SW auto-reload.
  * - Decodes a ?b= or ?board= shared-board param, applies it to DEFAULTS,
- *   seeds the station into favorites, persists to localStorage, and cleans
- *   the URL so a hard-reload does not re-import.
+ *   persists to localStorage, and cleans the URL so a hard-reload does not
+ *   re-import. Does NOT add the station to favorites.
  *
  * @returns {boolean} true when a shared board was successfully imported
  */
@@ -55,16 +56,6 @@ export function processUrlParams() {
         localStorage.setItem('departure:language', shared.language);
         initLanguage();
       } catch (_) { /* ignore */ }
-    }
-
-    // Add to favorites so the shared station appears in the dropdown
-    if (shared.stationName && shared.stopId) {
-      addRecentStation(shared.stationName, shared.stopId, shared.transportModes || [], {
-        numDepartures: shared.numDepartures,
-        fetchInterval: shared.fetchInterval,
-        textSize:      shared.textSize,
-        language:      shared.language
-      });
     }
 
     // Persist to localStorage so settings survive after URL is cleaned

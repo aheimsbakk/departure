@@ -46,6 +46,8 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
   let lastCandidates = [];
   let updatingField = false;
   let _destroyed = false;
+  /** AbortController for the current in-flight station search fetch */
+  let _searchAbortCtrl = null;
 
   function clearAutocomplete() {
     try {
@@ -70,7 +72,20 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
     acList.innerHTML = '';
     lastCandidates.forEach((c, idx) => {
       const li = document.createElement('li');
-      li.textContent = c.title || c.id || '';
+      // Render bare name at full opacity; locality suffix (e.g. ", Oslo") dimmed
+      const name   = c.name || c.title || '';
+      const suffix = (c.name && c.title && c.title.startsWith(c.name))
+        ? c.title.slice(c.name.length)
+        : '';
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = name;
+      li.appendChild(nameSpan);
+      if (suffix) {
+        const localitySpan = document.createElement('span');
+        localitySpan.className = 'autocomplete-locality';
+        localitySpan.textContent = suffix;
+        li.appendChild(localitySpan);
+      }
       li.setAttribute('role', 'option');
       li.setAttribute('data-id', String(c.id || ''));
       li.dataset.index = String(idx);
@@ -91,7 +106,7 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
     if (!Array.isArray(lastCandidates) || idx == null || idx < 0 || idx >= lastCandidates.length) return;
     const c = lastCandidates[idx];
     if (!c) return;
-    inpStation.value = c.title || c.id || '';
+    inpStation.value = c.name || c.title || c.id || '';
     inpStation.dataset.stopId = String(c.id || '');
     clearAutocomplete();
     onSelect();
@@ -120,10 +135,18 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
 
     acTimer = setTimeout(async () => {
       const searchQuery = v;
+      // Cancel any previous in-flight request before starting a new one
+      if (_searchAbortCtrl) _searchAbortCtrl.abort();
+      _searchAbortCtrl = new AbortController();
+      const { signal } = _searchAbortCtrl;
       try {
-        const cands = await searchStations({ text: searchQuery, limit: 5, fetchFn: window.fetch });
+        const cands = await searchStations({ text: searchQuery, limit: 5, fetchFn: window.fetch, signal });
+        // Guard: panel may have been destroyed while the fetch was in-flight
+        if (_destroyed) return;
         if (inpStation.value === searchQuery) showCandidates(cands);
       } catch (err) {
+        if (err?.name === 'AbortError') return; // cancelled by a newer search — normal
+        if (_destroyed) return;
         clearAutocomplete();
       }
     }, 250);
@@ -185,6 +208,8 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
   // Public API
   function getValue() { return inpStation.value; }
   function getStopId() { return inpStation.dataset.stopId || ''; }
+  /** Returns true when the autocomplete dropdown is currently visible. */
+  function isOpen() { return !!(acList && acList.classList.contains('open')); }
 
   function reset() {
     lastQuery = '';
@@ -205,8 +230,9 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
     _destroyed = true;
     clearTimeout(acTimer);
     clearTimeout(blurTimer);
+    if (_searchAbortCtrl) { _searchAbortCtrl.abort(); _searchAbortCtrl = null; }
     clearAutocomplete();
   }
 
-  return { rowStation, acWrap, inpStation, getValue, getStopId, reset, updateField, destroy };
+  return { rowStation, acWrap, inpStation, getValue, getStopId, isOpen, reset, updateField, destroy };
 }

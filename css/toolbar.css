@@ -1,7 +1,8 @@
 /* ======================================================================
    GLOBAL TOOLBAR
    Fixed top-right action bar (share, theme, settings).
-   Mirrors: src/app/action-bar.js
+   Fixed top-left GPS bar (compass nearby-stops button).
+   Mirrors: src/app/action-bar.js, src/app/gps-bar.js
    ====================================================================== */
 
 .global-gear {
@@ -21,5 +22,24 @@
 }
 
 .global-gear button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* ── Top-left GPS bar ───────────────────────────────────────────────── */
+.gps-bar {
+  position: fixed;
+  left: 18px;
+  top: 18px;
+  z-index: var(--z-global-gear);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.gps-bar button:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.gps-bar button:active:not(:disabled) {
   transform: scale(0.95);
 }
