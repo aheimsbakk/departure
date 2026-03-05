@@ -105,7 +105,8 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
    * @param {Object} station - { name, stopId, modes }
    */
   function handleGpsStationSelect(station) {
-    applyStation(station, false);
+    // GPS selection sets station + ID only — never overrides current transport mode filter
+    applyStation({ name: station.name, stopId: station.stopId }, false);
   }
 
   /**

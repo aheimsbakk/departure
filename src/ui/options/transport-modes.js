@@ -1,5 +1,5 @@
 // transport-modes.js — transport mode checkbox table, toggle-all, debounced apply
-import { TRANSPORT_MODE_EMOJIS } from '../../config.js';
+import { TRANSPORT_MODE_EMOJIS, MODE_GRID } from '../../config.js';
 
 /** Map a mode string to its display emoji. */
 function emojiForMode(mode) {
@@ -13,13 +13,6 @@ function emojiForMode(mode) {
   if (m.includes('coach')) return TRANSPORT_MODE_EMOJIS.coach;
   return TRANSPORT_MODE_EMOJIS.default;
 }
-
-// 2×3 grid layout: [row][col]
-const MODE_GRID = [
-  ['bus',   'tram'],
-  ['coach', 'metro'],
-  ['water', 'rail'],
-];
 
 /**
  * Build the transport modes section (label + toggle-all + checkbox table).

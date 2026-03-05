@@ -1,6 +1,6 @@
 // Version is defined here and in src/sw.js (service worker)
 // Both must be kept in sync - use scripts/bump-version.sh to update both
-export const VERSION = '1.36.10';
+export const VERSION = '1.36.11';
 
 export const DEFAULTS = {
   STATION_NAME: 'Jernbanetorget, Oslo',
@@ -20,6 +20,13 @@ export const DEFAULT_FAVORITE = 'WyJPc2xvIFMiLCJOU1I6U3RvcFBsYWNlOjU5ODcyIixbImJ
 
 // Immutable list of all transport modes for fallback when no modes are selected
 export const ALL_TRANSPORT_MODES = ['bus','tram','metro','rail','water','coach'];
+
+// Transport modes checkbox grid layout for the options panel: [row][col]
+export const MODE_GRID = [
+  ['tram', 'bus'],
+  ['metro', 'coach'],
+  ['rail', 'water'],
+];
 
 // Realtime data indicators
 // Used in the departure line template via {indicator} placeholder
