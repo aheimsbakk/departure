@@ -19,7 +19,7 @@ import { initTheme } from './ui/theme-toggle.js';
 import { createBoardElements, updateFavoriteButton } from './ui/ui.js';
 import { createHeaderToggle } from './ui/header.js';
 import { createOptionsPanel } from './ui/options/index.js';
-import { getRecentStations } from './ui/station-dropdown.js';
+import { getRecentStations, getDefaultStation } from './ui/station-dropdown.js';
 
 import { loadSettings, applyTextSize } from './app/settings.js';
 import { processUrlParams } from './app/url-import.js';
@@ -53,12 +53,23 @@ async function init() {
   // This must happen before updateFavoriteButton is called below
   const favorites = getRecentStations();
 
-  // 4. If no DEFAULTS but favorites exist, apply the first one.
-  //    Skip when a URL import already set the station.
-  if (!urlImported && !DEFAULTS.STOP_ID && favorites.length > 0) {
-    DEFAULTS.STATION_NAME = favorites[0].name;
-    DEFAULTS.STOP_ID = favorites[0].stopId;
-    DEFAULTS.TRANSPORT_MODES = favorites[0].modes || DEFAULTS.TRANSPORT_MODES;
+  // 4. Determine startup station (preference: URL import → first favorite → default station)
+  //    DEFAULT_FAVORITE is applied to DEFAULTS only, never saved to the favorites list.
+  if (!urlImported && !DEFAULTS.STOP_ID) {
+    if (favorites.length > 0) {
+      DEFAULTS.STATION_NAME    = favorites[0].name;
+      DEFAULTS.STOP_ID         = favorites[0].stopId;
+      DEFAULTS.TRANSPORT_MODES = favorites[0].modes || DEFAULTS.TRANSPORT_MODES;
+    } else {
+      const defaultStation = getDefaultStation();
+      if (defaultStation) {
+        DEFAULTS.STATION_NAME    = defaultStation.name;
+        DEFAULTS.STOP_ID         = defaultStation.stopId;
+        DEFAULTS.TRANSPORT_MODES = defaultStation.modes.length
+          ? defaultStation.modes
+          : DEFAULTS.TRANSPORT_MODES;
+      }
+    }
   }
 
   // 5. Build board DOM

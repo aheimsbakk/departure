@@ -32,7 +32,7 @@ const translations = {
     bus: 'Bus',
     tram: 'Tram',
     metro: 'Metro',
-    rail: 'Rail',
+    rail: 'Train',
     water: 'Water',
     coach: 'Coach',
 

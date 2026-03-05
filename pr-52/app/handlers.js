@@ -43,12 +43,13 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
   }
 
   /**
-   * Called when the user selects a station from the favorites dropdown.
-   * Updates DEFAULTS, persists the choice, and triggers an immediate refresh.
+   * Shared core for activating a new station.
+   * Updates DEFAULTS, syncs UI, optionally promotes to favorites, and triggers a refresh.
    *
-   * @param {Object} station - { name, stopId, modes, numDepartures?, fetchInterval?, textSize?, language? }
+   * @param {Object}  station         - { name, stopId, modes, numDepartures?, fetchInterval?, textSize?, language? }
+   * @param {boolean} addToFavorites  - When true, upserts into the favorites list and refreshes the dropdown
    */
-  function handleStationSelect(station) {
+  function applyStation(station, addToFavorites) {
     DEFAULTS.STATION_NAME = station.name;
     DEFAULTS.STOP_ID      = station.stopId;
     if (Array.isArray(station.modes)) {
@@ -61,14 +62,16 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
       optsRef.current.updateFields();
     }
 
-    // Move to top of favorites list, preserving the station's own settings
-    addRecentStation(station.name, station.stopId, station.modes || [], {
-      numDepartures: station.numDepartures ?? DEFAULTS.NUM_DEPARTURES,
-      fetchInterval: station.fetchInterval ?? DEFAULTS.FETCH_INTERVAL,
-      textSize:      station.textSize      ?? DEFAULTS.TEXT_SIZE,
-      language:      station.language      ?? getLanguage()
-    });
-    board.stationDropdown.refresh();
+    if (addToFavorites) {
+      // Move to top of favorites list, preserving the station's own settings
+      addRecentStation(station.name, station.stopId, station.modes || [], {
+        numDepartures: station.numDepartures ?? DEFAULTS.NUM_DEPARTURES,
+        fetchInterval: station.fetchInterval ?? DEFAULTS.FETCH_INTERVAL,
+        textSize:      station.textSize      ?? DEFAULTS.TEXT_SIZE,
+        language:      station.language      ?? getLanguage()
+      });
+      board.stationDropdown.refresh();
+    }
 
     // Update the browser tab title
     try { document.title = station.name || document.title; } catch (_) {}
@@ -86,37 +89,24 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
   }
 
   /**
+   * Called when the user selects a station from the favorites dropdown.
+   * Promotes the selection to the top of the favorites list.
+   *
+   * @param {Object} station - { name, stopId, modes, numDepartures?, fetchInterval?, textSize?, language? }
+   */
+  function handleStationSelect(station) {
+    applyStation(station, true);
+  }
+
+  /**
    * Called when the user selects a stop from the GPS nearby-stops dropdown.
    * Loads the stop without adding it to favorites — that is an explicit user action.
    *
    * @param {Object} station - { name, stopId, modes }
    */
   function handleGpsStationSelect(station) {
-    DEFAULTS.STATION_NAME = station.name;
-    DEFAULTS.STOP_ID      = station.stopId;
-    if (Array.isArray(station.modes)) {
-      DEFAULTS.TRANSPORT_MODES = station.modes;
-    }
-
-    // Sync the dropdown title and, if the options panel is open, its fields
-    board.stationDropdown.updateTitle(station.name, station.modes || DEFAULTS.TRANSPORT_MODES);
-    if (document.body.classList.contains('options-open') && optsRef.current?.updateFields) {
-      optsRef.current.updateFields();
-    }
-
-    // Update the browser tab title
-    try { document.title = station.name || document.title; } catch (_) {}
-
-    // Kick off a refresh with the new station then restart the unified loop
-    doRefresh(board.list)
-      .catch(err => console.warn('GPS station change refresh failed', err))
-      .finally(() => startRefreshLoop(board.list, board.status));
-
-    // Persist updated settings (station name / stop ID / modes, but not as a favorite)
-    saveSettings();
-
-    // Update heart button state — shows gray heart since not yet in favorites
-    updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
+    // GPS selection sets station + ID only — never overrides current transport mode filter
+    applyStation({ name: station.name, stopId: station.stopId }, false);
   }
 
   /**

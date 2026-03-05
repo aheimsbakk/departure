@@ -1,6 +1,6 @@
 // Version is defined here and in src/sw.js (service worker)
 // Both must be kept in sync - use scripts/bump-version.sh to update both
-export const VERSION = '1.36.9';
+export const VERSION = '1.36.11';
 
 export const DEFAULTS = {
   STATION_NAME: 'Jernbanetorget, Oslo',
@@ -16,10 +16,17 @@ export const DEFAULTS = {
 
 // Default favorite station encoded as base64 share link (minimal 3-element format)
 // Used when user has no favorites stored. Set to null to disable.
-export const DEFAULT_FAVORITE = 'WyJKZXJuYmFuZXRvcmdldCwgT3NsbyIsIk5TUjpTdG9wUGxhY2U6NTgzNjYiLFsiYnVzIiwibWV0cm8iLCJ0cmFtIiwicmFpbCIsIndhdGVyIiwiY29hY2giXV0';
+export const DEFAULT_FAVORITE = 'WyJPc2xvIFMiLCJOU1I6U3RvcFBsYWNlOjU5ODcyIixbImJ1cyIsInRyYW0iLCJjb2FjaCIsIm1ldHJvIiwid2F0ZXIiLCJyYWlsIl1d';
 
 // Immutable list of all transport modes for fallback when no modes are selected
 export const ALL_TRANSPORT_MODES = ['bus','tram','metro','rail','water','coach'];
+
+// Transport modes checkbox grid layout for the options panel: [row][col]
+export const MODE_GRID = [
+  ['tram', 'bus'],
+  ['metro', 'coach'],
+  ['rail', 'water'],
+];
 
 // Realtime data indicators
 // Used in the departure line template via {indicator} placeholder
