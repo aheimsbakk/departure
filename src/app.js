@@ -19,7 +19,7 @@ import { initTheme } from './ui/theme-toggle.js';
 import { createBoardElements, updateFavoriteButton } from './ui/ui.js';
 import { createHeaderToggle } from './ui/header.js';
 import { createOptionsPanel } from './ui/options/index.js';
-import { getRecentStations } from './ui/station-dropdown.js';
+import { getRecentStations, getDefaultStation } from './ui/station-dropdown.js';
 
 import { loadSettings, applyTextSize } from './app/settings.js';
 import { processUrlParams } from './app/url-import.js';
@@ -27,6 +27,7 @@ import { renderDepartures } from './app/render.js';
 import { doRefresh, startRefreshLoop, tickCountdowns, data } from './app/fetch-loop.js';
 import { wireHandlers } from './app/handlers.js';
 import { buildActionBar } from './app/action-bar.js';
+import { buildGpsBar } from './app/gps-bar.js';
 import { registerServiceWorker } from './app/sw-updater.js';
 
 // Initialise language and theme before any DOM is built so that the correct
@@ -52,18 +53,30 @@ async function init() {
   // This must happen before updateFavoriteButton is called below
   const favorites = getRecentStations();
 
-  // 4. If no DEFAULTS but favorites exist, apply the first one.
-  //    Skip when a URL import already set the station.
-  if (!urlImported && !DEFAULTS.STOP_ID && favorites.length > 0) {
-    DEFAULTS.STATION_NAME = favorites[0].name;
-    DEFAULTS.STOP_ID = favorites[0].stopId;
-    DEFAULTS.TRANSPORT_MODES = favorites[0].modes || DEFAULTS.TRANSPORT_MODES;
+  // 4. Determine startup station (preference: URL import → first favorite → default station)
+  //    DEFAULT_FAVORITE is applied to DEFAULTS only, never saved to the favorites list.
+  if (!urlImported && !DEFAULTS.STOP_ID) {
+    if (favorites.length > 0) {
+      DEFAULTS.STATION_NAME    = favorites[0].name;
+      DEFAULTS.STOP_ID         = favorites[0].stopId;
+      DEFAULTS.TRANSPORT_MODES = favorites[0].modes || DEFAULTS.TRANSPORT_MODES;
+    } else {
+      const defaultStation = getDefaultStation();
+      if (defaultStation) {
+        DEFAULTS.STATION_NAME    = defaultStation.name;
+        DEFAULTS.STOP_ID         = defaultStation.stopId;
+        DEFAULTS.TRANSPORT_MODES = defaultStation.modes.length
+          ? defaultStation.modes
+          : DEFAULTS.TRANSPORT_MODES;
+      }
+    }
   }
 
   // 5. Build board DOM
   // optsRef is a mutable box so handlers.js can call opts.updateFields()
   // without a circular import — it is filled in after createOptionsPanel.
   const optsRef = { current: null };
+  const gpsRef  = { current: null };
 
   const board = createBoardElements(
     DEFAULTS.STATION_NAME,
@@ -92,10 +105,14 @@ async function init() {
   //    wireHandlers must receive the action-bar button refs (step 6) so it can
   //    update their tooltips; createOptionsPanel must come after so `opts` is
   //    available when the closures above are eventually called.
-  const handlers = wireHandlers(board, shareComponents, themeBtn, settingsBtn, optsRef);
+  const handlers = wireHandlers(board, shareComponents, themeBtn, settingsBtn, optsRef, gpsRef);
   const opts = createOptionsPanel(DEFAULTS, handlers.onApplySettings, handlers.onLanguageChange);
   optsRef.current = opts;
   document.body.appendChild(opts.panel);
+
+  // 7b. Mount the GPS compass bar (top-left) — uses dedicated handler that does NOT auto-save to favorites
+  const { gpsContainer } = buildGpsBar((station) => handlers.handleGpsStationSelect(station));
+  gpsRef.current = gpsContainer;
 
   // 8. Header gear icon (opens options from the station header)
   const headerControls = createHeaderToggle(() => opts.open());

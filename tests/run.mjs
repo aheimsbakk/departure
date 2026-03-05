@@ -7,6 +7,7 @@ import './entur.parse.mode.test.mjs';
 import './ui.diff.test.mjs';
 import './entur.lookup.test.mjs';
 import './entur.empty.test.mjs';
+import './entur.gps-nearby.test.mjs';
 import './ui.tick.test.mjs';
 import './station-dropdown.test.mjs';
 import './favorites.test.mjs';

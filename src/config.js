@@ -1,12 +1,12 @@
 // Version is defined here and in src/sw.js (service worker)
 // Both must be kept in sync - use scripts/bump-version.sh to update both
-export const VERSION = '1.35.3';
+export const VERSION = '1.36.12';
 
 export const DEFAULTS = {
   STATION_NAME: 'Jernbanetorget, Oslo',
   STOP_ID: null, // When set, skip lookup and use this ID directly
   NUM_DEPARTURES: 5,
-  NUM_FAVORITES: 7,
+  NUM_FAVORITES: 8,
   FETCH_INTERVAL: 60,
   TRANSPORT_MODES: ['bus','tram','metro','rail','water','coach'],
   CLIENT_NAME: 'kollektiv-sanntid-org',
@@ -16,10 +16,17 @@ export const DEFAULTS = {
 
 // Default favorite station encoded as base64 share link (minimal 3-element format)
 // Used when user has no favorites stored. Set to null to disable.
-export const DEFAULT_FAVORITE = 'WyJKZXJuYmFuZXRvcmdldCwgT3NsbyIsIk5TUjpTdG9wUGxhY2U6NTgzNjYiLFsiYnVzIiwibWV0cm8iLCJ0cmFtIiwicmFpbCIsIndhdGVyIiwiY29hY2giXV0';
+export const DEFAULT_FAVORITE = 'WyJPc2xvIFMiLCJOU1I6U3RvcFBsYWNlOjU5ODcyIixbImJ1cyIsInRyYW0iLCJjb2FjaCIsIm1ldHJvIiwid2F0ZXIiLCJyYWlsIl1d';
 
 // Immutable list of all transport modes for fallback when no modes are selected
 export const ALL_TRANSPORT_MODES = ['bus','tram','metro','rail','water','coach'];
+
+// Transport modes checkbox grid layout for the options panel: [row][col]
+export const MODE_GRID = [
+  ['tram', 'bus'],
+  ['metro', 'coach'],
+  ['rail', 'water'],
+];
 
 // Realtime data indicators
 // Used in the departure line template via {indicator} placeholder
@@ -51,7 +58,8 @@ export const UI_EMOJIS = {
   heartSave: '🩶',    // Not in favorites — click to save (gray, theme-neutral)
   heartSaved: '❤️',  // Already in favorites — click to remove
   footerLink: '🔗',  // Entur data attribution link
-  footerReadme: '📘' // GitHub README link
+  footerReadme: '📘', // GitHub README link
+  compass: '🧭'       // GPS nearby-stops button (top-left toolbar)
 };
 
 // Cancellation display wrapper
@@ -127,3 +135,34 @@ export const PLATFORM_SYMBOL_RULES = [
 //
 // Note: {platform} is automatically empty if no platform info is available
 export const DEPARTURE_LINE_TEMPLATE = '{destination} {indicator} {lineNumber} {emoji} {platform}';
+
+// GPS nearby-stop search settings
+export const GPS_MAX_RESULTS      = 8;  // maximum stop places returned in the dropdown
+export const GPS_SEARCH_RADIUS_KM = 2;  // search radius for Entur Geocoder (boundary.circle.radius, unit: km)
+
+// GPS nearby-stop dropdown item template
+// Available placeholders:
+//   {name}      - Stop name (e.g. "Bergkrystallen")
+//   {modes}     - Transport mode emojis (e.g. "🚇🚌"), empty string when unknown
+//   {distance}  - Distance from current position with unit (e.g. "186m"), empty string when unavailable
+//
+// Post-processing collapses repeated spaces and strips a trailing separator when
+// {distance} is absent, so "{name} {modes} · {distance}" stays clean in all cases.
+//
+// Examples:
+//   '{name} {modes} · {distance}'     — default: "Bergkrystallen 🚇🚌 · 186m"
+//   '{distance} · {name} {modes}'     — distance first: "186m · Bergkrystallen 🚇🚌"
+//   '{modes} {name} ({distance})'     — parenthesised distance: "🚇🚌 Bergkrystallen (186m)"
+export const GPS_STOP_LINE_TEMPLATE = '{name} 🏃‍➡️ {distance} {modes}';
+
+// Favorites dropdown item template
+// Available placeholders:
+//   {name}   - Station name (e.g. "Jernbanetorget, Oslo")
+//   {modes}  - Transport mode emojis for the saved filter (e.g. "🚌🚇"),
+//              empty string when all modes are selected (the default state)
+//
+// Examples:
+//   '{name} {modes}'        — default: "Jernbanetorget, Oslo" or "Oslo S 🚅"
+//   '{modes} {name}'        — emojis first: "🚅 Oslo S"
+//   '{name} [{modes}]'      — bracketed: "Oslo S [🚅]"
+export const STATION_LINE_TEMPLATE = '{name} {modes}';

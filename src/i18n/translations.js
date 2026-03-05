@@ -32,7 +32,7 @@ const translations = {
     bus: 'Bus',
     tram: 'Tram',
     metro: 'Metro',
-    rail: 'Rail',
+    rail: 'Train',
     water: 'Water',
     coach: 'Coach',
 
@@ -72,7 +72,17 @@ const translations = {
     removeFromFavorites: 'Remove from favorites',
 
     // Transport mode toggle
-    toggleAllModes: 'Toggle all transport modes'
+    toggleAllModes: 'Toggle all transport modes',
+
+    // GPS nearby stops
+    gpsTooltip:           'Find nearby stops',
+    gpsLocating:          'Locating…',
+    gpsNoResults:         'No stops found nearby',
+    gpsFetchError:        'Could not fetch nearby stops',
+    gpsNotSupported:      'GPS not supported in this browser',
+    gpsPermissionDenied:  'Location access denied',
+    gpsUnavailable:       'Location unavailable',
+    gpsMeters:            'm'
   },
 
   no: {
@@ -146,7 +156,17 @@ const translations = {
     removeFromFavorites: 'Fjern fra favoritter',
 
     // Transport mode toggle
-    toggleAllModes: 'Velg/fjern alle transportmidler'
+    toggleAllModes: 'Velg/fjern alle transportmidler',
+
+    // GPS nearby stops
+    gpsTooltip:           'Finn nærmeste holdeplasser',
+    gpsLocating:          'Finner posisjon…',
+    gpsNoResults:         'Ingen holdeplasser funnet i nærheten',
+    gpsFetchError:        'Kunne ikke hente holdeplasser',
+    gpsNotSupported:      'GPS støttes ikke i denne nettleseren',
+    gpsPermissionDenied:  'Tilgang til posisjon ble nektet',
+    gpsUnavailable:       'Posisjon utilgjengelig',
+    gpsMeters:            'm'
   },
 
   de: {
@@ -220,7 +240,17 @@ const translations = {
     removeFromFavorites: 'Aus Favoriten entfernen',
 
     // Transport mode toggle
-    toggleAllModes: 'Alle Verkehrsmittel auswählen/abwählen'
+    toggleAllModes: 'Alle Verkehrsmittel auswählen/abwählen',
+
+    // GPS nearby stops
+    gpsTooltip:           'Haltestellen in der Nähe finden',
+    gpsLocating:          'Standort wird ermittelt…',
+    gpsNoResults:         'Keine Haltestellen in der Nähe gefunden',
+    gpsFetchError:        'Haltestellen konnten nicht abgerufen werden',
+    gpsNotSupported:      'GPS wird in diesem Browser nicht unterstützt',
+    gpsPermissionDenied:  'Standortzugriff verweigert',
+    gpsUnavailable:       'Standort nicht verfügbar',
+    gpsMeters:            'm'
   },
 
   es: {
@@ -294,7 +324,17 @@ const translations = {
     removeFromFavorites: 'Eliminar de favoritos',
 
     // Transport mode toggle
-    toggleAllModes: 'Seleccionar/deseleccionar todos los modos'
+    toggleAllModes: 'Seleccionar/deseleccionar todos los modos',
+
+    // GPS nearby stops
+    gpsTooltip:           'Encontrar paradas cercanas',
+    gpsLocating:          'Localizando…',
+    gpsNoResults:         'No se encontraron paradas cercanas',
+    gpsFetchError:        'No se pudieron obtener paradas cercanas',
+    gpsNotSupported:      'GPS no compatible con este navegador',
+    gpsPermissionDenied:  'Acceso a la ubicación denegado',
+    gpsUnavailable:       'Ubicación no disponible',
+    gpsMeters:            'm'
   },
 
   it: {
@@ -368,7 +408,17 @@ const translations = {
     removeFromFavorites: 'Rimuovi dai preferiti',
 
     // Transport mode toggle
-    toggleAllModes: 'Seleziona/deseleziona tutti i mezzi'
+    toggleAllModes: 'Seleziona/deseleziona tutti i mezzi',
+
+    // GPS nearby stops
+    gpsTooltip:           'Trova fermate vicine',
+    gpsLocating:          'Localizzazione in corso…',
+    gpsNoResults:         'Nessuna fermata trovata nelle vicinanze',
+    gpsFetchError:        'Impossibile recuperare le fermate vicine',
+    gpsNotSupported:      'GPS non supportato in questo browser',
+    gpsPermissionDenied:  'Accesso alla posizione negato',
+    gpsUnavailable:       'Posizione non disponibile',
+    gpsMeters:            'm'
   },
 
   el: {
@@ -442,7 +492,17 @@ const translations = {
     removeFromFavorites: 'Αφαίρεση από τα αγαπημένα',
 
     // Transport mode toggle
-    toggleAllModes: 'Επιλογή/αποεπιλογή όλων των μέσων'
+    toggleAllModes: 'Επιλογή/αποεπιλογή όλων των μέσων',
+
+    // GPS nearby stops
+    gpsTooltip:           'Εύρεση κοντινών στάσεων',
+    gpsLocating:          'Εντοπισμός τοποθεσίας…',
+    gpsNoResults:         'Δεν βρέθηκαν κοντινές στάσεις',
+    gpsFetchError:        'Αδύνατη η ανάκτηση κοντινών στάσεων',
+    gpsNotSupported:      'Το GPS δεν υποστηρίζεται σε αυτόν τον browser',
+    gpsPermissionDenied:  'Η πρόσβαση στην τοποθεσία απορρίφθηκε',
+    gpsUnavailable:       'Η τοποθεσία δεν είναι διαθέσιμη',
+    gpsMeters:            'm'
   },
 
   fa: {
@@ -516,7 +576,17 @@ const translations = {
     removeFromFavorites: 'حذف از علاقه‌مندی‌ها',
 
     // Transport mode toggle
-    toggleAllModes: 'انتخاب/عدم انتخاب همه وسایل نقلیه'
+    toggleAllModes: 'انتخاب/عدم انتخاب همه وسایل نقلیه',
+
+    // GPS nearby stops
+    gpsTooltip:           'یافتن ایستگاه‌های نزدیک',
+    gpsLocating:          'در حال یافتن موقعیت…',
+    gpsNoResults:         'هیچ ایستگاهی در نزدیکی یافت نشد',
+    gpsFetchError:        'دریافت ایستگاه‌های نزدیک ناموفق بود',
+    gpsNotSupported:      'GPS در این مرورگر پشتیبانی نمی‌شود',
+    gpsPermissionDenied:  'دسترسی به موقعیت رد شد',
+    gpsUnavailable:       'موقعیت در دسترس نیست',
+    gpsMeters:            'm'
   },
 
   hi: {
@@ -590,7 +660,17 @@ const translations = {
     removeFromFavorites: 'पसंदीदा से हटाएं',
 
     // Transport mode toggle
-    toggleAllModes: 'सभी परिवहन साधन चुनें/हटाएं'
+    toggleAllModes: 'सभी परिवहन साधन चुनें/हटाएं',
+
+    // GPS nearby stops
+    gpsTooltip:           'पास के स्टॉप खोजें',
+    gpsLocating:          'स्थान खोजा जा रहा है…',
+    gpsNoResults:         'पास में कोई स्टॉप नहीं मिला',
+    gpsFetchError:        'पास के स्टॉप नहीं मिल सके',
+    gpsNotSupported:      'इस ब्राउज़र में GPS समर्थित नहीं है',
+    gpsPermissionDenied:  'स्थान पहुँच अस्वीकृत',
+    gpsUnavailable:       'स्थान उपलब्ध नहीं',
+    gpsMeters:            'm'
   },
 
   is: {
@@ -664,7 +744,17 @@ const translations = {
     removeFromFavorites: 'Fjarlægja úr eftirlæti',
 
     // Transport mode toggle
-    toggleAllModes: 'Velja/afvelja allar samgöngur'
+    toggleAllModes: 'Velja/afvelja allar samgöngur',
+
+    // GPS nearby stops
+    gpsTooltip:           'Finna nálægar stöðvar',
+    gpsLocating:          'Finnur staðsetningu…',
+    gpsNoResults:         'Engar stöðvar fundust í nágrenninu',
+    gpsFetchError:        'Ekki tókst að sækja nálægar stöðvar',
+    gpsNotSupported:      'GPS er ekki stutt í þessum vafra',
+    gpsPermissionDenied:  'Aðgangi að staðsetningu hafnað',
+    gpsUnavailable:       'Staðsetning ekki tiltæk',
+    gpsMeters:            'm'
   },
 
   uk: {
@@ -738,7 +828,17 @@ const translations = {
     removeFromFavorites: 'Видалити з обраного',
 
     // Transport mode toggle
-    toggleAllModes: 'Вибрати/зняти всі засоби транспорту'
+    toggleAllModes: 'Вибрати/зняти всі засоби транспорту',
+
+    // GPS nearby stops
+    gpsTooltip:           'Знайти найближчі зупинки',
+    gpsLocating:          'Визначення місцезнаходження…',
+    gpsNoResults:         'Зупинок поблизу не знайдено',
+    gpsFetchError:        'Не вдалося отримати найближчі зупинки',
+    gpsNotSupported:      'GPS не підтримується у цьому браузері',
+    gpsPermissionDenied:  'Доступ до місцезнаходження заблоковано',
+    gpsUnavailable:       'Місцезнаходження недоступне',
+    gpsMeters:            'м'
   },
 
   fr: {
@@ -812,7 +912,17 @@ const translations = {
     removeFromFavorites: 'Supprimer des favoris',
 
     // Transport mode toggle
-    toggleAllModes: 'Sélectionner/désélectionner tous les modes'
+    toggleAllModes: 'Sélectionner/désélectionner tous les modes',
+
+    // GPS nearby stops
+    gpsTooltip:           'Trouver les arrêts proches',
+    gpsLocating:          'Localisation en cours…',
+    gpsNoResults:         'Aucun arrêt trouvé à proximité',
+    gpsFetchError:        'Impossible de récupérer les arrêts proches',
+    gpsNotSupported:      'GPS non pris en charge dans ce navigateur',
+    gpsPermissionDenied:  'Accès à la localisation refusé',
+    gpsUnavailable:       'Localisation indisponible',
+    gpsMeters:            'm'
   },
 
   pl: {
@@ -886,7 +996,17 @@ const translations = {
     removeFromFavorites: 'Usuń z ulubionych',
 
     // Transport mode toggle
-    toggleAllModes: 'Zaznacz/odznacz wszystkie środki transportu'
+    toggleAllModes: 'Zaznacz/odznacz wszystkie środki transportu',
+
+    // GPS nearby stops
+    gpsTooltip:           'Znajdź pobliskie przystanki',
+    gpsLocating:          'Ustalanie lokalizacji…',
+    gpsNoResults:         'Nie znaleziono przystanków w pobliżu',
+    gpsFetchError:        'Nie udało się pobrać pobliskich przystanków',
+    gpsNotSupported:      'GPS nie jest obsługiwany w tej przeglądarce',
+    gpsPermissionDenied:  'Dostęp do lokalizacji został zablokowany',
+    gpsUnavailable:       'Lokalizacja niedostępna',
+    gpsMeters:            'm'
   }
 };
 

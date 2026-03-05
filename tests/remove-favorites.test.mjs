@@ -53,25 +53,14 @@ global.document = {
   body: { classList: { add(){}, remove(){} } }
 };
 
-const { getRecentStations, addRecentStation, isStationInFavorites, removeFromFavorites, resetDefaultFavoriteFlag } =
+const { getRecentStations, addRecentStation, isStationInFavorites, removeFromFavorites } =
   await import('../src/ui/station-dropdown.js');
 const { updateFavoriteButton } = await import('../src/ui/ui.js');
 const { UI_EMOJIS } = await import('../src/config.js');
 
 // Helper to clear favorites between tests.
-// Does NOT reset defaultFavoriteImported — once the flag has been set by the
-// initialization block below, it stays true for the entire test run.
 function clearFavorites() {
-  localStorage.setItem('recent-stations', '[]');
-}
-
-// One-time initialization: trigger the default-favorite import once on an empty list
-// so that defaultFavoriteImported is permanently set to true for this module instance.
-// After this, clearFavorites() safely resets storage without risking re-import.
-{
   localStorage.clear();
-  getRecentStations(); // triggers import + sets flag to true
-  localStorage.setItem('recent-stations', '[]'); // reset to clean state
 }
 
 // Helper: create a mock button

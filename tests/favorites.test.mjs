@@ -55,50 +55,35 @@ global.document = {
   body: { classList: { add(){}, remove(){} } }
 };
 
-const { getRecentStations, addRecentStation, isStationInFavorites } = await import('../src/ui/station-dropdown.js');
+const { getRecentStations, addRecentStation, isStationInFavorites, getDefaultStation } = await import('../src/ui/station-dropdown.js');
 const { updateFavoriteButton } = await import('../src/ui/ui.js');
 const { UI_EMOJIS, DEFAULT_FAVORITE } = await import('../src/config.js');
 
-// --- Default favorite import tests ---
+// --- getDefaultStation tests ---
 
-// Test: Empty favorites + DEFAULT_FAVORITE set → imports default
+// Test: Returns the decoded default station without touching localStorage
 {
   localStorage.clear();
-  const { resetDefaultFavoriteFlag } = await import('../src/ui/station-dropdown.js');
-  resetDefaultFavoriteFlag();
-  const favorites = getRecentStations();
-  assert.equal(favorites.length >= 1, true, 'Should import default favorite when none exist');
-  if (favorites.length > 0) {
-    assert.equal(favorites[0].name, 'Jernbanetorget, Oslo', 'Default favorite should be Jernbanetorget');
-    assert.equal(favorites[0].stopId, 'NSR:StopPlace:58366', 'Default favorite stopId should match');
-  }
+  const station = getDefaultStation();
+  assert.ok(station !== null, 'Should return a station object when DEFAULT_FAVORITE is set');
+  assert.equal(station.name, 'Oslo S', 'Default station name should match');
+  assert.equal(station.stopId, 'NSR:StopPlace:59872', 'Default station stopId should match');
+  assert.ok(Array.isArray(station.modes), 'Modes should be an array');
 }
 
-// Test: Favorites already exist → no import
+// Test: getDefaultStation does NOT write to localStorage
 {
   localStorage.clear();
-  const { resetDefaultFavoriteFlag } = await import('../src/ui/station-dropdown.js');
-  resetDefaultFavoriteFlag();
-  addRecentStation('Custom Station', 'NSR:StopPlace:99999', ['bus']);
-  const favorites = getRecentStations();
-  assert.equal(favorites.length, 1, 'Should not import default when favorites exist');
-  assert.equal(favorites[0].name, 'Custom Station', 'Should keep existing favorite');
+  getDefaultStation();
+  const stored = localStorage.getItem('recent-stations');
+  assert.equal(stored, null, 'getDefaultStation must not write to localStorage');
 }
 
-// Test: Import only happens once (flag prevents re-import)
+// Test: getRecentStations returns empty array when storage is empty (no seeding)
 {
   localStorage.clear();
-  const { resetDefaultFavoriteFlag } = await import('../src/ui/station-dropdown.js');
-  resetDefaultFavoriteFlag();
-  // First call imports
-  getRecentStations();
-  // Modify the stored favorites
-  const stored = JSON.parse(localStorage.getItem('recent-stations') || '[]');
-  stored[0].name = 'Modified Name';
-  localStorage.setItem('recent-stations', JSON.stringify(stored));
-  // Second call should not re-import
   const favorites = getRecentStations();
-  assert.equal(favorites[0].name, 'Modified Name', 'Should not re-import default favorite');
+  assert.deepEqual(favorites, [], 'getRecentStations should return [] with empty storage');
 }
 
 // --- isStationInFavorites tests ---
@@ -174,90 +159,65 @@ function mockBtn() {
   };
 }
 
-// Test 8: Not in favorites → red heart, enabled
+// Test 8: Not in favorites → gray heart, enabled
 {
   localStorage.clear();
   const btn = mockBtn();
-  updateFavoriteButton(btn, 'NSR:StopPlace:99999', ['bus'], 'light');
-  assert.equal(btn.textContent, UI_EMOJIS.heartSave, 'Should show red heart when not in favorites');
+  updateFavoriteButton(btn, 'NSR:StopPlace:99999', ['bus']);
+  assert.equal(btn.textContent, UI_EMOJIS.heartSave, 'Should show gray heart when not in favorites');
   assert.equal(btn.disabled, false, 'Should be enabled when not in favorites');
 }
 
-// Test 9: In favorites with matching modes + light theme → white heart, enabled (click to remove)
+// Test 9: In favorites with matching modes → red heart, enabled (click to remove)
 {
   localStorage.clear();
   addRecentStation('Oslo S', 'NSR:StopPlace:59872', ['bus']);
   const btn = mockBtn();
-  updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus'], 'light');
-  assert.equal(btn.textContent, UI_EMOJIS.heartSavedLight, 'Should show white heart in light theme');
+  updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus']);
+  assert.equal(btn.textContent, UI_EMOJIS.heartSaved, 'Should show red heart when in favorites');
   assert.equal(btn.disabled, false, 'Should be ENABLED when in favorites (to allow removal)');
 }
 
-// Test 10: In favorites with matching modes + dark theme → black heart, enabled (click to remove)
+// Test 10: In favorites, different station → gray heart, enabled
 {
   localStorage.clear();
   addRecentStation('Oslo S', 'NSR:StopPlace:59872', ['bus']);
   const btn = mockBtn();
-  updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus'], 'dark');
-  assert.equal(btn.textContent, UI_EMOJIS.heartSavedDark, 'Should show black heart in dark theme');
-  assert.equal(btn.disabled, false, 'Should be ENABLED when in favorites (to allow removal)');
+  updateFavoriteButton(btn, 'NSR:StopPlace:99999', ['bus']);
+  assert.equal(btn.textContent, UI_EMOJIS.heartSave, 'Different station should show gray heart');
+  assert.equal(btn.disabled, false, 'Different station should be enabled');
 }
 
-// Test 11: In favorites but DIFFERENT modes → red heart, enabled (not a match)
+// Test 11: In favorites but DIFFERENT modes → gray heart, enabled (not a match)
 {
   localStorage.clear();
   addRecentStation('Oslo S', 'NSR:StopPlace:59872', ['bus']);
   const btn = mockBtn();
-  updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['metro'], 'light');
-  assert.equal(btn.textContent, UI_EMOJIS.heartSave, 'Different modes should show red heart');
+  updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['metro']);
+  assert.equal(btn.textContent, UI_EMOJIS.heartSave, 'Different modes should show gray heart');
   assert.equal(btn.disabled, false, 'Different modes should be enabled');
 }
 
-// Test 12: In favorites + auto theme with light preference → white heart, enabled
+// Test 12: Null btn does not throw
+{
+  localStorage.clear();
+  updateFavoriteButton(null, 'NSR:StopPlace:59872', ['bus']);
+  updateFavoriteButton(undefined, 'NSR:StopPlace:59872', ['bus']);
+}
+
+// Test 13: Changing modes makes heart go from saved to unsaved
 {
   localStorage.clear();
   addRecentStation('Oslo S', 'NSR:StopPlace:59872', ['bus']);
   const btn = mockBtn();
-  updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus'], 'auto');
-  assert.equal(btn.textContent, UI_EMOJIS.heartSavedLight, 'Auto theme with light preference should show white heart');
-  assert.equal(btn.disabled, false);
-}
-
-// Test 13: Null btn does not throw
-{
-  localStorage.clear();
-  updateFavoriteButton(null, 'NSR:StopPlace:59872', ['bus'], 'light');
-  updateFavoriteButton(undefined, 'NSR:StopPlace:59872', ['bus'], 'dark');
-}
-
-// Test 14: In favorites + auto theme with dark preference → black heart, enabled
-{
-  localStorage.clear();
-  addRecentStation('Oslo S', 'NSR:StopPlace:59872', ['bus']);
-  const btn = mockBtn();
-  const origMatchMedia = global.window.matchMedia;
-  global.window.matchMedia = (query) => ({
-    matches: query === '(prefers-color-scheme: dark)'
-  });
-  updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus'], 'auto');
-  assert.equal(btn.textContent, UI_EMOJIS.heartSavedDark, 'Auto theme with dark preference should show black heart');
-  assert.equal(btn.disabled, false);
-  global.window.matchMedia = origMatchMedia;
-}
-
-// Test 15: Changing modes makes heart go from in-favorites (enabled) to not-in-favorites (red, enabled)
-{
-  localStorage.clear();
-  addRecentStation('Oslo S', 'NSR:StopPlace:59872', ['bus']);
-  const btn = mockBtn();
-  // With matching modes: enabled, shows saved heart
-  updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus'], 'light');
+  // With matching modes: shows saved heart
+  updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus']);
   assert.equal(btn.disabled, false, 'Matching modes: enabled (can remove)');
-  assert.equal(btn.textContent, UI_EMOJIS.heartSavedLight, 'Matching modes: saved heart');
-  // Change modes: now shows red heart (different modes = not a saved combo)
-  updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus', 'metro'], 'light');
+  assert.equal(btn.textContent, UI_EMOJIS.heartSaved, 'Matching modes: saved heart');
+  // Change modes: now shows gray heart (different modes = not a saved combo)
+  updateFavoriteButton(btn, 'NSR:StopPlace:59872', ['bus', 'metro']);
   assert.equal(btn.disabled, false, 'Changed modes: still enabled (can save)');
-  assert.equal(btn.textContent, UI_EMOJIS.heartSave, 'Changed modes: red heart');
+  assert.equal(btn.textContent, UI_EMOJIS.heartSave, 'Changed modes: gray heart');
 }
 
 console.log('favorites.test.mjs OK');

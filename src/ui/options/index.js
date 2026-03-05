@@ -152,7 +152,7 @@ export function createOptionsPanel(defaults, onApply, onLanguageChange) {
 
   // Keyboard: Enter advances focus through fields
   inpStation.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !(stationAC.acList)) {
+    if (e.key === 'Enter' && !stationAC.isOpen()) {
       e.preventDefault();
       inpNum.focus();
     }

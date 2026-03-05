@@ -1,12 +1,11 @@
-Overall Context: Kollektiv.Sanntid.org - Real-time Norwegian public transport departure board. Version 1.35.3.
+Overall Context: Kollektiv.Sanntid.org - Real-time Norwegian public transport departure board. Version 1.36.12.
 
-Current Goal: Bug fix — number inputs in options panel now apply on blur (mobile Chrome fix).
+Current Goal: Stable — no active feature work.
 
 Last 3 Changes:
-- Mobile blur fix (v1.35.3): applyChanges() added to blur handlers for inpNum/inpInt in options/index.js; Chrome Android numeric keyboard fires blur not keydown Enter
-- Footer link configurable (v1.35.2): footerLink/footerReadme added to UI_EMOJIS in config.js; GITHUB_URL updated with #kollektivsanntidorg anchor; footer-link.test.mjs added (6 assertions)
-- Favorite heart refactor (v1.35.0): gray 🩶 = not saved, red ❤️ = saved (all themes); removed heartSavedLight/heartSavedDark + isLight branch + getTheme imports from 3 files
+- GPS mode reset (v1.36.12): selecting a stop from GPS dropdown always resets transport modes to ALL_TRANSPORT_MODES; stop modes remain display-only in the list
+- Move MODE_GRID to config.js (v1.36.11): exported from config.js, import updated in transport-modes.js; GPS stop selection no longer overrides transport modes
+- Refactor default station + share link (v1.36.10): `getDefaultStation()` replaces old seeding; `getRecentStations()` is a pure read; share links no longer add to favorites; `applyStation()` helper deduplicates handlers; transport modes grid reordered; "Rail" → "Train" label in EN
 
 Next Steps:
 - Update src/sitemap.xml <lastmod> on every future release
-- Await mobile test confirmation
