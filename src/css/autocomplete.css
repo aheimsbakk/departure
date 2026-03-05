@@ -49,3 +49,8 @@
   background: var(--highlight-bg);
   color: var(--highlight-fg);
 }
+
+/* Locality suffix (e.g. ", Oslo") — visually de-emphasised */
+.autocomplete-locality {
+  opacity: 0.5;
+}

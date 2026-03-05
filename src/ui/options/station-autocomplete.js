@@ -72,7 +72,20 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
     acList.innerHTML = '';
     lastCandidates.forEach((c, idx) => {
       const li = document.createElement('li');
-      li.textContent = c.title || c.id || '';
+      // Render bare name at full opacity; locality suffix (e.g. ", Oslo") dimmed
+      const name   = c.name || c.title || '';
+      const suffix = (c.name && c.title && c.title.startsWith(c.name))
+        ? c.title.slice(c.name.length)
+        : '';
+      const nameSpan = document.createElement('span');
+      nameSpan.textContent = name;
+      li.appendChild(nameSpan);
+      if (suffix) {
+        const localitySpan = document.createElement('span');
+        localitySpan.className = 'autocomplete-locality';
+        localitySpan.textContent = suffix;
+        li.appendChild(localitySpan);
+      }
       li.setAttribute('role', 'option');
       li.setAttribute('data-id', String(c.id || ''));
       li.dataset.index = String(idx);
