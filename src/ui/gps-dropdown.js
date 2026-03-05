@@ -113,8 +113,8 @@ export function createGpsButton(onStationSelect) {
         onStationSelect({
           name:   stop.name,
           stopId: stop.id,
-          // Use the stop's own transport modes as the filter when known,
-          // otherwise keep current DEFAULTS or fall back to all modes.
+          // Provide all modes reported for this stop; fall back to ALL_TRANSPORT_MODES
+          // so the board shows every service available at the selected station.
           modes:  stop.modes.length ? stop.modes : ALL_TRANSPORT_MODES.slice()
         });
       }

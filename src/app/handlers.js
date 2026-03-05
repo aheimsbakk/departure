@@ -11,7 +11,7 @@
  * passed in at wiring time, keeping this module free of global state.
  */
 
-import { DEFAULTS } from '../config.js';
+import { DEFAULTS, ALL_TRANSPORT_MODES } from '../config.js';
 import { t, getLanguage } from '../i18n.js';
 import { updateFooterTranslations, updateFavoriteButton } from '../ui/ui.js';
 import { addRecentStation, removeFromFavorites, isStationInFavorites } from '../ui/station-dropdown.js';
@@ -101,12 +101,14 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
   /**
    * Called when the user selects a stop from the GPS nearby-stops dropdown.
    * Loads the stop without adding it to favorites — that is an explicit user action.
+   * Resets transport modes to all modes reported for that stop so the board
+   * shows every service available at the selected station.
    *
    * @param {Object} station - { name, stopId, modes }
    */
   function handleGpsStationSelect(station) {
-    // GPS selection sets station + ID only — never overrides current transport mode filter
-    applyStation({ name: station.name, stopId: station.stopId }, false);
+    // Always apply all transport modes — the stop's modes are display-only in the dropdown list.
+    applyStation({ name: station.name, stopId: station.stopId, modes: ALL_TRANSPORT_MODES.slice() }, false);
   }
 
   /**
