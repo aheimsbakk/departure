@@ -17,7 +17,7 @@ import { updateFooterTranslations, updateFavoriteButton } from '../ui/ui.js';
 import { addRecentStation, removeFromFavorites, isStationInFavorites } from '../ui/station-dropdown.js';
 import { saveSettings, applyTextSize } from './settings.js';
 import { doRefresh, startRefreshLoop } from './fetch-loop.js';
-import { resetDisplayedN } from './scroll-loader.js';
+import { resetDisplayedN, updateIndicator } from './scroll-loader.js';
 
 /**
  * Wire all user-action handlers and return them as a plain object.
@@ -53,6 +53,9 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
   function applyStation(station, addToFavorites) {
     // Reset temporary scroll-load count so the board shows the saved N again
     resetDisplayedN();
+    updateIndicator(board.scrollIndicator);
+    const _scrollLabel = board.scrollIndicator?.querySelector('.scroll-indicator-label');
+    if (_scrollLabel) _scrollLabel.textContent = t('scrollLoadMore');
 
     DEFAULTS.STATION_NAME = station.name;
     DEFAULTS.STOP_ID      = station.stopId;
@@ -145,6 +148,9 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
   function onApplySettings(newOpts) {
     // Reset temporary scroll-load count so the board shows the newly saved N
     resetDisplayedN();
+    updateIndicator(board.scrollIndicator);
+    const _scrollLabel = board.scrollIndicator?.querySelector('.scroll-indicator-label');
+    if (_scrollLabel) _scrollLabel.textContent = t('scrollLoadMore');
 
     DEFAULTS.STATION_NAME    = newOpts.STATION_NAME;
     DEFAULTS.STOP_ID         = newOpts.STOP_ID || null;

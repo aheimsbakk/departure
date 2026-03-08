@@ -21,18 +21,30 @@ export const SCROLL_MAX = 21;
 
 /**
  * Wheel delta (px) that must accumulate while the page is at the bottom
- * before a new load is triggered.  Two firm mouse-wheel ticks ≈ 200 px.
+ * before a new load is triggered.  ~5 firm mouse-wheel ticks ≈ 500 px.
+ * Raised from 200 to reduce accidental triggers.
  */
-const WHEEL_RESISTANCE = 200;
+const WHEEL_RESISTANCE = 500;
 
 /**
  * Touch drag distance (px upward) needed to trigger a load while at the
- * bottom of the page.  A short but deliberate swipe ≈ 80 px.
+ * bottom of the page.  A deliberate two-thumb-length swipe ≈ 160 px.
+ * Raised from 80 to reduce accidental triggers.
  */
-const TOUCH_RESISTANCE = 80;
+const TOUCH_RESISTANCE = 160;
+
+/**
+ * Minimum milliseconds between two successive load-more triggers.
+ * Prevents API overload when the user scrolls rapidly through multiple
+ * Fibonacci steps in quick succession.
+ */
+const LOAD_COOLDOWN_MS = 800;
 
 /** Session-temporary displayed count.  null = use DEFAULTS.NUM_DEPARTURES. */
 let _displayedN = null;
+
+/** Wall-clock timestamp (ms) of the last successful load-more trigger. */
+let _lastLoadAt = 0;
 
 /**
  * Returns the currently active departure count for fetch calls.
@@ -127,6 +139,10 @@ export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax) {
     if (accumulated < WHEEL_RESISTANCE) return; // not reached yet
     accumulated = 0;
 
+    // Rate-limit: ignore bursts faster than LOAD_COOLDOWN_MS
+    const now = Date.now();
+    if (now - _lastLoadAt < LOAD_COOLDOWN_MS) return;
+
     const current = getDisplayedN();
     if (current >= SCROLL_MAX) {
       if (typeof onAtMax === 'function') onAtMax();
@@ -135,6 +151,7 @@ export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax) {
     const next = getNextScrollN(current);
     if (!next) return;
 
+    _lastLoadAt = Date.now();
     _displayedN = next;
     updateIndicator(indicatorEl);
     if (typeof onLoadMore === 'function') onLoadMore(next);
@@ -166,6 +183,11 @@ export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax) {
     touchAccum += dy;
     if (touchAccum >= TOUCH_RESISTANCE) {
       touchAccum = 0;
+
+      // Rate-limit: ignore bursts faster than LOAD_COOLDOWN_MS
+      const now = Date.now();
+      if (now - _lastLoadAt < LOAD_COOLDOWN_MS) return;
+
       const current = getDisplayedN();
       if (current >= SCROLL_MAX) {
         if (typeof onAtMax === 'function') onAtMax();
@@ -173,6 +195,7 @@ export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax) {
       }
       const next = getNextScrollN(current);
       if (!next) return;
+      _lastLoadAt = Date.now();
       _displayedN = next;
       updateIndicator(indicatorEl);
       if (typeof onLoadMore === 'function') onLoadMore(next);

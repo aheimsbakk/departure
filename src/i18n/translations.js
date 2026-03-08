@@ -86,7 +86,7 @@ const translations = {
 
     // Scroll-load indicator
     scrollLoadMore: 'scroll for more',
-    scrollAtMax:    'max 21 — change in options'
+    scrollAtMax:    'for more change in ⚙️'
   },
 
   no: {
@@ -174,7 +174,7 @@ const translations = {
 
     // Scroll-load indicator
     scrollLoadMore: 'rull for flere',
-    scrollAtMax:    'maks 21 — endre i innstillinger'
+    scrollAtMax:    'for flere endre i ⚙️'
   },
 
   de: {
@@ -262,7 +262,7 @@ const translations = {
 
     // Scroll-load indicator
     scrollLoadMore: 'scrollen für mehr',
-    scrollAtMax:    'Max. 21 — in Einstellungen ändern'
+    scrollAtMax:    'für mehr ändern in ⚙️'
   },
 
   es: {
@@ -350,7 +350,7 @@ const translations = {
 
     // Scroll-load indicator
     scrollLoadMore: 'desplazar para más',
-    scrollAtMax:    'máx. 21 — cambiar en opciones'
+    scrollAtMax:    'para más cambia en ⚙️'
   },
 
   it: {
@@ -438,7 +438,7 @@ const translations = {
 
     // Scroll-load indicator
     scrollLoadMore: 'scorri per altri',
-    scrollAtMax:    'max 21 — cambia nelle opzioni'
+    scrollAtMax:    'per di più cambia in ⚙️'
   },
 
   el: {
@@ -526,7 +526,7 @@ const translations = {
 
     // Scroll-load indicator
     scrollLoadMore: 'κύλιση για περισσότερα',
-    scrollAtMax:    'μέγ. 21 — αλλαγή στις επιλογές'
+    scrollAtMax:    'για περισσότερα αλλάξτε στο ⚙️'
   },
 
   fa: {
@@ -614,7 +614,7 @@ const translations = {
 
     // Scroll-load indicator
     scrollLoadMore: 'اسکرول برای بیشتر',
-    scrollAtMax:    'حداکثر ۲۱ — در تنظیمات تغییر دهید'
+    scrollAtMax:    'برای بیشتر در ⚙️ تغییر دهید'
   },
 
   hi: {
@@ -702,7 +702,7 @@ const translations = {
 
     // Scroll-load indicator
     scrollLoadMore: 'अधिक के लिए स्क्रॉल करें',
-    scrollAtMax:    'अधिकतम 21 — विकल्पों में बदलें'
+    scrollAtMax:    'अधिक के लिए ⚙️ में बदलें'
   },
 
   is: {
@@ -790,7 +790,7 @@ const translations = {
 
     // Scroll-load indicator
     scrollLoadMore: 'skrunaðu fyrir fleiri',
-    scrollAtMax:    'hámark 21 — breyta í stillingar'
+    scrollAtMax:    'til fleiri breyta í ⚙️'
   },
 
   uk: {
@@ -878,7 +878,7 @@ const translations = {
 
     // Scroll-load indicator
     scrollLoadMore: 'прокрути для більшого',
-    scrollAtMax:    'макс. 21 — змінити в опціях'
+    scrollAtMax:    'для більшого змініть у ⚙️'
   },
 
   fr: {
@@ -966,7 +966,7 @@ const translations = {
 
     // Scroll-load indicator
     scrollLoadMore: 'défiler pour plus',
-    scrollAtMax:    'max 21 — modifier dans les options'
+    scrollAtMax:    'pour plus changez dans ⚙️'
   },
 
   pl: {
@@ -1054,7 +1054,7 @@ const translations = {
 
     // Scroll-load indicator
     scrollLoadMore: 'przewiń dla więcej',
-    scrollAtMax:    'maks. 21 — zmień w opcjach'
+    scrollAtMax:    'dla więcej zmień w ⚙️'
   }
 };
 

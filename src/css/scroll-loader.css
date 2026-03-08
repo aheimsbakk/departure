@@ -22,17 +22,26 @@
   opacity: 1;
 }
 
-/* Dimmed when the max has been reached */
+/* At max (21): full opacity — arrow styling and hidden label handle the state */
 .scroll-load-indicator.scroll-indicator--max {
-  opacity: 0.4;
+  opacity: 1;
 }
 
-/* Arrow symbol */
+/* Arrow symbol — bounces when more steps are available */
 .scroll-indicator-arrow {
   font-size: calc(var(--large-scale) * 0.3);
   line-height: 1;
   color: var(--text-secondary);
   animation: scroll-bounce 2s ease-in-out infinite;
+}
+
+/* Arrow at max: stop bounce, add a box to show scrolling is blocked */
+.scroll-load-indicator.scroll-indicator--max .scroll-indicator-arrow {
+  animation: none;
+  border: 1.5px solid currentColor;
+  border-radius: 3px;
+  padding: 0 4px 1px;
+  opacity: 0.5;
 }
 
 /* Small hint label under the arrow */
@@ -44,20 +53,20 @@
   transition: color 0.3s, opacity 0.3s;
 }
 
+/* Label hidden at max (normal — no flash) */
+.scroll-load-indicator.scroll-indicator--max .scroll-indicator-label {
+  display: none;
+}
+
 /* Bounce animation */
 @keyframes scroll-bounce {
   0%, 100% { transform: translateY(0); }
   50%       { transform: translateY(5px); }
 }
 
-/* Flash on max: label turns accent colour briefly */
+/* Flash on max: show "for more change in ⚙️" statically — no blinking */
 .scroll-load-indicator.scroll-indicator--flash .scroll-indicator-label {
+  display: block;
   color: var(--accent);
   opacity: 1;
-  animation: scroll-flash 0.55s ease-in-out 4;
-}
-
-@keyframes scroll-flash {
-  0%, 100% { opacity: 1; }
-  50%       { opacity: 0.15; }
 }

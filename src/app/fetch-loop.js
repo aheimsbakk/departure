@@ -22,6 +22,7 @@ import { fetchDepartures, lookupStopId } from '../entur/index.js';
 import { formatCountdown } from '../time.js';
 import { t, getLanguage } from '../i18n.js';
 import { renderDepartures } from './render.js';
+import { getDisplayedN } from './scroll-loader.js';
 
 /** Ticks remaining until the next automatic refresh (counts down to 0) */
 let ticksUntilRefresh = DEFAULTS.FETCH_INTERVAL;
@@ -121,7 +122,7 @@ export function startRefreshLoop(listEl, statusEl) {
     const elapsedSec = (Date.now() - lastFetchAt) / 1000;
     if (elapsedSec >= DEFAULTS.FETCH_INTERVAL) {
       ticksUntilRefresh = DEFAULTS.FETCH_INTERVAL; // reset chip display
-      doRefresh(listEl).catch(err => console.warn('Wake-up refresh failed', err));
+      doRefresh(listEl, getDisplayedN()).catch(err => console.warn('Wake-up refresh failed', err));
     }
   };
   document.addEventListener('visibilitychange', _visibilityHandler);
@@ -136,7 +137,7 @@ export function startRefreshLoop(listEl, statusEl) {
       // Reset eagerly before the async call so the chip immediately shows
       // the full interval rather than staying at 0 for the fetch duration.
       ticksUntilRefresh = DEFAULTS.FETCH_INTERVAL;
-      doRefresh(listEl).catch(err => console.warn('Refresh failed', err));
+      doRefresh(listEl, getDisplayedN()).catch(err => console.warn('Refresh failed', err));
     }
 
     // 3. Tick all countdowns and update the status chip in the same frame.
