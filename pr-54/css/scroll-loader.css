@@ -5,7 +5,29 @@
    Max state (scroll-indicator--max): ::after morphs into a solid circle.
    No font glyphs used — shapes are platform-identical everywhere.
    Mirrors: src/app/scroll-loader.js
+
+   Board lift animation:
+   .is-lifting  — added by JS at touchstart; disables all transition so that
+                  the finger-tracking transform (applied via rAF) is instant.
+   (no class)   — resting state; the spring cubic-bezier defined below plays
+                  when JS clears .is-lifting and resets transform to ''.
    ====================================================================== */
+
+/* Suppress the browser's own elastic overscroll so it doesn't fight the
+   custom rubber-band lift on iOS Safari and Android Chrome. */
+html, body {
+  overscroll-behavior: none;
+}
+
+/* Pre-spring state: no transitions while the finger is actively dragging. */
+.board.is-lifting {
+  transition: none;
+}
+
+/* Resting / snap-back state: spring curve plays when .is-lifting is removed. */
+.board:not(.is-lifting) {
+  transition: transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
 
 .scroll-load-indicator {
   display: flex;
@@ -66,6 +88,7 @@
 
 /* Small hint label under the arrow */
 .scroll-indicator-label {
+  font-size: 12px;
   color: var(--text-secondary);
   letter-spacing: 0.04em;
   opacity: 0.65;
