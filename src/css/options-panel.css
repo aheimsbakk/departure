@@ -37,7 +37,7 @@
 }
 
 .options-row label {
-  font-size: 0.9rem;
+  font-size: 1em;
   margin-bottom: 6px;
   color: var(--text-primary);
 }
