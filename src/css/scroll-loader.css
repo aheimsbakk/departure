@@ -1,7 +1,8 @@
 /* ======================================================================
    SCROLL LOAD INDICATOR
-   The ⌄ badge shown below the departure list.  Pulses to signal that
-   the user can overscroll to temporarily load more departures.
+   The ⌄ / ● badge shown below the departure list.  Pulses to signal
+   that the user can overscroll to temporarily load more departures;
+   turns into a solid dot ● once the 21-departure cap is reached.
    Mirrors: src/app/scroll-loader.js
    ====================================================================== */
 
@@ -35,12 +36,9 @@
   animation: scroll-bounce 2s ease-in-out infinite;
 }
 
-/* Arrow at max: stop bounce, add a box to show scrolling is blocked */
+/* Arrow at max: stop bounce, show as a static dot marking the list end */
 .scroll-load-indicator.scroll-indicator--max .scroll-indicator-arrow {
   animation: none;
-  border: 1.5px solid currentColor;
-  border-radius: 3px;
-  padding: 0 4px 1px;
   opacity: 0.5;
 }
 

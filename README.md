@@ -62,6 +62,17 @@ The app displays upcoming departures with:
 - **Cancellation notices** - Cancelled departures appear with strikethrough and reduced opacity
 - **Automatic updates** every 60 seconds (configurable)
 
+### Loading More Departures
+
+When you've scrolled to the bottom of the departure list, keep scrolling (or swipe up on mobile) to temporarily expand the number of departures shown. Each extra nudge steps through a sequence — **2 → 3 → 5 → 8 → 13 → 21** — so you can load exactly as many as you need.
+
+- A **⌄ arrow** below the list bounces to signal more steps are available
+- When you reach the **maximum of 21**, the arrow is replaced by a **● dot** marking the end of the list
+- Try to go further and a brief hint appears reminding you to change the limit in ⚙️ Settings
+- The expanded count is **session-only** — it resets to your configured number when you switch stations, apply settings, or reload the page. Nothing is saved to your preferences.
+
+To make a higher number permanent, update **Number of Departures** in the settings panel.
+
 ### Settings Panel
 
 Access all settings by clicking the **⚙️ settings** button:
@@ -70,7 +81,7 @@ Access all settings by clicking the **⚙️ settings** button:
 Type to search for any station or stop in Norway. The app suggests matches as you type.
 
 #### Number of Departures
-Choose how many upcoming departures to display (default: 5)
+Choose how many upcoming departures to display (default: 5). You can also temporarily expand this up to 21 by overscrolling at the bottom of the list — see [Loading More Departures](#loading-more-departures).
 
 #### Update Interval
 Set how often the app refreshes departure times in seconds (default: 60)
