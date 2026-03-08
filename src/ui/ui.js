@@ -78,7 +78,11 @@ export function createBoardElements(stationName, onStationSelect, onFavoriteTogg
 
   footer.append(dataLine, versionLine);
   
-  el.append(headerWrap, list, scrollIndicator, footer);
+  // Footer is intentionally NOT appended to .board here.
+  // It must be a direct child of <body> so that position:fixed is relative to
+  // the viewport — not to .board, which receives transform during scroll-drag.
+  // app.js calls document.body.appendChild(board.footer) after init.
+  el.append(headerWrap, list, scrollIndicator);
   // expose header-wrap for other modules to attach controls
   el.headerWrap = headerWrap;
   // expose station dropdown for updating

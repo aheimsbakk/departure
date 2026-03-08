@@ -44,7 +44,7 @@
 
 /* Small hint label under the arrow */
 .scroll-indicator-label {
-  font-size: calc(var(--large-scale) * 0.13);
+  font-size: clamp(11px, calc(var(--large-scale) * 0.13), 13px);
   color: var(--text-secondary);
   letter-spacing: 0.04em;
   opacity: 0.65;

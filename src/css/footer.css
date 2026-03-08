@@ -9,7 +9,7 @@
   bottom: 18px;
   left: 18px;
   z-index: var(--z-footer);
-  font-size: 12px;
+  font-size: clamp(11px, calc(var(--large-scale) * 0.13), 13px);
   color: var(--text-primary);
   background: var(--overlay-medium);
   padding: 6px 10px;
