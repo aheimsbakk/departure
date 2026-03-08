@@ -95,17 +95,15 @@ export function getNextScrollN(current) {
 export function updateIndicator(indicatorEl) {
   if (!indicatorEl) return;
 
-  const n       = getDisplayedN();
-  const next    = getNextScrollN(n);
-  const arrowEl = indicatorEl.querySelector('.scroll-indicator-arrow');
+  const n    = getDisplayedN();
+  const next = getNextScrollN(n);
 
   if (next === null) {
-    // At max — replace the down-arrow with a solid dot to mark the list end
-    if (arrowEl) arrowEl.textContent = '●';
+    // At max — CSS switches ::after to a circle dot via scroll-indicator--max
     indicatorEl.classList.add('scroll-indicator--max');
     indicatorEl.classList.remove('scroll-indicator--active');
   } else {
-    if (arrowEl) arrowEl.textContent = '⌄';
+    // CSS draws the triangle via ::after; no glyph needed
     indicatorEl.classList.remove('scroll-indicator--max');
     indicatorEl.classList.add('scroll-indicator--active');
   }
