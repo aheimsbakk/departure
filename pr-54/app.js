@@ -128,8 +128,12 @@ async function init() {
   headerRight.appendChild(headerControls.el);
   headerWrap.appendChild(headerRight);
 
-  // 9. Mount board and apply initial text size
+  // 9. Mount board, footer, and apply initial text size.
+  //    The footer is appended directly to <body> — NOT inside .board — so that
+  //    its position:fixed stays viewport-relative even when .board has a CSS
+  //    transform applied (e.g. rubber-band scroll-drag lift).
   ROOT.appendChild(board.el);
+  document.body.appendChild(board.footer);
   applyTextSize(DEFAULTS.TEXT_SIZE || 'medium');
   try { document.title = DEFAULTS.STATION_NAME || document.title; } catch (_) {}
 
@@ -168,6 +172,7 @@ async function init() {
   attachScrollListeners(
     board.scrollIndicator,
     (nextN) => {
+      // onLoadMore — also called when the board springs back after lift
       doRefresh(board.list, nextN)
         .catch(err => console.warn('Scroll-load fetch failed', err));
       // Refresh the label text in case language changed since init
@@ -184,7 +189,8 @@ async function init() {
       setTimeout(() => {
         if (label) label.textContent = t('scrollLoadMore');
       }, 2400);
-    }
+    },
+    board.el  // board element for rubber-band lift + spring snap-back
   );
 }
 

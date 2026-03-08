@@ -8,6 +8,8 @@
  *   - Given configured N, the next step is the first Fibonacci number > N
  *   - Accumulate wheel / touch delta with configurable resistance before
  *     triggering a load-more so the user doesn't overshoot accidentally
+ *   - Progressive rubber-band board lift during overscroll + spring snap-back
+ *     so the user gets clear visual feedback that they are dragging the list up
  *   - Expose helpers to update the scroll indicator DOM element
  */
 
@@ -39,6 +41,12 @@ const TOUCH_RESISTANCE = 160;
  * Fibonacci steps in quick succession.
  */
 const LOAD_COOLDOWN_MS = 800;
+
+/**
+ * Maximum visual lift (px) the board rises during rubber-band overscroll.
+ * Reached when accumulated delta equals the resistance threshold.
+ */
+const BOARD_LIFT_MAX_PX = 40;
 
 /** Session-temporary displayed count.  null = use DEFAULTS.NUM_DEPARTURES. */
 let _displayedN = null;
@@ -124,17 +132,65 @@ export function flashMaxMessage(indicatorEl) {
  * Load-more is triggered only when the page is at its bottom and the
  * accumulated delta exceeds the resistance threshold.
  *
+ * While overscrolling the board element is progressively lifted via
+ * translateY (rubber-band effect) and springs back with a bounce curve
+ * when the user releases or when the trigger fires.
+ *
  * @param {HTMLElement|null} indicatorEl - Indicator element to update on change
  * @param {Function}         onLoadMore  - Called with (nextN: number)
  * @param {Function}         onAtMax     - Called when already at SCROLL_MAX
+ * @param {HTMLElement|null} boardEl     - The .board element to lift/bounce
  * @returns {Function} destroy — call to remove all listeners
  */
-export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax) {
+export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax, boardEl) {
   let accumulated = 0;
+
+  // Timer that clears the inline transition style after the snap-back animation
+  // has finished so it does not interfere with other board transforms.
+  let snapClearTimer = null;
+
+  // Timer that triggers a snap-back after wheel input stops.
+  let wheelSettleTimer = null;
 
   /** True when the page is scrolled to the bottom (or has no overflow). */
   function isAtPageBottom() {
     return (window.scrollY + window.innerHeight) >= (document.body.scrollHeight - 20);
+  }
+
+  /**
+   * Apply an instantaneous (no transition) lift to the board.
+   * @param {number} px - Positive = lift upward (negative translateY)
+   */
+  function setLiftImmediate(px) {
+    if (!boardEl) return;
+    // Force a synchronous style flush so 'none' transition takes effect before
+    // the transform is written, preventing the browser from animating the lift.
+    boardEl.style.transition = 'none';
+    // Reading offsetHeight forces a reflow — ensures the transition:none is
+    // committed before we write the new transform value.
+    // eslint-disable-next-line no-unused-expressions
+    boardEl.offsetHeight;
+    boardEl.style.transform = px > 0 ? `translateY(-${px.toFixed(1)}px)` : '';
+  }
+
+  /**
+   * Spring the board back to its resting position using a bounce easing curve.
+   * Clears the inline transition property once the animation completes.
+   */
+  function snapBack() {
+    if (!boardEl) return;
+    if (snapClearTimer) clearTimeout(snapClearTimer);
+    // Apply the spring curve BEFORE clearing the transform so the browser
+    // animates from the current lifted position back to 0.
+    boardEl.style.transition = 'transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)';
+    boardEl.style.transform  = '';
+    snapClearTimer = setTimeout(() => {
+      // Only clear if transform is still the settled value to avoid
+      // wiping a concurrent lift that started during the bounce.
+      if (boardEl && boardEl.style.transform === '') {
+        boardEl.style.transition = '';
+      }
+    }, 600);
   }
 
   /** Core: check resistance and advance if threshold met. */
@@ -148,6 +204,7 @@ export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax) {
 
     const current = getDisplayedN();
     if (current >= SCROLL_MAX) {
+      snapBack();
       if (typeof onAtMax === 'function') onAtMax();
       return;
     }
@@ -157,14 +214,34 @@ export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax) {
     _lastLoadAt = Date.now();
     _displayedN = next;
     updateIndicator(indicatorEl);
+    snapBack();
     if (typeof onLoadMore === 'function') onLoadMore(next);
   }
 
   // --- Wheel (desktop) ---
   function handleWheel(e) {
-    if (e.deltaY <= 0) { accumulated = 0; return; }
-    if (!isAtPageBottom()) { accumulated = 0; return; }
+    if (e.deltaY <= 0) {
+      accumulated = 0;
+      clearTimeout(wheelSettleTimer);
+      snapBack();
+      return;
+    }
+    if (!isAtPageBottom()) {
+      accumulated = 0;
+      clearTimeout(wheelSettleTimer);
+      snapBack();
+      return;
+    }
     accumulated += e.deltaY;
+
+    // Lift the board proportionally to show rubber-band feedback
+    const progress = Math.min(accumulated / WHEEL_RESISTANCE, 1);
+    setLiftImmediate(progress * BOARD_LIFT_MAX_PX);
+
+    // Schedule a snap-back if the wheel goes idle (user stops scrolling)
+    clearTimeout(wheelSettleTimer);
+    wheelSettleTimer = setTimeout(snapBack, 180);
+
     tryAdvance();
   }
 
@@ -180,10 +257,22 @@ export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax) {
   function handleTouchMove(e) {
     const dy = touchLastY - e.touches[0].clientY; // positive = swiping up (scroll down)
     touchLastY = e.touches[0].clientY;
-    if (dy <= 0) { touchAccum = 0; return; }
-    if (!isAtPageBottom()) { touchAccum = 0; return; }
+
+    if (dy <= 0) {
+      // Scrolling back up — don't reset touchAccum; let touchEnd snap back.
+      return;
+    }
+    if (!isAtPageBottom()) {
+      touchAccum = 0;
+      return;
+    }
 
     touchAccum += dy;
+
+    // Rubber-band lift: board rises in real-time with the finger
+    const progress = Math.min(touchAccum / TOUCH_RESISTANCE, 1);
+    setLiftImmediate(progress * BOARD_LIFT_MAX_PX);
+
     if (touchAccum >= TOUCH_RESISTANCE) {
       touchAccum = 0;
 
@@ -193,6 +282,7 @@ export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax) {
 
       const current = getDisplayedN();
       if (current >= SCROLL_MAX) {
+        snapBack();
         if (typeof onAtMax === 'function') onAtMax();
         return;
       }
@@ -201,17 +291,28 @@ export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax) {
       _lastLoadAt = Date.now();
       _displayedN = next;
       updateIndicator(indicatorEl);
+      snapBack();
       if (typeof onLoadMore === 'function') onLoadMore(next);
     }
+  }
+
+  /** Snap back whenever the finger lifts — covers all release scenarios. */
+  function handleTouchEnd() {
+    touchAccum = 0;
+    snapBack();
   }
 
   window.addEventListener('wheel',      handleWheel,      { passive: true });
   window.addEventListener('touchstart', handleTouchStart, { passive: true });
   window.addEventListener('touchmove',  handleTouchMove,  { passive: true });
+  window.addEventListener('touchend',   handleTouchEnd,   { passive: true });
 
   return function destroy() {
+    clearTimeout(wheelSettleTimer);
+    clearTimeout(snapClearTimer);
     window.removeEventListener('wheel',      handleWheel);
     window.removeEventListener('touchstart', handleTouchStart);
     window.removeEventListener('touchmove',  handleTouchMove);
+    window.removeEventListener('touchend',   handleTouchEnd);
   };
 }
