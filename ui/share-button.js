@@ -18,12 +18,14 @@ export function encodeSettings(settings) {
     ];
     
     const json = JSON.stringify(data);
-    const base64 = btoa(unescape(encodeURIComponent(json)));
-    
+    // Use TextEncoder for correct UTF-8 → binary → base64 (replaces deprecated unescape/encodeURIComponent trick)
+    const bytes = new TextEncoder().encode(json);
+    const base64 = btoa(String.fromCharCode(...bytes));
+
     // Make URL-safe
     return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
   } catch (e) {
-    console.error('Failed to encode settings:', e);
+    console.warn('Failed to encode settings:', e.message);
     return null;
   }
 }
@@ -44,7 +46,10 @@ export function decodeSettings(encoded) {
       base64 += '=';
     }
     
-    const json = decodeURIComponent(escape(atob(base64)));
+    // Use TextDecoder for correct base64 → binary → UTF-8 (replaces deprecated escape/decodeURIComponent trick)
+    const binary = atob(base64);
+    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    const json = new TextDecoder().decode(bytes);
     const data = JSON.parse(json);
     
     // Support both array formats:
@@ -130,7 +135,7 @@ export function decodeSettings(encoded) {
     
     return settings;
   } catch (e) {
-    console.error('Failed to decode settings:', e);
+    console.warn('Failed to decode settings:', e.message);
     return null;
   }
 }
