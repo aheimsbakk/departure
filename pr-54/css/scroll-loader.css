@@ -1,8 +1,9 @@
 /* ======================================================================
    SCROLL LOAD INDICATOR
-   The ⌄ / ● badge shown below the departure list.  Pulses to signal
-   that the user can overscroll to temporarily load more departures;
-   turns into a solid dot ● once the 21-departure cap is reached.
+   The CSS-drawn triangle / dot badge shown below the departure list.
+   Normal state: ::after draws a downward triangle (bounces).
+   Max state (scroll-indicator--max): ::after morphs into a solid circle.
+   No font glyphs used — shapes are platform-identical everywhere.
    Mirrors: src/app/scroll-loader.js
    ====================================================================== */
 
@@ -28,23 +29,43 @@
   opacity: 1;
 }
 
-/* Arrow symbol — bounces when more steps are available */
+/* CSS-drawn downward triangle — no font glyph, platform-identical on all OSes */
 .scroll-indicator-arrow {
-  font-size: calc(var(--large-scale) * 0.3);
-  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 14px;
   color: var(--text-secondary);
+  opacity: 0.5;
   animation: scroll-bounce 2s ease-in-out infinite;
 }
 
-/* Arrow at max: stop bounce, show as a static dot marking the list end */
+.scroll-indicator-arrow::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 10px solid currentColor;
+}
+
+/* At max: stop bounce, morph into a same-area solid dot */
 .scroll-load-indicator.scroll-indicator--max .scroll-indicator-arrow {
   animation: none;
-  opacity: 0.5;
+}
+
+.scroll-load-indicator.scroll-indicator--max .scroll-indicator-arrow::after {
+  width: 10px;
+  height: 10px;
+  border: none;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 /* Small hint label under the arrow */
 .scroll-indicator-label {
-  font-size: clamp(11px, calc(var(--large-scale) * 0.13), 13px);
   color: var(--text-secondary);
   letter-spacing: 0.04em;
   opacity: 0.65;

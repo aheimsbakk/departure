@@ -43,7 +43,7 @@ export function createBoardElements(stationName, onStationSelect, onFavoriteTogg
 
   const scrollArrow = document.createElement('span');
   scrollArrow.className = 'scroll-indicator-arrow';
-  scrollArrow.textContent = '⌄';
+  scrollArrow.textContent = ''; // shape drawn by CSS ::after
 
   const scrollLabel = document.createElement('span');
   scrollLabel.className = 'scroll-indicator-label';
