@@ -131,8 +131,10 @@ export function flashMaxMessage(indicatorEl) {
  * accumulated delta exceeds the resistance threshold.
  *
  * While overscrolling the board element is progressively lifted via
- * translateY (rubber-band effect) and springs back with a bounce curve
- * when the user releases or when the trigger fires.
+ * translate3d (GPU-composited, rAF-batched) and springs back with a bounce
+ * easing curve defined in CSS when the user releases or when the trigger fires.
+ * The .is-lifting class disables CSS transitions during drag (no forced reflow);
+ * removing it lets the spring play automatically.
  *
  * @param {HTMLElement|null} indicatorEl - Indicator element to update on change
  * @param {Function}         onLoadMore  - Called with (nextN: number)
@@ -143,12 +145,17 @@ export function flashMaxMessage(indicatorEl) {
 export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax, boardEl) {
   let accumulated = 0;
 
-  // Timer that clears the inline transition style after the snap-back animation
-  // has finished so it does not interfere with other board transforms.
+  // Timer that clears will-change and the snap class after the spring animation.
   let snapClearTimer = null;
 
-  // Timer that triggers a snap-back after wheel input stops.
+  // Timer that triggers a snap-back after wheel input goes idle.
   let wheelSettleTimer = null;
+
+  // rAF handle — ensures at most one pending transform write per frame.
+  let rafId = null;
+
+  // The lift value (px) queued for the next rAF flush.
+  let pendingLiftPx = 0;
 
   /** True when the page is scrolled to the bottom (or has no overflow). */
   function isAtPageBottom() {
@@ -156,39 +163,45 @@ export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax, boardEl)
   }
 
   /**
-   * Apply an instantaneous (no transition) lift to the board.
-   * @param {number} px - Positive = lift upward (negative translateY)
+   * Schedule a board lift for the next animation frame.
+   * Uses translate3d for GPU-composited movement and rAF batching so that
+   * multiple touchmove events between frames collapse into a single DOM write —
+   * no forced reflow, no layout thrash.
+   *
+   * @param {number} px - Positive = lift upward (negative Y)
    */
   function setLiftImmediate(px) {
     if (!boardEl) return;
-    // Force a synchronous style flush so 'none' transition takes effect before
-    // the transform is written, preventing the browser from animating the lift.
-    boardEl.style.transition = 'none';
-    // Reading offsetHeight forces a reflow — ensures the transition:none is
-    // committed before we write the new transform value.
-    // eslint-disable-next-line no-unused-expressions
-    boardEl.offsetHeight;
-    boardEl.style.transform = px > 0 ? `translateY(-${px.toFixed(1)}px)` : '';
+    pendingLiftPx = px;
+    if (rafId !== null) return; // already a frame queued — coalesce
+    rafId = requestAnimationFrame(() => {
+      rafId = null;
+      if (!boardEl) return;
+      // .is-lifting CSS class keeps transition:none; no inline style juggling,
+      // no forced reflow needed.
+      boardEl.classList.add('is-lifting');
+      boardEl.style.transform = pendingLiftPx > 0
+        ? `translate3d(0, -${pendingLiftPx.toFixed(1)}px, 0)`
+        : '';
+    });
   }
 
   /**
    * Spring the board back to its resting position using a bounce easing curve.
-   * Clears the inline transition property once the animation completes.
+   * Removes .is-lifting (restoring CSS transitions) so the spring plays, then
+   * clears will-change once the animation settles to free the compositing layer.
    */
   function snapBack() {
     if (!boardEl) return;
     if (snapClearTimer) clearTimeout(snapClearTimer);
-    // Apply the spring curve BEFORE clearing the transform so the browser
-    // animates from the current lifted position back to 0.
-    boardEl.style.transition = 'transform 0.55s cubic-bezier(0.34, 1.56, 0.64, 1)';
-    boardEl.style.transform  = '';
+    // Cancel any pending lift rAF — snap wins.
+    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+    // Remove the no-transition class so the spring curve defined in CSS applies.
+    boardEl.classList.remove('is-lifting');
+    boardEl.style.transform = '';
     snapClearTimer = setTimeout(() => {
-      // Only clear if transform is still the settled value to avoid
-      // wiping a concurrent lift that started during the bounce.
-      if (boardEl && boardEl.style.transform === '') {
-        boardEl.style.transition = '';
-      }
-    }, 600);
+      if (boardEl) boardEl.style.willChange = '';
+    }, 650);
   }
 
   /** Core: check resistance and advance if threshold met. */
@@ -250,6 +263,9 @@ export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax, boardEl)
   function handleTouchStart(e) {
     touchLastY = e.touches[0].clientY;
     touchAccum = 0;
+    // Pre-promote board to its own compositing layer before any movement,
+    // preventing first-frame paint stutter.
+    if (boardEl) boardEl.style.willChange = 'transform';
   }
 
   function handleTouchMove(e) {
@@ -308,6 +324,7 @@ export function attachScrollListeners(indicatorEl, onLoadMore, onAtMax, boardEl)
   return function destroy() {
     clearTimeout(wheelSettleTimer);
     clearTimeout(snapClearTimer);
+    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
     window.removeEventListener('wheel',      handleWheel);
     window.removeEventListener('touchstart', handleTouchStart);
     window.removeEventListener('touchmove',  handleTouchMove);
