@@ -4,13 +4,14 @@
  * Thin orchestrator: imports focused modules and wires them together.
  * No business logic lives here — each concern is owned by its module.
  *
- *   app/settings.js   — localStorage load/save, text-size
- *   app/url-import.js — shared-board URL decode (?b= / ?board=)
- *   app/render.js     — departure list rendering
- *   app/fetch-loop.js — doRefresh, startRefreshLoop(listEl, statusEl), tickCountdowns
- *   app/handlers.js   — station select, favorite toggle, apply settings, language change
- *   app/action-bar.js — share + theme + settings buttons
- *   app/sw-updater.js — service worker registration and auto-update toast
+ *   app/settings.js    — localStorage load/save, text-size
+ *   app/url-import.js  — shared-board URL decode (?b= / ?board=)
+ *   app/render.js      — departure list rendering
+ *   app/fetch-loop.js  — doRefresh, startRefreshLoop(listEl, statusEl), tickCountdowns
+ *   app/handlers.js    — station select, favorite toggle, apply settings, language change
+ *   app/action-bar.js  — share + theme + settings buttons
+ *   app/scroll-loader.js — Fibonacci scroll-to-load temporary departure expansion
+ *   app/sw-updater.js  — service worker registration and auto-update toast
  */
 
 import { DEFAULTS } from './config.js';
@@ -29,6 +30,11 @@ import { wireHandlers } from './app/handlers.js';
 import { buildActionBar } from './app/action-bar.js';
 import { buildGpsBar } from './app/gps-bar.js';
 import { registerServiceWorker } from './app/sw-updater.js';
+import {
+  attachScrollListeners,
+  updateIndicator,
+  flashMaxMessage
+} from './app/scroll-loader.js';
 
 // Initialise language and theme before any DOM is built so that the correct
 // strings and colours are in place from the very first render.
@@ -153,6 +159,33 @@ async function init() {
   //     for the first 1-second tick to fire.
   startRefreshLoop(board.list, board.status);
   tickCountdowns(board.list, board.status);
+
+  // 13. Wire Fibonacci scroll-load.
+  //     Attaches wheel/touch listeners that accumulate delta at the bottom
+  //     of the page; triggers a temporary fetch with the next Fibonacci count.
+  //     Resets automatically on station change (handlers.js → resetDisplayedN).
+  updateIndicator(board.scrollIndicator);
+  attachScrollListeners(
+    board.scrollIndicator,
+    (nextN) => {
+      doRefresh(board.list, nextN)
+        .catch(err => console.warn('Scroll-load fetch failed', err));
+      // Refresh the label text in case language changed since init
+      const label = board.scrollIndicator?.querySelector('.scroll-indicator-label');
+      if (label) label.textContent = t('scrollLoadMore');
+      updateIndicator(board.scrollIndicator);
+    },
+    () => {
+      // User tried to scroll past 21 — flash the "use options" hint
+      const label = board.scrollIndicator?.querySelector('.scroll-indicator-label');
+      if (label) label.textContent = t('scrollAtMax');
+      flashMaxMessage(board.scrollIndicator);
+      // Restore the default label text after the flash animation (≈ 2.2 s)
+      setTimeout(() => {
+        if (label) label.textContent = t('scrollLoadMore');
+      }, 2400);
+    }
+  );
 }
 
 // BFCache cold-start guard: if the OS fully kills the PWA process and restores

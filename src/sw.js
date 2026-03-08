@@ -1,4 +1,4 @@
-const VERSION = '1.36.13';
+const VERSION = '1.37.0';
 const CACHE_NAME = `departures-v${VERSION}`;
 const ASSETS = [
   './',
@@ -13,6 +13,7 @@ const ASSETS = [
   './css/header.css',
   './css/toolbar.css',
   './css/departures.css',
+  './css/scroll-loader.css',
   './css/options-panel.css',
   './css/autocomplete.css',
   './css/transport-modes.css',
@@ -28,6 +29,7 @@ const ASSETS = [
   './app/render.js',
   './app/fetch-loop.js',
   './app/handlers.js',
+  './app/scroll-loader.js',
   './app/action-bar.js',
   './app/gps-bar.js',
   './app/sw-updater.js',

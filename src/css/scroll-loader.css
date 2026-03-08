@@ -1,0 +1,63 @@
+/* ======================================================================
+   SCROLL LOAD INDICATOR
+   The ⌄ badge shown below the departure list.  Pulses to signal that
+   the user can overscroll to temporarily load more departures.
+   Mirrors: src/app/scroll-loader.js
+   ====================================================================== */
+
+.scroll-load-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 2px 0 4px;
+  user-select: none;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+/* Visible when there are more steps available */
+.scroll-load-indicator.scroll-indicator--active {
+  opacity: 1;
+}
+
+/* Dimmed when the max has been reached */
+.scroll-load-indicator.scroll-indicator--max {
+  opacity: 0.4;
+}
+
+/* Arrow symbol */
+.scroll-indicator-arrow {
+  font-size: calc(var(--large-scale) * 0.3);
+  line-height: 1;
+  color: var(--text-secondary);
+  animation: scroll-bounce 2s ease-in-out infinite;
+}
+
+/* Small hint label under the arrow */
+.scroll-indicator-label {
+  font-size: calc(var(--large-scale) * 0.13);
+  color: var(--text-secondary);
+  letter-spacing: 0.04em;
+  opacity: 0.65;
+  transition: color 0.3s, opacity 0.3s;
+}
+
+/* Bounce animation */
+@keyframes scroll-bounce {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(5px); }
+}
+
+/* Flash on max: label turns accent colour briefly */
+.scroll-load-indicator.scroll-indicator--flash .scroll-indicator-label {
+  color: var(--accent);
+  opacity: 1;
+  animation: scroll-flash 0.55s ease-in-out 4;
+}
+
+@keyframes scroll-flash {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.15; }
+}

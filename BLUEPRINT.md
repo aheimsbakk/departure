@@ -16,9 +16,9 @@ User-facing features
 - Station header (clickable) opens favorites dropdown (up to `NUM_FAVORITES` recent stations with saved settings). On first load with empty favorites, `getDefaultStation()` (decodes `DEFAULT_FAVORITE`) is used as the startup station — it is **not written** to the favorites list.
 - Favorite heart button is always enabled. Gray heart 🩶 = not in favorites (click to add, theme-neutral). Red heart ❤️ = already in favorites (click to remove). `handleFavoriteToggle` in `handlers.js` performs the toggle; `removeFromFavorites` in `station-dropdown.js` handles removal.
 - GPS compass button 🧭 (fixed top-left, same `.header-btn` style as top-right buttons). Click → requests browser geolocation → fetches up to `GPS_MAX_RESULTS` (10) nearest stops within `GPS_SEARCH_RADIUS_KM` (2 km) via Entur Geocoder reverse API → shows a temporary dropdown listing stops rendered from `GPS_STOP_LINE_TEMPLATE` (name + distance + mode emojis). Selecting a stop sets it as the current station and closes the dropdown. The heart button is then available to save to favorites.
-- Up to N upcoming departures (configurable).
+- Up to N upcoming departures (configurable). N is temporarily expandable via scroll-load (see below).
 - Departure line: destination, realtime indicator (● live / ○ scheduled), line number, transport emoji, platform symbol+code.
-- Cancelled departures shown with strikethrough and reduced opacity.
+- Scroll-load: a `⌄` indicator below the departure list lets the user temporarily expand the displayed count by overscrolling at the bottom of the page. Steps follow the Fibonacci sequence (1→2→3→5→8→13→21, max 21). Starting step is the first Fibonacci number > configured N. Resistance: 200 px wheel delta or 80 px touch drag required. Resets to configured N on station change, settings apply, or app reload (never persisted). At max, indicator flashes "max 21 — change in options". Implemented in `src/app/scroll-loader.js` + `src/css/scroll-loader.css`.
 - Live countdown (MM:SS), updates every second.
 - Platform/quay display with configurable symbol rules (bay ▣, gate ◆, platform ⚏, stop ▪, berth ⚓).
 - Auto-centering both horizontally and vertically.
@@ -37,8 +37,9 @@ Architecture overview
   - `settings.js`        — load/save localStorage settings; applyTextSize
   - `url-import.js`      — decode ?b= / ?board= shared-board params, clean URL
   - `render.js`          — renderDepartures (departure list clear + populate)
-  - `fetch-loop.js`      — doRefresh, startRefreshLoop(listEl, statusEl), tickCountdowns; single unified 1-second interval drives both departure countdowns and the "update in" chip; fetch triggered when tick counter reaches 0
-  - `handlers.js`        — handleStationSelect, handleFavoriteToggle, onApplySettings, onLanguageChange
+  - `fetch-loop.js`      — doRefresh(listEl, numDepartures?), startRefreshLoop(listEl, statusEl), tickCountdowns; single unified 1-second interval drives both departure countdowns and the "update in" chip; fetch triggered when tick counter reaches 0; optional numDepartures param supports scroll-load temporary expansion
+  - `scroll-loader.js`   — Fibonacci scroll-load state machine: session-temporary departure count, wheel/touch resistance, `⌄` indicator helpers; exports `getDisplayedN`, `resetDisplayedN`, `attachScrollListeners`, `updateIndicator`, `flashMaxMessage`
+  - `handlers.js`        — handleStationSelect, handleFavoriteToggle, onApplySettings, onLanguageChange; calls resetDisplayedN() on every station change and settings apply
   - `action-bar.js`      — share + theme + settings buttons, global-gear container
   - `sw-updater.js`      — SW registration, update toast, controllerchange reload
 - `src/config.js`        — all configurable constants: VERSION, DEFAULTS (includes NUM_FAVORITES, FETCH_INTERVAL, GITHUB_URL), DEFAULT_FAVORITE, ALL_TRANSPORT_MODES, REALTIME_INDICATORS, TRANSPORT_MODE_EMOJIS, UI_EMOJIS, CANCELLATION_WRAPPER, PLATFORM_SYMBOLS, PLATFORM_SYMBOL_RULES, DEPARTURE_LINE_TEMPLATE, STATION_LINE_TEMPLATE, GPS_STOP_LINE_TEMPLATE, GPS_MAX_RESULTS, GPS_SEARCH_RADIUS_KM
@@ -70,6 +71,7 @@ Architecture overview
   - `header.css`         — station header row, dropdown, status chip, favorite btn
   - `toolbar.css`        — fixed top-right .global-gear + fixed top-left .gps-bar action bars
   - `departures.css`     — departure list, destination, time, platform, text-size-* utilities
+  - `scroll-loader.css`  — scroll-load `⌄` indicator: bouncing arrow, label, active/max/flash states
   - `options-panel.css`  — slide-in panel shell, .options-row, inputs, .options-actions
   - `autocomplete.css`   — station search autocomplete list
   - `transport-modes.css`— mode filter checkbox grid
@@ -198,9 +200,9 @@ Current file tree (implemented)
 - `src/index.html`
 - `src/style.css`        (import manifest)
 - `src/icons.css`
-- `src/css/`             (tokens, base, buttons, layout, utils, header, toolbar, departures, options-panel, autocomplete, transport-modes, language-switcher, share-modal, toasts, footer, debug)
+- `src/css/`             (tokens, base, buttons, layout, utils, header, toolbar, departures, scroll-loader, options-panel, autocomplete, transport-modes, language-switcher, share-modal, toasts, footer, debug)
 - `src/app.js`
-- `src/app/` (settings.js, url-import.js, render.js, fetch-loop.js, handlers.js, action-bar.js, gps-bar.js, sw-updater.js)
+- `src/app/` (settings.js, url-import.js, render.js, fetch-loop.js, handlers.js, action-bar.js, gps-bar.js, sw-updater.js, scroll-loader.js)
   - `gps-bar.js`         — mounts `.gps-bar` fixed top-left container with compass button
 - `src/config.js`
 - `src/entur/` (index.js, modes.js, parser.js, query.js, http.js, departures.js, geocoder.js, gps-search.js)

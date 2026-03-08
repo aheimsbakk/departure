@@ -34,6 +34,22 @@ export function createBoardElements(stationName, onStationSelect, onFavoriteTogg
   
   headerLeft.append(stationRow, status);
   headerWrap.append(headerLeft);
+
+  // Scroll-load indicator: shown between the departure list and the footer.
+  // Visibility and state are controlled by scroll-loader.js.
+  const scrollIndicator = document.createElement('div');
+  scrollIndicator.className = 'scroll-load-indicator';
+  scrollIndicator.setAttribute('aria-hidden', 'true');
+
+  const scrollArrow = document.createElement('span');
+  scrollArrow.className = 'scroll-indicator-arrow';
+  scrollArrow.textContent = '⌄';
+
+  const scrollLabel = document.createElement('span');
+  scrollLabel.className = 'scroll-indicator-label';
+  scrollLabel.textContent = t('scrollLoadMore');
+
+  scrollIndicator.append(scrollArrow, scrollLabel);
   
   // Footer: two lines — data attribution above, version + GitHub below
   const footer = document.createElement('div'); footer.className='app-footer';
@@ -62,12 +78,12 @@ export function createBoardElements(stationName, onStationSelect, onFavoriteTogg
 
   footer.append(dataLine, versionLine);
   
-  el.append(headerWrap, list, footer);
+  el.append(headerWrap, list, scrollIndicator, footer);
   // expose header-wrap for other modules to attach controls
   el.headerWrap = headerWrap;
   // expose station dropdown for updating
   el.stationDropdown = stationDropdown;
-  return {el, list, status, footer, stationDropdown, favoriteBtn};
+  return {el, list, status, footer, stationDropdown, favoriteBtn, scrollIndicator};
 }
 
 /**

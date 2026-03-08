@@ -46,11 +46,17 @@ export let data = [];
  * On failure the error is logged and any previous data is left in place.
  * Resets ticksUntilRefresh to the current FETCH_INTERVAL when complete.
  *
- * @param {HTMLElement} listEl - The departure list container
+ * @param {HTMLElement} listEl          - The departure list container
+ * @param {number}      [numDepartures] - Override departure count (scroll-load
+ *                                        temporary expansion); falls back to
+ *                                        DEFAULTS.NUM_DEPARTURES when omitted.
  */
-export async function doRefresh(listEl) {
+export async function doRefresh(listEl, numDepartures) {
   if (fetchInFlight) return;
   fetchInFlight = true;
+  const n = (typeof numDepartures === 'number' && numDepartures > 0)
+    ? numDepartures
+    : DEFAULTS.NUM_DEPARTURES;
   try {
     let stopId = DEFAULTS.STOP_ID;
     if (!stopId) {
@@ -63,7 +69,7 @@ export async function doRefresh(listEl) {
     const fresh = stopId
       ? await fetchDepartures({
           stopId,
-          numDepartures: DEFAULTS.NUM_DEPARTURES,
+          numDepartures: n,
           modes:         DEFAULTS.TRANSPORT_MODES,
           lang:          getLanguage(),
           apiUrl:        DEFAULTS.API_URL,
