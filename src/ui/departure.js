@@ -142,11 +142,16 @@ export function createDepartureNode(item){
     
     const platformSymbol = PLATFORM_SYMBOLS[symbolKey] || PLATFORM_SYMBOLS.default;
     
-    // Create stacked display element
+    // Create stacked display element — use DOM methods, never innerHTML,
+    // because quayCode originates from the Entur API (XSS prevention).
     const stackedSpan = document.createElement('span');
     stackedSpan.className = 'platform-stacked';
-    stackedSpan.innerHTML = `<span>${platformSymbol}</span><span>${quayCode}</span>`;
-    
+    const symSpan = document.createElement('span');
+    symSpan.textContent = platformSymbol;
+    const codeSpan = document.createElement('span');
+    codeSpan.textContent = quayCode;
+    stackedSpan.append(symSpan, codeSpan);
+
     // Store the element for later insertion
     platformElement = stackedSpan;
   }
