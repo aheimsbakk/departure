@@ -135,6 +135,9 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   /** Timer for the max-reached hint auto-dismiss */
   let maxHintTimer = null;
 
+  /** Timestamp (ms) of the last load-more trigger — used for debouncing */
+  let lastLoadMoreAt = 0;
+
   // ── Indicator element ──────────────────────────────────────────────
   const indicator = document.createElement('div');
   indicator.className = 'scroll-more-indicator';
@@ -264,9 +267,15 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   /**
    * Attempt to load the next batch of departures.
    * Respects the Fibonacci progression and calls the onLoadMore callback.
+   * A leading-edge debounce (SCROLL_MORE.DEBOUNCE_MS) prevents double-fires
+   * from rapid wheel ticks or gesture re-entry.
    */
   async function triggerLoadMore() {
     if (loading) return;
+
+    const now = Date.now();
+    if (now - lastLoadMoreAt < SCROLL_MORE.DEBOUNCE_MS) return;
+    lastLoadMoreAt = now;
 
     const current = getEffectiveCount();
     const next = getNextStep(current);
@@ -485,6 +494,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   function reset() {
     tempCount = null;
     loading = false;
+    lastLoadMoreAt = 0;
     interruptedBounce = false;
     boardEl.classList.remove('board--pulling');
     // Cancel any running bounce animation and restore the board to its

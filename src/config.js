@@ -1,6 +1,6 @@
 // Version is defined here and in src/sw.js (service worker)
 // Both must be kept in sync - use scripts/bump-version.sh to update both
-export const VERSION = '1.37.20';
+export const VERSION = '1.37.21';
 
 export const DEFAULTS = {
   STATION_NAME: 'Jernbanetorget, Oslo',
@@ -174,6 +174,7 @@ export const STATION_LINE_TEMPLATE = '{name} {modes}';
 // WHEEL_THRESHOLD     — accumulated wheel deltaY required to trigger a load (desktop)
 // WHEEL_RESET_MS      — ms of wheel inactivity before the accumulator resets
 // MAX_HINT_DURATION   — ms the "for more change in ⚙️" hint stays visible
+// DEBOUNCE_MS         — minimum ms between consecutive load-more triggers (prevents double-fires)
 export const SCROLL_MORE = {
   SCROLL_STEPS:       [1, 2, 3, 5, 8, 13, 21],
   PULL_THRESHOLD:     250,
@@ -183,4 +184,6 @@ export const SCROLL_MORE = {
   MAX_HINT_DURATION:  4000,
   /** Duration (ms) of the bounce-back animation after finger release */
   BOUNCE_DURATION_MS: 500,
+  /** Minimum ms between consecutive load-more triggers (debounce guard) */
+  DEBOUNCE_MS:        600,
 };
