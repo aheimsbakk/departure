@@ -43,7 +43,7 @@ Architecture overview
   - `action-bar.js`      — share + theme + settings buttons, global-gear container
   - `scroll-more.js`     — pull-to-load-more departures: Fibonacci progression (1→2→3→5→8→13→21), touch/mouse/wheel gesture detection, rubber-band drag feedback (marginTop, no GPU translate), ease-out-cubic rAF bounce-back on release (BOUNCE_DURATION_MS), ▼/"scroll for more" indicator → ●/"for more change in ⚙️" at max; load-more fires at threshold during gesture (not on release); resets on station change
   - `sw-updater.js`      — SW registration, update toast, controllerchange reload
-- `src/config.js`        — all configurable constants: VERSION, DEFAULTS (includes NUM_FAVORITES, FETCH_INTERVAL, GITHUB_URL), DEFAULT_FAVORITE, ALL_TRANSPORT_MODES, REALTIME_INDICATORS, TRANSPORT_MODE_EMOJIS, UI_EMOJIS, CANCELLATION_WRAPPER, PLATFORM_SYMBOLS, PLATFORM_SYMBOL_RULES, DEPARTURE_LINE_TEMPLATE, STATION_LINE_TEMPLATE, GPS_STOP_LINE_TEMPLATE, GPS_MAX_RESULTS, GPS_SEARCH_RADIUS_KM, SCROLL_MORE
+- `src/config.js`        — all configurable constants: VERSION, DEFAULTS (includes NUM_FAVORITES, FETCH_INTERVAL, GITHUB_URL), DEFAULT_FAVORITE, ALL_TRANSPORT_MODES, REALTIME_INDICATORS, TRANSPORT_MODE_EMOJIS, UI_EMOJIS, CANCELLATION_WRAPPER, PLATFORM_SYMBOLS, PLATFORM_SYMBOL_RULES, DEPARTURE_LINE_TEMPLATE, STATION_LINE_TEMPLATE, GPS_STOP_LINE_TEMPLATE, GPS_MAX_RESULTS, GPS_SEARCH_RADIUS_KM, SCROLL_MORE (includes DEBOUNCE_MS)
 - `src/entur/`           — Entur API client (split into focused modules)
   - `index.js`           — public re-export facade (drop-in for former entur.js)
   - `modes.js`           — CANONICAL_MODE_MAP, token→canonical mapping, raw mode detection
@@ -161,7 +161,7 @@ PWA & Service Worker
 - `src/sw.js`: versioned cache name (`kollektiv-v<VERSION>`), caches all app assets on install, serves from cache with network fallback.
 - Update flow: new SW detected → 5-second countdown toast shows old→new version → `skipWaiting` → `controllerchange` triggers hard reload with `?t=<timestamp>` cache-bust.
 - PWA wake-up on resume: `visibilitychange` in `fetch-loop.js` checks wall-clock elapsed time vs `FETCH_INTERVAL`; triggers immediate `doRefresh()` if stale. `pageshow` (event.persisted) in `app.js` forces full reload on BFCache cold-start.
-- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.37.7`.
+- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.37.21`.
 
 Performance & DOM update pattern
 - Render template once per departure item; keep references to text nodes for countdown and situation.
