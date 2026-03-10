@@ -9,6 +9,8 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
+  /* Reserve space at the bottom so the fixed footer never overlaps content */
+  padding-bottom: 80px;
 }
 
 /* Shift content left when options panel is open */

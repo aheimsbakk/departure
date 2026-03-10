@@ -1,6 +1,6 @@
 // Version is defined here and in src/sw.js (service worker)
 // Both must be kept in sync - use scripts/bump-version.sh to update both
-export const VERSION = '1.37.2';
+export const VERSION = '1.37.3';
 
 export const DEFAULTS = {
   STATION_NAME: 'Jernbanetorget, Oslo',
