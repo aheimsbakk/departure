@@ -9,6 +9,21 @@
   <link rel="icon" type="image/svg+xml" href="./icons/favicon.svg">
   <meta name="theme-color" content="#f5f7fa" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0b0f1a" media="(prefers-color-scheme: dark)">
+  <script>
+    (function () {
+      var stored = localStorage.getItem('kollektiv-theme');
+      if (stored === 'light' || stored === 'dark') {
+        var color = stored === 'light' ? '#f5f7fa' : '#0b0f1a';
+        if (stored === 'light') document.documentElement.classList.add('theme-light');
+        // Collapse the two media-query tags into one unconditional tag so Chrome
+        // honours the explicit user choice regardless of the OS color scheme.
+        var metas = document.querySelectorAll('meta[name="theme-color"]');
+        if (metas[1]) metas[1].remove();
+        if (metas[0]) { metas[0].removeAttribute('media'); metas[0].content = color; }
+      }
+      // 'auto' or unset: leave the two media-query tags untouched — the browser handles it natively.
+    })();
+  </script>
   <meta name="description" content="Real-time public transport departure board for Norway. Track buses, trams, metro, trains, ferries, and coaches with live departure times from any station or stop." />
   <meta name="keywords" content="Norway, public transport, departure board, real-time, bus, tram, metro, train, ferry, Entur, sanntid, kollektiv" />
   <meta name="author" content="Arnulf Heimsbakk" />
