@@ -182,6 +182,14 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   }
 
   /**
+   * Remove the inline marginTop entirely so flexbox centering
+   * (justify-content: center) can take over without interference.
+   */
+  function clearDisplacement() {
+    boardEl.style.removeProperty('margin-top');
+  }
+
+  /**
    * Animate the board back to the origin using an ease-out-cubic curve.
    * Cancels any in-progress bounce before starting a new one.
    */
@@ -192,7 +200,11 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     }
 
     const startDisplacement = currentDeltaY;
-    if (startDisplacement === 0) return;
+    if (startDisplacement === 0) {
+      // Even if there's nothing to animate, ensure no stale inline style
+      clearDisplacement();
+      return;
+    }
 
     const startTime = performance.now();
     const duration = SCROLL_MORE.BOUNCE_DURATION_MS;
@@ -208,7 +220,10 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
       if (progress < 1) {
         bounceRafId = requestAnimationFrame(step);
       } else {
-        applyDisplacement(0);
+        // Remove the inline style entirely so CSS flexbox centering is
+        // restored cleanly — setting marginTop to "0px" would leave an
+        // inline override that can subtly interfere with layout.
+        clearDisplacement();
         currentDeltaY = 0;
         bounceRafId = null;
       }
@@ -281,15 +296,15 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     if (!isNearBottom()) return;
 
     // Cancel any in-progress bounce-back before starting a fresh drag.
-    // Also zero currentDeltaY so the new drag starts from the current
-    // visual position (marginTop is left as-is; it is overwritten on the
-    // first onPointerMove call) rather than resuming from the stale value,
-    // which would cause a visual jump when the rAF mid-flight value is
-    // re-applied by applyDisplacement on the first move event.
+    // Reset marginTop immediately so the board is at its natural position;
+    // otherwise a tap-without-move during a bounce would leave the board
+    // stuck at an intermediate offset (the rAF is cancelled but the inline
+    // marginTop is never cleared).
     if (bounceRafId !== null) {
       cancelAnimationFrame(bounceRafId);
       bounceRafId = null;
       currentDeltaY = 0;
+      clearDisplacement();
     }
 
     pointerActive = true;
@@ -314,7 +329,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     if (rawDelta >= 0) {
       // User is pulling down — let native pull-to-refresh work
       if (currentDeltaY !== 0) {
-        applyDisplacement(0);
+        clearDisplacement();
         currentDeltaY = 0;
         rawPullDistance = 0;
       }
@@ -346,6 +361,15 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   function onPointerEnd() {
     if (!pointerActive) return;
     pointerActive = false;
+
+    // If content was re-rendered during the gesture (e.g. triggerLoadMore
+    // added new departures), the tracked currentDeltaY may no longer match
+    // the visual displacement.  Read the actual computed marginTop so the
+    // bounce-back starts from the true visual position, avoiding a jump.
+    const computedMargin = parseFloat(boardEl.style.marginTop) || 0;
+    if (computedMargin !== 0 && Math.abs(computedMargin - currentDeltaY) > 1) {
+      currentDeltaY = computedMargin;
+    }
 
     // Animate back to origin with a slow ease-out bounce
     snapBack();
@@ -421,7 +445,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
       cancelAnimationFrame(bounceRafId);
       bounceRafId = null;
       currentDeltaY = 0;
-      applyDisplacement(0);
+      clearDisplacement();
     }
     if (maxHintTimer) {
       clearTimeout(maxHintTimer);
