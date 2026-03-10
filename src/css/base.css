@@ -24,6 +24,9 @@ body {
      overscroll-behavior-y: none stops the bounce but keeps Chrome pull-to-refresh
      (which is an intentional browser feature, not elastic bounce). */
   overscroll-behavior-y: none;
+  /* Ensure the scroll container itself reserves space for the fixed footer.
+     Works on Firefox where .board padding-bottom alone is insufficient. */
+  padding-bottom: 80px;
 }
 
 ::selection {
