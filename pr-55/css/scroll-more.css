@@ -80,13 +80,15 @@
   transition: none;
   /* Prevent iOS rubber-band from interfering with our custom pull */
   -webkit-overflow-scrolling: auto;
-  /*
-   * Tell the browser up-front that vertical touch events are owned by JS.
-   * Without this, Firefox mobile must wait for every touchmove handler to
-   * (possibly) call preventDefault() before advancing its own scroll
-   * pipeline — causing visible jank.  Chrome predicts this heuristically;
-   * Firefox does not.  `pan-x` keeps horizontal swipe native while giving
-   * our pull-up gesture full, un-throttled ownership of the vertical axis.
-   */
-  touch-action: pan-x;
+}
+
+/*
+ * Applied by scroll-more.js only while an upward pull gesture is active.
+ * Tells Firefox (and all browsers) to hand full touch ownership to JS for
+ * this gesture — eliminating the per-frame preventDefault handshake that
+ * causes scroll jank on Firefox mobile.  Removed immediately on pointer-up
+ * so normal vertical scrolling is unaffected for every other gesture.
+ */
+.board--pulling {
+  touch-action: none;
 }
