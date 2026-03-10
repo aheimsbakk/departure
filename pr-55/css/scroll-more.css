@@ -1,0 +1,81 @@
+/* ======================================================================
+   SCROLL MORE INDICATOR
+   Pull-to-load-more departures: arrow indicator, loading state,
+   bounce animation cue, and max-reached state.
+   Mirrors: src/app/scroll-more.js
+   ====================================================================== */
+
+.scroll-more-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 0 4px;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: default;
+  min-height: 36px;
+}
+
+/* ⯆ Arrow with subtle bounce animation cue */
+.scroll-more-arrow {
+  font-size: 1.2em;
+  line-height: 1;
+  color: var(--text-secondary);
+  animation: scroll-more-bounce 2s ease-in-out infinite;
+}
+
+/* ● Dot indicator when at max */
+.scroll-more-dot {
+  font-size: 0.8em;
+  line-height: 1;
+  color: var(--text-secondary);
+  opacity: 0.6;
+  animation: none;
+}
+
+/* "scroll for more" / "for more change in ⚙️" label */
+.scroll-more-label {
+  font-size: 0.7em;
+  color: var(--text-secondary);
+  opacity: 0.7;
+  white-space: nowrap;
+  transition: opacity var(--transition-fast);
+}
+
+/* While loading: dim the indicator */
+.scroll-more-loading .scroll-more-arrow,
+.scroll-more-loading .scroll-more-dot {
+  opacity: 0.3;
+  animation: none;
+}
+
+.scroll-more-loading .scroll-more-label {
+  opacity: 0.3;
+}
+
+/* Max-reached state — no bounce, just the dot */
+.scroll-more-maxed .scroll-more-label {
+  opacity: 0.6;
+}
+
+/* ── Bounce animation for the down-arrow cue ────────────────────────── */
+@keyframes scroll-more-bounce {
+  0%, 100% {
+    margin-top: 0;
+  }
+  50% {
+    margin-top: 6px;
+  }
+}
+
+/* ── Board drag feedback ────────────────────────────────────────────── */
+
+/* During active drag, disable transitions on the board so marginTop
+   tracks the finger without delay.  The bounce-back is JS-driven
+   via requestAnimationFrame so it doesn't need CSS transitions. */
+.board {
+  transition: none;
+  /* Prevent iOS rubber-band from interfering with our custom pull */
+  -webkit-overflow-scrolling: auto;
+}
