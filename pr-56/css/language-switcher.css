@@ -1,0 +1,24 @@
+/* ======================================================================
+   LANGUAGE SWITCHER
+   Flag button row inside the options panel.
+   Mirrors: src/ui/options/language-switcher.js
+   ====================================================================== */
+
+.language-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* Flag buttons — smaller padding than the default button base */
+.language-flag {
+  padding: 2px;
+  font-size: 1em;
+}
+
+.language-flag.active {
+  background: var(--text-primary);
+  color: #081021;
+  border-color: var(--text-primary);
+}
