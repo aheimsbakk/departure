@@ -111,6 +111,15 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   /** rAF handle for the bounce-back animation */
   let bounceRafId = null;
 
+  /**
+   * When true the current gesture was started while a bounce-back animation
+   * was running.  The gesture is treated as an "interrupt" — the animation
+   * stops and the entire gesture is passed through to the browser for native
+   * scrolling.  The flag resets on pointer-up so the next gesture is handled
+   * normally.
+   */
+  let interruptedBounce = false;
+
   /** Timer for the max-reached hint auto-dismiss */
   let maxHintTimer = null;
 
@@ -295,16 +304,18 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     // Only start tracking if we're near bottom (or list fits in viewport)
     if (!isNearBottom()) return;
 
-    // Cancel any in-progress bounce-back before starting a fresh drag.
-    // Reset marginTop immediately so the board is at its natural position;
-    // otherwise a tap-without-move during a bounce would leave the board
-    // stuck at an intermediate offset (the rAF is cancelled but the inline
-    // marginTop is never cleared).
+    // If a bounce-back animation is running, the user is interrupting it.
+    // Cancel the animation, clear displacement, and mark the gesture as an
+    // interrupt so that onPointerMove passes all events through to the
+    // browser for normal scrolling.
     if (bounceRafId !== null) {
       cancelAnimationFrame(bounceRafId);
       bounceRafId = null;
       currentDeltaY = 0;
       clearDisplacement();
+      interruptedBounce = true;
+      // Do NOT set pointerActive — let the browser handle this gesture natively
+      return;
     }
 
     pointerActive = true;
@@ -359,6 +370,12 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   }
 
   function onPointerEnd() {
+    // Clear the bounce-interrupt flag so the next gesture is handled normally
+    if (interruptedBounce) {
+      interruptedBounce = false;
+      return;
+    }
+
     if (!pointerActive) return;
     pointerActive = false;
 
@@ -437,6 +454,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   function reset() {
     tempCount = null;
     loading = false;
+    interruptedBounce = false;
     // Cancel any running bounce animation and restore the board to its
     // natural position.  Without this the rAF loop would continue writing
     // marginTop on boardEl after a station change, holding a stale DOM
