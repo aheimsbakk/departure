@@ -23,6 +23,11 @@
   width: 100%;
   max-width: var(--departure-max-width);
   box-sizing: border-box;
+  /* Prevent the browser from starting a text-selection gesture on touch,
+     which would claim the touch before our pull-to-load-more handler can
+     read it — causing pulls on text to be ignored. */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .departure-destination {
