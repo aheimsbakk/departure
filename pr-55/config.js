@@ -1,6 +1,6 @@
 // Version is defined here and in src/sw.js (service worker)
 // Both must be kept in sync - use scripts/bump-version.sh to update both
-export const VERSION = '1.37.13';
+export const VERSION = '1.37.14';
 
 export const DEFAULTS = {
   STATION_NAME: 'Jernbanetorget, Oslo',
@@ -176,11 +176,11 @@ export const STATION_LINE_TEMPLATE = '{name} {modes}';
 // MAX_HINT_DURATION   — ms the "for more change in ⚙️" hint stays visible
 export const SCROLL_MORE = {
   SCROLL_STEPS:       [1, 2, 3, 5, 8, 13, 21],
-  PULL_THRESHOLD:     160,
-  RESISTANCE:         0.6,
+  PULL_THRESHOLD:     250,
+  RESISTANCE:         0.5,
   WHEEL_THRESHOLD:    500,
   WHEEL_RESET_MS:     800,
   MAX_HINT_DURATION:  4000,
   /** Duration (ms) of the bounce-back animation after finger release */
-  BOUNCE_DURATION_MS: 600,
+  BOUNCE_DURATION_MS: 500,
 };

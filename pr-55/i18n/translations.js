@@ -85,7 +85,7 @@ const translations = {
     gpsMeters:            'm',
 
     // Scroll-more (pull to load more departures)
-    scrollForMore:        'scroll for more',
+    scrollForMore:        'scroll for temporary more',
     scrollMaxReached:     'for more change in ⚙️'
   },
 
@@ -173,7 +173,7 @@ const translations = {
     gpsMeters:            'm',
 
     // Scroll-more
-    scrollForMore:        'dra for flere',
+    scrollForMore:        'dra for midlertidig flere',
     scrollMaxReached:     'for flere endre i ⚙️'
   },
 
@@ -261,7 +261,7 @@ const translations = {
     gpsMeters:            'm',
 
     // Scroll-more
-    scrollForMore:        'scrollen für mehr',
+    scrollForMore:        'scrollen für vorübergehend mehr',
     scrollMaxReached:     'für mehr ändern in ⚙️'
   },
 
@@ -349,7 +349,7 @@ const translations = {
     gpsMeters:            'm',
 
     // Scroll-more
-    scrollForMore:        'desliza para más',
+    scrollForMore:        'desliza para más temporal',
     scrollMaxReached:     'para más cambie en ⚙️'
   },
 
@@ -437,7 +437,7 @@ const translations = {
     gpsMeters:            'm',
 
     // Scroll-more
-    scrollForMore:        'scorri per altri',
+    scrollForMore:        'scorri per altri temporanei',
     scrollMaxReached:     'per altri cambia in ⚙️'
   },
 
@@ -525,7 +525,7 @@ const translations = {
     gpsMeters:            'm',
 
     // Scroll-more
-    scrollForMore:        'σύρετε για περισσότερα',
+    scrollForMore:        'σύρετε για προσωρινά περισσότερα',
     scrollMaxReached:     'για περισσότερα αλλάξτε στο ⚙️'
   },
 
@@ -613,7 +613,7 @@ const translations = {
     gpsMeters:            'm',
 
     // Scroll-more
-    scrollForMore:        'بکشید برای بیشتر',
+    scrollForMore:        'بکشید برای بیشتر موقت',
     scrollMaxReached:     'برای بیشتر در ⚙️ تغییر دهید'
   },
 
@@ -701,7 +701,7 @@ const translations = {
     gpsMeters:            'm',
 
     // Scroll-more
-    scrollForMore:        'और देखने के लिए स्क्रॉल करें',
+    scrollForMore:        'अस्थायी अधिक के लिए स्क्रॉल करें',
     scrollMaxReached:     'अधिक के लिए ⚙️ में बदलें'
   },
 
@@ -789,7 +789,7 @@ const translations = {
     gpsMeters:            'm',
 
     // Scroll-more
-    scrollForMore:        'dragðu fyrir meira',
+    scrollForMore:        'dragðu fyrir tímabundið meira',
     scrollMaxReached:     'fyrir meira breyttu í ⚙️'
   },
 
@@ -877,7 +877,7 @@ const translations = {
     gpsMeters:            'м',
 
     // Scroll-more
-    scrollForMore:        'прокрутіть для більшого',
+    scrollForMore:        'прокрутіть для тимчасового більшого',
     scrollMaxReached:     'для більшого змініть у ⚙️'
   },
 
@@ -965,7 +965,7 @@ const translations = {
     gpsMeters:            'm',
 
     // Scroll-more
-    scrollForMore:        'faites défiler pour plus',
+    scrollForMore:        'faites défiler pour plus temporaire',
     scrollMaxReached:     'pour plus changez dans ⚙️'
   },
 
@@ -1053,7 +1053,7 @@ const translations = {
     gpsMeters:            'm',
 
     // Scroll-more
-    scrollForMore:        'przewiń aby zobaczyć więcej',
+    scrollForMore:        'przewiń aby zobaczyć więcej tymczasowo',
     scrollMaxReached:     'aby zobaczyć więcej zmień w ⚙️'
   }
 };
