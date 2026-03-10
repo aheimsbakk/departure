@@ -23,6 +23,7 @@
   line-height: 1;
   color: var(--text-secondary);
   animation: scroll-more-bounce 2s ease-in-out infinite;
+  display: inline-block;
 }
 
 /* ● Dot indicator when at max */
@@ -62,10 +63,10 @@
 /* ── Bounce animation for the down-arrow cue ────────────────────────── */
 @keyframes scroll-more-bounce {
   0%, 100% {
-    margin-top: 0;
+    transform: translateY(0);
   }
   50% {
-    margin-top: 6px;
+    transform: translateY(6px);
   }
 }
 

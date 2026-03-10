@@ -81,6 +81,8 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   let currentDeltaY = 0;
   /** Raw (un-resisted) pull distance for threshold comparison */
   let rawPullDistance = 0;
+  /** Whether load-more was already triggered during this gesture */
+  let thresholdTriggered = false;
 
   /** Timer for the max-reached hint auto-dismiss */
   let maxHintTimer = null;
@@ -92,7 +94,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
 
   const arrow = document.createElement('span');
   arrow.className = 'scroll-more-arrow';
-  arrow.textContent = '⯆';
+  arrow.textContent = '▼';
 
   const label = document.createElement('span');
   label.className = 'scroll-more-label';
@@ -125,7 +127,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
       indicator.classList.add('scroll-more-maxed');
       indicator.classList.remove('scroll-more-loading');
     } else {
-      arrow.textContent = '⯆';
+      arrow.textContent = '▼';
       arrow.classList.remove('scroll-more-dot');
       arrow.classList.add('scroll-more-arrow');
       label.textContent = t('scrollForMore');
@@ -237,6 +239,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     startY = e.touches ? e.touches[0].clientY : e.clientY;
     currentDeltaY = 0;
     rawPullDistance = 0;
+    thresholdTriggered = false;
 
     // Prevent text selection during drag (mouse only)
     if (!e.touches) {
@@ -271,6 +274,12 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
 
     applyDisplacement(currentDeltaY);
 
+    // Trigger load-more seamlessly when threshold is reached (not on release)
+    if (rawPullDistance >= PULL_THRESHOLD && !thresholdTriggered) {
+      thresholdTriggered = true;
+      triggerLoadMore();
+    }
+
     // Prevent default scrolling while we're handling the pull gesture
     if (e.cancelable && absDelta > 10) {
       e.preventDefault();
@@ -281,16 +290,11 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     if (!pointerActive) return;
     pointerActive = false;
 
-    const pulled = rawPullDistance;
-
-    // Bounce back first
+    // Bounce back to origin
     bounceBack();
 
-    // If pulled past threshold, trigger load more
-    if (pulled >= PULL_THRESHOLD) {
-      triggerLoadMore();
-    }
     rawPullDistance = 0;
+    thresholdTriggered = false;
   }
 
   // ── Wheel handler (desktop scroll) ─────────────────────────────────

@@ -127,6 +127,8 @@ async function init() {
 
   // 9. Mount board and apply initial text size
   ROOT.appendChild(board.el);
+  // Mount footer outside the board so pull-to-scroll displacement doesn't affect it
+  document.body.appendChild(board.footer);
   applyTextSize(DEFAULTS.TEXT_SIZE || 'medium');
   try { document.title = DEFAULTS.STATION_NAME || document.title; } catch (_) {}
 
