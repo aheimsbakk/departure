@@ -6,7 +6,7 @@
  *   - Fibonacci-like progression: 1, 2, 3, 5, 8, 13, 21 (max)
  *   - Detect pull-up gesture on the departure list (touch + mouse)
  *   - Apply visual drag feedback using top/marginTop (no GPU translate)
- *   - Bounce back to origin when released
+ *   - Snap back to origin instantly when released (no bounce animation)
  *   - Show ⯆ "scroll for more" indicator, switching to ● "for more change in ⚙️" at max
  *   - Reset temporary count on station change or app reload
  *
@@ -30,8 +30,6 @@ const PULL_THRESHOLD = 80;
 /** Resistance factor — higher = harder to drag (0–1 maps to 0–PULL_THRESHOLD visually) */
 const RESISTANCE = 0.4;
 
-/** Duration (ms) of the bounce-back animation */
-const BOUNCE_DURATION = 300;
 
 /** Duration (ms) of the "max reached" hint text before it fades */
 const MAX_HINT_DURATION = 4000;
@@ -154,26 +152,10 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     boardEl.style.marginTop = `${dy}px`;
   }
 
-  /** Animate bounce-back to origin */
-  function bounceBack() {
-    const start = currentDeltaY;
-    const startTime = performance.now();
-
-    function tick(now) {
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / BOUNCE_DURATION, 1);
-      // Ease-out cubic
-      const eased = 1 - Math.pow(1 - progress, 3);
-      const current = start * (1 - eased);
-      applyDisplacement(current);
-      if (progress < 1) {
-        requestAnimationFrame(tick);
-      } else {
-        applyDisplacement(0);
-        currentDeltaY = 0;
-      }
-    }
-    requestAnimationFrame(tick);
+  /** Snap back to origin instantly (no bounce animation) */
+  function snapBack() {
+    applyDisplacement(0);
+    currentDeltaY = 0;
   }
 
   /**
@@ -290,8 +272,8 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     if (!pointerActive) return;
     pointerActive = false;
 
-    // Bounce back to origin
-    bounceBack();
+    // Snap back to origin instantly
+    snapBack();
 
     rawPullDistance = 0;
     thresholdTriggered = false;

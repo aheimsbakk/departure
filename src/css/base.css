@@ -12,6 +12,8 @@ html {
   margin: 0;
   background: var(--bg);
   background-attachment: fixed;
+  /* Prevent native overscroll bounce on iOS/Android */
+  overscroll-behavior: none;
 }
 
 body {
@@ -20,6 +22,8 @@ body {
   background: transparent;
   color: var(--text-primary);
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+  /* Prevent native overscroll bounce that hides the fixed footer */
+  overscroll-behavior: none;
 }
 
 ::selection {
