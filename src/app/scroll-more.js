@@ -18,21 +18,20 @@
  *   - Memory-safe: all listeners are cleaned up via destroy()
  */
 
-import { DEFAULTS } from '../config.js';
+import { DEFAULTS, SCROLL_MORE } from '../config.js';
 import { t } from '../i18n.js';
 
 // Fibonacci-like progression for temporary departure counts
-const SCROLL_STEPS = [1, 2, 3, 5, 8, 13, 21];
+const SCROLL_STEPS = SCROLL_MORE.SCROLL_STEPS;
 
 /** Pixels the user must drag upward before triggering a load */
-const PULL_THRESHOLD = 80;
+const PULL_THRESHOLD = SCROLL_MORE.PULL_THRESHOLD;
 
 /** Resistance factor — higher = harder to drag (0–1 maps to 0–PULL_THRESHOLD visually) */
-const RESISTANCE = 0.4;
-
+const RESISTANCE = SCROLL_MORE.RESISTANCE;
 
 /** Duration (ms) of the "max reached" hint text before it fades */
-const MAX_HINT_DURATION = 4000;
+const MAX_HINT_DURATION = SCROLL_MORE.MAX_HINT_DURATION;
 
 /**
  * Find the next step in the Fibonacci progression.
@@ -299,10 +298,10 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     wheelResetTimer = setTimeout(() => {
       wheelAccumulator = 0;
       wheelResetTimer = null;
-    }, 800);
+    }, SCROLL_MORE.WHEEL_RESET_MS);
 
     // Require sustained scroll effort (resistance)
-    if (wheelAccumulator >= 200) {
+    if (wheelAccumulator >= SCROLL_MORE.WHEEL_THRESHOLD) {
       wheelAccumulator = 0;
       triggerLoadMore();
     }
