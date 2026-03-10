@@ -12,16 +12,32 @@
   <script>
     (function () {
       var stored = localStorage.getItem('kollektiv-theme');
+      var isLight;
+      if (stored === 'light') {
+        isLight = true;
+      } else if (stored === 'dark') {
+        isLight = false;
+      } else {
+        // auto / unset — follow OS
+        isLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+      }
+      var color = isLight ? '#f5f7fa' : '#0b0f1a';
+
+      // Apply theme class before CSS renders so --bg-solid resolves correctly.
+      if (isLight) document.documentElement.classList.add('theme-light');
+
+      // Force background-color directly on <html> so Chrome mobile's compositor
+      // uses it for the gap behind the retracting address bar. CSS custom
+      // properties via class toggling are not always re-evaluated for that area.
+      document.documentElement.style.backgroundColor = color;
+
+      // Collapse the two media-query theme-color metas into one unconditional
+      // tag when the user has an explicit (non-auto) preference.
       if (stored === 'light' || stored === 'dark') {
-        var color = stored === 'light' ? '#f5f7fa' : '#0b0f1a';
-        if (stored === 'light') document.documentElement.classList.add('theme-light');
-        // Collapse the two media-query tags into one unconditional tag so Chrome
-        // honours the explicit user choice regardless of the OS color scheme.
         var metas = document.querySelectorAll('meta[name="theme-color"]');
         if (metas[1]) metas[1].remove();
         if (metas[0]) { metas[0].removeAttribute('media'); metas[0].content = color; }
       }
-      // 'auto' or unset: leave the two media-query tags untouched — the browser handles it natively.
     })();
   </script>
   <meta name="description" content="Real-time public transport departure board for Norway. Track buses, trams, metro, trains, ferries, and coaches with live departure times from any station or stop." />

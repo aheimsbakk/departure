@@ -112,6 +112,10 @@ function applyTheme(theme) {
     isDark = prefersDark;
   }
 
+  // Force background-color directly on <html> so Chrome mobile's compositor
+  // uses it for the gap behind the retracting address bar.
+  root.style.backgroundColor = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
+
   updateThemeColorMeta(isDark, theme === 'auto');
 }
 
