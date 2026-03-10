@@ -6,7 +6,7 @@
 .app-root {
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   padding: 24px;
 }
@@ -21,7 +21,14 @@ body.options-open .app-root {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--header-gap);
   text-align: center;
   max-width: 90vw;
+  /* Stretch to fill the full viewport height so touch/mouse events fire on
+     the entire canvas, not just the text area.  justify-content:center keeps
+     the content vertically centred when it doesn't overflow; when it does
+     overflow the flex children simply grow past the container and the page
+     becomes scrollable — no extra space is added below the text. */
+  min-height: 100vh;
 }
