@@ -9,8 +9,6 @@
   align-items: center;
   justify-content: center;
   padding: 24px;
-  /* Reserve space at the bottom so the fixed footer never overlaps content */
-  padding-bottom: 80px;
 }
 
 /* Shift content left when options panel is open */
@@ -26,4 +24,6 @@ body.options-open .app-root {
   gap: var(--header-gap);
   text-align: center;
   max-width: 90vw;
+  /* Ensure bottom content never scrolls under the fixed footer */
+  padding-bottom: 80px;
 }
