@@ -29,6 +29,8 @@ import { wireHandlers } from './app/handlers.js';
 import { buildActionBar } from './app/action-bar.js';
 import { buildGpsBar } from './app/gps-bar.js';
 import { registerServiceWorker } from './app/sw-updater.js';
+import { initScrollMore } from './app/scroll-more.js';
+import { setNumDeparturesOverride } from './app/fetch-loop.js';
 
 // Initialise language and theme before any DOM is built so that the correct
 // strings and colours are in place from the very first render.
@@ -77,6 +79,7 @@ async function init() {
   // without a circular import — it is filled in after createOptionsPanel.
   const optsRef = { current: null };
   const gpsRef  = { current: null };
+  const scrollMoreRef = { current: null };
 
   const board = createBoardElements(
     DEFAULTS.STATION_NAME,
@@ -105,7 +108,7 @@ async function init() {
   //    wireHandlers must receive the action-bar button refs (step 6) so it can
   //    update their tooltips; createOptionsPanel must come after so `opts` is
   //    available when the closures above are eventually called.
-  const handlers = wireHandlers(board, shareComponents, themeBtn, settingsBtn, optsRef, gpsRef);
+  const handlers = wireHandlers(board, shareComponents, themeBtn, settingsBtn, optsRef, gpsRef, scrollMoreRef);
   const opts = createOptionsPanel(DEFAULTS, handlers.onApplySettings, handlers.onLanguageChange);
   optsRef.current = opts;
   document.body.appendChild(opts.panel);
@@ -127,10 +130,21 @@ async function init() {
   applyTextSize(DEFAULTS.TEXT_SIZE || 'medium');
   try { document.title = DEFAULTS.STATION_NAME || document.title; } catch (_) {}
 
-  // 10. Register service worker
+  // 10. Initialise scroll-more (pull-to-load-more departures)
+  const scrollMore = initScrollMore({
+    boardEl: board.el,
+    listEl:  board.list,
+    onLoadMore: async (newCount) => {
+      setNumDeparturesOverride(newCount);
+      await doRefresh(board.list);
+    }
+  });
+  scrollMoreRef.current = scrollMore;
+
+  // 11. Register service worker
   await registerServiceWorker();
 
-  // 11. Initial data load
+  // 12. Initial data load
   // doRefresh() internally resolves the stop ID via lookupStopId() when
   // DEFAULTS.STOP_ID is not set — no need to duplicate that lookup here.
   if (board.status) board.status.classList.add('visible');
@@ -146,7 +160,7 @@ async function init() {
   // Ensure an empty state is shown when the initial fetch produced nothing
   if (!data || data.length === 0) renderDepartures(board.list, []);
 
-  // 12. Start the unified 1-second loop.
+  // 13. Start the unified 1-second loop.
   //     startRefreshLoop drives both the departure countdowns AND the
   //     "update in Xs" status chip from a single setInterval — no drift.
   //     An immediate tickCountdowns() call paints the chips without waiting

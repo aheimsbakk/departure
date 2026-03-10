@@ -82,7 +82,11 @@ const translations = {
     gpsNotSupported:      'GPS not supported in this browser',
     gpsPermissionDenied:  'Location access denied',
     gpsUnavailable:       'Location unavailable',
-    gpsMeters:            'm'
+    gpsMeters:            'm',
+
+    // Scroll-more (pull to load more departures)
+    scrollForMore:        'scroll for more',
+    scrollMaxReached:     'for more change in ⚙️'
   },
 
   no: {
@@ -166,7 +170,11 @@ const translations = {
     gpsNotSupported:      'GPS støttes ikke i denne nettleseren',
     gpsPermissionDenied:  'Tilgang til posisjon ble nektet',
     gpsUnavailable:       'Posisjon utilgjengelig',
-    gpsMeters:            'm'
+    gpsMeters:            'm',
+
+    // Scroll-more
+    scrollForMore:        'dra for flere',
+    scrollMaxReached:     'for flere endre i ⚙️'
   },
 
   de: {
@@ -250,7 +258,11 @@ const translations = {
     gpsNotSupported:      'GPS wird in diesem Browser nicht unterstützt',
     gpsPermissionDenied:  'Standortzugriff verweigert',
     gpsUnavailable:       'Standort nicht verfügbar',
-    gpsMeters:            'm'
+    gpsMeters:            'm',
+
+    // Scroll-more
+    scrollForMore:        'scrollen für mehr',
+    scrollMaxReached:     'für mehr ändern in ⚙️'
   },
 
   es: {
@@ -334,7 +346,11 @@ const translations = {
     gpsNotSupported:      'GPS no compatible con este navegador',
     gpsPermissionDenied:  'Acceso a la ubicación denegado',
     gpsUnavailable:       'Ubicación no disponible',
-    gpsMeters:            'm'
+    gpsMeters:            'm',
+
+    // Scroll-more
+    scrollForMore:        'desliza para más',
+    scrollMaxReached:     'para más cambie en ⚙️'
   },
 
   it: {
@@ -418,7 +434,11 @@ const translations = {
     gpsNotSupported:      'GPS non supportato in questo browser',
     gpsPermissionDenied:  'Accesso alla posizione negato',
     gpsUnavailable:       'Posizione non disponibile',
-    gpsMeters:            'm'
+    gpsMeters:            'm',
+
+    // Scroll-more
+    scrollForMore:        'scorri per altri',
+    scrollMaxReached:     'per altri cambia in ⚙️'
   },
 
   el: {
@@ -502,7 +522,11 @@ const translations = {
     gpsNotSupported:      'Το GPS δεν υποστηρίζεται σε αυτόν τον browser',
     gpsPermissionDenied:  'Η πρόσβαση στην τοποθεσία απορρίφθηκε',
     gpsUnavailable:       'Η τοποθεσία δεν είναι διαθέσιμη',
-    gpsMeters:            'm'
+    gpsMeters:            'm',
+
+    // Scroll-more
+    scrollForMore:        'σύρετε για περισσότερα',
+    scrollMaxReached:     'για περισσότερα αλλάξτε στο ⚙️'
   },
 
   fa: {
@@ -586,7 +610,11 @@ const translations = {
     gpsNotSupported:      'GPS در این مرورگر پشتیبانی نمی‌شود',
     gpsPermissionDenied:  'دسترسی به موقعیت رد شد',
     gpsUnavailable:       'موقعیت در دسترس نیست',
-    gpsMeters:            'm'
+    gpsMeters:            'm',
+
+    // Scroll-more
+    scrollForMore:        'بکشید برای بیشتر',
+    scrollMaxReached:     'برای بیشتر در ⚙️ تغییر دهید'
   },
 
   hi: {
@@ -670,7 +698,11 @@ const translations = {
     gpsNotSupported:      'इस ब्राउज़र में GPS समर्थित नहीं है',
     gpsPermissionDenied:  'स्थान पहुँच अस्वीकृत',
     gpsUnavailable:       'स्थान उपलब्ध नहीं',
-    gpsMeters:            'm'
+    gpsMeters:            'm',
+
+    // Scroll-more
+    scrollForMore:        'और देखने के लिए स्क्रॉल करें',
+    scrollMaxReached:     'अधिक के लिए ⚙️ में बदलें'
   },
 
   is: {
@@ -754,7 +786,11 @@ const translations = {
     gpsNotSupported:      'GPS er ekki stutt í þessum vafra',
     gpsPermissionDenied:  'Aðgangi að staðsetningu hafnað',
     gpsUnavailable:       'Staðsetning ekki tiltæk',
-    gpsMeters:            'm'
+    gpsMeters:            'm',
+
+    // Scroll-more
+    scrollForMore:        'dragðu fyrir meira',
+    scrollMaxReached:     'fyrir meira breyttu í ⚙️'
   },
 
   uk: {
@@ -838,7 +874,11 @@ const translations = {
     gpsNotSupported:      'GPS не підтримується у цьому браузері',
     gpsPermissionDenied:  'Доступ до місцезнаходження заблоковано',
     gpsUnavailable:       'Місцезнаходження недоступне',
-    gpsMeters:            'м'
+    gpsMeters:            'м',
+
+    // Scroll-more
+    scrollForMore:        'прокрутіть для більшого',
+    scrollMaxReached:     'для більшого змініть у ⚙️'
   },
 
   fr: {
@@ -922,7 +962,11 @@ const translations = {
     gpsNotSupported:      'GPS non pris en charge dans ce navigateur',
     gpsPermissionDenied:  'Accès à la localisation refusé',
     gpsUnavailable:       'Localisation indisponible',
-    gpsMeters:            'm'
+    gpsMeters:            'm',
+
+    // Scroll-more
+    scrollForMore:        'faites défiler pour plus',
+    scrollMaxReached:     'pour plus changez dans ⚙️'
   },
 
   pl: {
@@ -1006,7 +1050,11 @@ const translations = {
     gpsNotSupported:      'GPS nie jest obsługiwany w tej przeglądarce',
     gpsPermissionDenied:  'Dostęp do lokalizacji został zablokowany',
     gpsUnavailable:       'Lokalizacja niedostępna',
-    gpsMeters:            'm'
+    gpsMeters:            'm',
+
+    // Scroll-more
+    scrollForMore:        'przewiń aby zobaczyć więcej',
+    scrollMaxReached:     'aby zobaczyć więcej zmień w ⚙️'
   }
 };
 

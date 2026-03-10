@@ -10,3 +10,6 @@ tests/*.log
 
 # Temporary folder
 tmp/
+
+# Temporary workflow/task spec files
+TASK.md

@@ -22,6 +22,7 @@ User-facing features
 - Live countdown (MM:SS), updates every second.
 - Platform/quay display with configurable symbol rules (bay ▣, gate ◆, platform ⚏, stop ▪, berth ⚓).
 - Auto-centering both horizontally and vertically.
+- Pull-to-load-more departures: user pulls up on the departure list (touch drag, mouse drag, or mouse wheel with resistance) to progressively load more departures following the Fibonacci-like sequence 1→2→3→5→8→13→21. Shows ⯆ with "scroll for more" label (animated bounce cue); at max (21) switches to ● with temporary "for more change in ⚙️" hint. Temporary count resets on station change, settings apply, or app reload. Drag uses marginTop (no GPU translate) with rubber-band resistance and bounce-back animation. The temporary count persists across automatic fetch-loop refreshes.
 - Settings persisted to `localStorage` (`departure:settings`): station name, stop ID, N, modes, text size, fetch interval.
 - Language persisted to `localStorage` (`departure:language`): 12 supported languages.
 - Theme persisted to `localStorage` (`departure:theme`): light / auto / dark cycle.
@@ -37,9 +38,10 @@ Architecture overview
   - `settings.js`        — load/save localStorage settings; applyTextSize
   - `url-import.js`      — decode ?b= / ?board= shared-board params, clean URL
   - `render.js`          — renderDepartures (departure list clear + populate)
-  - `fetch-loop.js`      — doRefresh, startRefreshLoop(listEl, statusEl), tickCountdowns; single unified 1-second interval drives both departure countdowns and the "update in" chip; fetch triggered when tick counter reaches 0
-  - `handlers.js`        — handleStationSelect, handleFavoriteToggle, onApplySettings, onLanguageChange
+  - `fetch-loop.js`      — doRefresh, startRefreshLoop(listEl, statusEl), tickCountdowns; single unified 1-second interval drives both departure countdowns and the "update in" chip; fetch triggered when tick counter reaches 0; supports temporary numDepartures override via setNumDeparturesOverride()/getEffectiveNumDepartures() for scroll-more feature
+  - `handlers.js`        — handleStationSelect, handleFavoriteToggle, onApplySettings, onLanguageChange; resets scroll-more on station change and settings apply
   - `action-bar.js`      — share + theme + settings buttons, global-gear container
+  - `scroll-more.js`     — pull-to-load-more departures: Fibonacci progression (1→2→3→5→8→13→21), touch/mouse/wheel gesture detection, rubber-band drag feedback (marginTop, no GPU translate), bounce-back animation, ⯆/"scroll for more" indicator → ●/"for more change in ⚙️" at max; resets on station change
   - `sw-updater.js`      — SW registration, update toast, controllerchange reload
 - `src/config.js`        — all configurable constants: VERSION, DEFAULTS (includes NUM_FAVORITES, FETCH_INTERVAL, GITHUB_URL), DEFAULT_FAVORITE, ALL_TRANSPORT_MODES, REALTIME_INDICATORS, TRANSPORT_MODE_EMOJIS, UI_EMOJIS, CANCELLATION_WRAPPER, PLATFORM_SYMBOLS, PLATFORM_SYMBOL_RULES, DEPARTURE_LINE_TEMPLATE, STATION_LINE_TEMPLATE, GPS_STOP_LINE_TEMPLATE, GPS_MAX_RESULTS, GPS_SEARCH_RADIUS_KM
 - `src/entur/`           — Entur API client (split into focused modules)
@@ -70,6 +72,7 @@ Architecture overview
   - `header.css`         — station header row, dropdown, status chip, favorite btn
   - `toolbar.css`        — fixed top-right .global-gear + fixed top-left .gps-bar action bars
   - `departures.css`     — departure list, destination, time, platform, text-size-* utilities
+  - `scroll-more.css`    — pull-to-load-more indicator: ⯆ bounce animation, ● max state, loading dim, drag feedback
   - `options-panel.css`  — slide-in panel shell, .options-row, inputs, .options-actions
   - `autocomplete.css`   — station search autocomplete list
   - `transport-modes.css`— mode filter checkbox grid
@@ -143,7 +146,7 @@ Internationalisation (i18n)
 - `t(key)` returns the string for the current language (falls back to `en`).
 - Language persisted in `localStorage` key `departure:language`.
 - Supported: `en`, `no`, `de`, `es`, `it`, `el`, `fa`, `hi`, `is`, `uk`, `fr`, `pl`.
-- All 12 languages carry the full key set including GPS keys (`gpsTooltip`, `gpsLocating`, `gpsNoResults`, `gpsFetchError`, `gpsNotSupported`, `gpsPermissionDenied`, `gpsUnavailable`, `gpsMeters`).
+- All 12 languages carry the full key set including GPS keys (`gpsTooltip`, `gpsLocating`, `gpsNoResults`, `gpsFetchError`, `gpsNotSupported`, `gpsPermissionDenied`, `gpsUnavailable`, `gpsMeters`) and scroll-more keys (`scrollForMore`, `scrollMaxReached`).
 - Language switcher in options panel uses flag buttons; changing language updates all translatable strings in the open panel in-place (footer and tooltips refreshed via `onLanguageChange` callback — the panel is **not** recreated).
 
 Share URL format
@@ -198,9 +201,9 @@ Current file tree (implemented)
 - `src/index.html`
 - `src/style.css`        (import manifest)
 - `src/icons.css`
-- `src/css/`             (tokens, base, buttons, layout, utils, header, toolbar, departures, options-panel, autocomplete, transport-modes, language-switcher, share-modal, toasts, footer, debug)
+- `src/css/`             (tokens, base, buttons, layout, utils, header, toolbar, departures, scroll-more, options-panel, autocomplete, transport-modes, language-switcher, share-modal, toasts, footer, debug)
 - `src/app.js`
-- `src/app/` (settings.js, url-import.js, render.js, fetch-loop.js, handlers.js, action-bar.js, gps-bar.js, sw-updater.js)
+- `src/app/` (settings.js, url-import.js, render.js, fetch-loop.js, handlers.js, action-bar.js, gps-bar.js, scroll-more.js, sw-updater.js)
   - `gps-bar.js`         — mounts `.gps-bar` fixed top-left container with compass button
 - `src/config.js`
 - `src/entur/` (index.js, modes.js, parser.js, query.js, http.js, departures.js, geocoder.js, gps-search.js)
