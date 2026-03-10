@@ -1,6 +1,6 @@
 // Version is defined here and in src/sw.js (service worker)
 // Both must be kept in sync - use scripts/bump-version.sh to update both
-export const VERSION = '1.37.8';
+export const VERSION = '1.37.9';
 
 export const DEFAULTS = {
   STATION_NAME: 'Jernbanetorget, Oslo',
@@ -177,7 +177,7 @@ export const STATION_LINE_TEMPLATE = '{name} {modes}';
 export const SCROLL_MORE = {
   SCROLL_STEPS:       [1, 2, 3, 5, 8, 13, 21],
   PULL_THRESHOLD:     160,
-  RESISTANCE:         0.4,
+  RESISTANCE:         0.6,
   WHEEL_THRESHOLD:    500,
   WHEEL_RESET_MS:     800,
   MAX_HINT_DURATION:  4000,

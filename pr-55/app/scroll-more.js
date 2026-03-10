@@ -43,6 +43,15 @@ const RESISTANCE = SCROLL_MORE.RESISTANCE;
 const MAX_HINT_DURATION = SCROLL_MORE.MAX_HINT_DURATION;
 
 /**
+ * Module-level reference to the active scroll-more instance.
+ * Prevents duplicate window listeners if initScrollMore is ever called
+ * a second time (e.g. due to a hot-reload or an accidental double-init).
+ * The previous instance is destroyed before the new one is created.
+ * @type {{ destroy: Function } | null}
+ */
+let _activeInstance = null;
+
+/**
  * Find the next step in the Fibonacci progression.
  * Returns null when already at (or above) the maximum.
  *
@@ -75,6 +84,15 @@ export function isAtMax(count) {
  * @returns {{ destroy: Function, reset: Function, indicatorEl: HTMLElement, getTemporaryCount: Function }}
  */
 export function initScrollMore({ boardEl, listEl, onLoadMore }) {
+  // Guard against accidental double-init: destroy any existing instance first
+  // so that the window-level mouse and wheel listeners from the previous call
+  // are removed before the new ones are registered.
+  if (_activeInstance !== null) {
+    console.warn('scroll-more: double-init detected — destroying previous instance');
+    _activeInstance.destroy();
+    _activeInstance = null;
+  }
+
   /** Current temporary departure count (null = use DEFAULTS.NUM_DEPARTURES) */
   let tempCount = null;
 
@@ -218,12 +236,16 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     loading = true;
     indicator.classList.add('scroll-more-loading');
 
-    tempCount = next;
-
+    // Advance tempCount only after a successful fetch.  Setting it before the
+    // await caused a silent state desync: if doRefresh() returned early because
+    // fetchInFlight was already true, the indicator would show the new (higher)
+    // count while the displayed data still reflected the previous count.
     try {
       await onLoadMore(next);
+      tempCount = next;
     } catch (err) {
       console.warn('Scroll-more load failed', err);
+      // tempCount is intentionally NOT advanced on failure so the user can retry
     } finally {
       loading = false;
       indicator.classList.remove('scroll-more-loading');
@@ -258,10 +280,16 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     // Only start tracking if we're near bottom (or list fits in viewport)
     if (!isNearBottom()) return;
 
-    // Cancel any in-progress bounce-back before starting a fresh drag
+    // Cancel any in-progress bounce-back before starting a fresh drag.
+    // Also zero currentDeltaY so the new drag starts from the current
+    // visual position (marginTop is left as-is; it is overwritten on the
+    // first onPointerMove call) rather than resuming from the stale value,
+    // which would cause a visual jump when the rAF mid-flight value is
+    // re-applied by applyDisplacement on the first move event.
     if (bounceRafId !== null) {
       cancelAnimationFrame(bounceRafId);
       bounceRafId = null;
+      currentDeltaY = 0;
     }
 
     pointerActive = true;
@@ -339,7 +367,12 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     // Only respond to downward scroll
     if (e.deltaY <= 0) return;
 
-    wheelAccumulator += e.deltaY;
+    // Clamp the per-event contribution so that a single high-resolution
+    // trackpad event (which can fire deltaY > 1000 px) cannot single-handedly
+    // exceed the threshold.  This normalises behaviour across mouse wheels
+    // (large discrete steps) and trackpads (many small fractional steps).
+    const MAX_DELTA_PER_EVENT = SCROLL_MORE.WHEEL_THRESHOLD / 2;
+    wheelAccumulator += Math.min(e.deltaY, MAX_DELTA_PER_EVENT);
 
     // Reset accumulator after inactivity
     if (wheelResetTimer) clearTimeout(wheelResetTimer);
@@ -380,6 +413,16 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   function reset() {
     tempCount = null;
     loading = false;
+    // Cancel any running bounce animation and restore the board to its
+    // natural position.  Without this the rAF loop would continue writing
+    // marginTop on boardEl after a station change, holding a stale DOM
+    // reference and potentially fighting any new layout applied by the render.
+    if (bounceRafId !== null) {
+      cancelAnimationFrame(bounceRafId);
+      bounceRafId = null;
+      currentDeltaY = 0;
+      applyDisplacement(0);
+    }
     if (maxHintTimer) {
       clearTimeout(maxHintTimer);
       maxHintTimer = null;
@@ -421,13 +464,16 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     if (maxHintTimer) clearTimeout(maxHintTimer);
     if (wheelResetTimer) clearTimeout(wheelResetTimer);
     indicator.remove();
+    _activeInstance = null;
   }
 
-  return {
+  const instance = {
     destroy,
     reset,
     getTemporaryCount,
     updateTranslations,
     indicatorEl: indicator
   };
+  _activeInstance = instance;
+  return instance;
 }
