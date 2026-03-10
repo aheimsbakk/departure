@@ -99,6 +99,14 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   /** Whether a load-more is currently in flight */
   let loading = false;
 
+  /**
+   * Set to true when the finger is released while a fetch is still in-flight.
+   * The snapBack() call is deferred until triggerLoadMore()'s finally block
+   * so that it starts in a clean frame AFTER the DOM mutation from
+   * renderDepartures() — preventing the rAF stall that leaves the board stuck.
+   */
+  let snapBackPending = false;
+
   /** Active pointer tracking state */
   let pointerActive = false;
   let startY = 0;
@@ -303,6 +311,15 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
       loading = false;
       indicator.classList.remove('scroll-more-loading');
       updateIndicator();
+      // If the finger was released while the fetch was still in-flight, the
+      // snapBack() call in onPointerEnd was deferred to avoid the rAF stall
+      // caused by renderDepartures()'s DOM mutation landing between the
+      // pointer-up event and the first rAF frame.  Fire it now — the DOM is
+      // stable and the compositor can schedule the animation cleanly.
+      if (snapBackPending) {
+        snapBackPending = false;
+        snapBack();
+      }
     }
   }
 
@@ -428,8 +445,16 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
       currentDeltaY = computedMargin;
     }
 
-    // Animate back to origin with a slow ease-out bounce
-    snapBack();
+    // If a fetch triggered mid-gesture is still in-flight, defer snapBack()
+    // until triggerLoadMore()'s finally block.  Starting the rAF bounce while
+    // renderDepartures() is about to mutate the DOM causes a compositor stall
+    // on mobile browsers — the rAF callback never fires until the next touch.
+    if (loading) {
+      snapBackPending = true;
+    } else {
+      // Animate back to origin with a slow ease-out bounce
+      snapBack();
+    }
 
     rawPullDistance = 0;
     thresholdTriggered = false;
@@ -494,6 +519,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   function reset() {
     tempCount = null;
     loading = false;
+    snapBackPending = false;
     lastLoadMoreAt = 0;
     interruptedBounce = false;
     boardEl.classList.remove('board--pulling');
@@ -543,6 +569,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     window.removeEventListener('mouseup', onPointerEnd);
     window.removeEventListener('wheel', onWheel);
     boardEl.classList.remove('board--pulling');
+    snapBackPending = false;
     if (bounceRafId !== null) {
       cancelAnimationFrame(bounceRafId);
       bounceRafId = null;
