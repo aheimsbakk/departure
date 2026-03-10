@@ -62,7 +62,7 @@ export function createBoardElements(stationName, onStationSelect, onFavoriteTogg
 
   footer.append(dataLine, versionLine);
   
-  el.append(headerWrap, list, footer);
+  el.append(headerWrap, list);
   // expose header-wrap for other modules to attach controls
   el.headerWrap = headerWrap;
   // expose station dropdown for updating

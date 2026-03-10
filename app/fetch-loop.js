@@ -42,6 +42,30 @@ let lastFetchAt = Date.now();
 export let data = [];
 
 /**
+ * Optional override for numDepartures used by scroll-more.
+ * When set (non-null), doRefresh uses this instead of DEFAULTS.NUM_DEPARTURES.
+ * The scroll-more module manages this value; it resets to null on station change.
+ * @type {number|null}
+ */
+let numDeparturesOverride = null;
+
+/**
+ * Set the temporary departure count override.
+ * @param {number|null} count - Override value or null to clear
+ */
+export function setNumDeparturesOverride(count) {
+  numDeparturesOverride = (typeof count === 'number' && count > 0) ? count : null;
+}
+
+/**
+ * Get the current effective departure count.
+ * @returns {number}
+ */
+export function getEffectiveNumDepartures() {
+  return numDeparturesOverride ?? DEFAULTS.NUM_DEPARTURES;
+}
+
+/**
  * Fetch live departures and re-render the list.
  * On failure the error is logged and any previous data is left in place.
  * Resets ticksUntilRefresh to the current FETCH_INTERVAL when complete.
@@ -63,7 +87,7 @@ export async function doRefresh(listEl) {
     const fresh = stopId
       ? await fetchDepartures({
           stopId,
-          numDepartures: DEFAULTS.NUM_DEPARTURES,
+          numDepartures: getEffectiveNumDepartures(),
           modes:         DEFAULTS.TRANSPORT_MODES,
           lang:          getLanguage(),
           apiUrl:        DEFAULTS.API_URL,
