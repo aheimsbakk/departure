@@ -6,7 +6,8 @@
 
 :root {
   /* --- Color palette (Dark theme — default) --- */
-  --bg:                      linear-gradient(180deg, #0b0f1a, #081021);
+  --bg-solid:                #0b0f1a;
+  --bg:                      #0b0f1a;
   --text-primary:            #ffffff;
   --text-secondary:          rgba(255, 255, 255, 0.8);
   --accent:                  #72e0a1;
@@ -68,7 +69,8 @@
 
 /* --- Light theme overrides --- */
 :root.theme-light {
-  --bg:                      linear-gradient(180deg, #f5f7fa, #e8ecf1);
+  --bg-solid:                #f5f7fa;
+  --bg:                      #f5f7fa;
   --text-primary:            #1a1a1a;
   --text-secondary:          rgba(0, 0, 0, 0.7);
   --accent:                  #2d8659;

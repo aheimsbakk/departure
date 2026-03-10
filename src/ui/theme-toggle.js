@@ -21,17 +21,47 @@ const THEME_COLORS = {
 };
 
 /**
- * Update <meta name="theme-color"> to match the resolved (effective) theme.
- * @param {boolean} isDark - true if the effective theme is dark
+ * Update <meta name="theme-color"> tags to match the resolved (effective) theme.
+ *
+ * In auto mode the two media-query meta tags in index.html handle everything
+ * natively without JS. When the user explicitly picks light or dark we
+ * override both tags to the same solid color (no media attribute) so Chrome
+ * immediately reflects the manual choice regardless of system preference.
+ *
+ * @param {boolean} isDark  - true if the effective theme is dark
+ * @param {boolean} isAuto  - true if the theme is following system preference
  */
-function updateThemeColorMeta(isDark) {
+function updateThemeColorMeta(isDark, isAuto) {
   const color = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
+  const metas = document.querySelectorAll('meta[name="theme-color"]');
+
+  if (isAuto) {
+    // Restore media-query driven behaviour so the browser handles it natively.
+    // Only touch the tags if they were previously collapsed to a single value.
+    if (metas.length === 1) {
+      metas[0].setAttribute('media', '(prefers-color-scheme: light)');
+      metas[0].content = THEME_COLORS.light;
+      const dark = document.createElement('meta');
+      dark.name = 'theme-color';
+      dark.setAttribute('media', '(prefers-color-scheme: dark)');
+      dark.content = THEME_COLORS.dark;
+      metas[0].insertAdjacentElement('afterend', dark);
+    }
+    return;
+  }
+
+  if (metas.length >= 2) {
+    // Collapse both tags into one unconditional tag.
+    metas[1].remove();
+  }
+
   let meta = document.querySelector('meta[name="theme-color"]');
   if (!meta) {
     meta = document.createElement('meta');
     meta.name = 'theme-color';
     document.head.appendChild(meta);
   }
+  meta.removeAttribute('media');
   meta.content = color;
 }
 
@@ -82,7 +112,11 @@ function applyTheme(theme) {
     isDark = prefersDark;
   }
 
-  updateThemeColorMeta(isDark);
+  // Force background-color directly on <html> so Chrome mobile's compositor
+  // uses it for the gap behind the retracting address bar.
+  root.style.backgroundColor = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
+
+  updateThemeColorMeta(isDark, theme === 'auto');
 }
 
 /**

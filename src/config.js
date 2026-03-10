@@ -1,6 +1,6 @@
 // Version is defined here and in src/sw.js (service worker)
 // Both must be kept in sync - use scripts/bump-version.sh to update both
-export const VERSION = '1.36.13';
+export const VERSION = '1.37.20';
 
 export const DEFAULTS = {
   STATION_NAME: 'Jernbanetorget, Oslo',
@@ -166,3 +166,21 @@ export const GPS_STOP_LINE_TEMPLATE = '{name} 🏃‍➡️ {distance} {modes}';
 //   '{modes} {name}'        — emojis first: "🚅 Oslo S"
 //   '{name} [{modes}]'      — bracketed: "Oslo S [🚅]"
 export const STATION_LINE_TEMPLATE = '{name} {modes}';
+
+// Scroll-more (pull-to-load-more) tuning
+// SCROLL_STEPS        — Fibonacci-like departure count progression
+// PULL_THRESHOLD      — pixels of upward drag required to trigger a load (touch/mouse)
+// RESISTANCE          — drag resistance factor: higher = harder to pull (logarithmic curve)
+// WHEEL_THRESHOLD     — accumulated wheel deltaY required to trigger a load (desktop)
+// WHEEL_RESET_MS      — ms of wheel inactivity before the accumulator resets
+// MAX_HINT_DURATION   — ms the "for more change in ⚙️" hint stays visible
+export const SCROLL_MORE = {
+  SCROLL_STEPS:       [1, 2, 3, 5, 8, 13, 21],
+  PULL_THRESHOLD:     250,
+  RESISTANCE:         0.5,
+  WHEEL_THRESHOLD:    500,
+  WHEEL_RESET_MS:     800,
+  MAX_HINT_DURATION:  4000,
+  /** Duration (ms) of the bounce-back animation after finger release */
+  BOUNCE_DURATION_MS: 500,
+};

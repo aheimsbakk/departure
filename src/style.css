@@ -15,6 +15,7 @@
 @import './css/header.css';
 @import './css/toolbar.css';
 @import './css/departures.css';
+@import './css/scroll-more.css';
 
 /* --- Options panel and its sub-components --- */
 @import './css/options-panel.css';

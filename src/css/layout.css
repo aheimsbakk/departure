@@ -6,7 +6,7 @@
 .app-root {
   min-height: 100vh;
   display: flex;
-  align-items: center;
+  align-items: stretch;
   justify-content: center;
   padding: 24px;
 }
@@ -21,7 +21,13 @@ body.options-open .app-root {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: var(--header-gap);
   text-align: center;
   max-width: 90vw;
+  /* Fill the available space inside .app-root (which provides min-height:100vh)
+     so touch/mouse events fire on the entire canvas.  justify-content:center
+     keeps content vertically centred when it fits; when it overflows the flex
+     item simply grows with its content — no extra whitespace at the bottom. */
+  flex: 1;
 }

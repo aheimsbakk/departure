@@ -1,11 +1,12 @@
-Overall Context: Kollektiv.Sanntid.org - Real-time Norwegian public transport departure board. Version 1.36.13.
+Overall Context: Kollektiv.Sanntid.org - Real-time Norwegian public transport departure board. Version 1.37.19.
 
-Current Goal: Stable — no active feature work.
+Current Goal: Stable mobile PWA experience across Chrome and Firefox.
 
 Last 3 Changes:
-- Security fixes (v1.36.13): XSS fix in departure.js (innerHTML→DOM); deprecated escape/unescape replaced with TextEncoder/TextDecoder in share-button.js; console.error→console.warn
-- GPS mode reset (v1.36.12): selecting a stop from GPS dropdown always resets transport modes to ALL_TRANSPORT_MODES; stop modes remain display-only in the list
-- Move MODE_GRID to config.js (v1.36.11): exported from config.js, import updated in transport-modes.js; GPS stop selection no longer overrides transport modes
+- Firefox mobile scroll fix (v1.37.19): Toggle touch-action none via .board--pulling class only during active upward pull gesture — eliminates Firefox jank without affecting Chrome native scroll
+- Chrome bg inline-style fix (v1.37.18): Set document.documentElement.style.backgroundColor directly in inline script (index.html) and applyTheme() (theme-toggle.js) to bypass CSS variable indirection that Chrome's compositor ignores for the address-bar gap
+- Chrome theme mismatch fix (v1.37.17): Added blocking inline script in index.html to apply .theme-light and collapse theme-color metas before first CSS paint
 
 Next Steps:
-- Update src/sitemap.xml <lastmod> on every future release
+- Update src/sitemap.xml <lastmod> on release
+- Run npm run format to apply Prettier to all 75 source files

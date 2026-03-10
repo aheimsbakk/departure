@@ -14,10 +14,13 @@
   background: var(--overlay-medium);
   padding: 6px 10px;
   border-radius: var(--btn-border-radius);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   display: flex;
   flex-direction: column;
   gap: 2px;
+  /* Explicit stacking context so Firefox composites it above page content */
+  isolation: isolate;
 }
 
 .footer-data-line,

@@ -17,6 +17,7 @@ import { updateFooterTranslations, updateFavoriteButton } from '../ui/ui.js';
 import { addRecentStation, removeFromFavorites, isStationInFavorites } from '../ui/station-dropdown.js';
 import { saveSettings, applyTextSize } from './settings.js';
 import { doRefresh, startRefreshLoop } from './fetch-loop.js';
+import { setNumDeparturesOverride } from './fetch-loop.js';
 
 /**
  * Wire all user-action handlers and return them as a plain object.
@@ -28,7 +29,7 @@ import { doRefresh, startRefreshLoop } from './fetch-loop.js';
  * @param {{ updateFields?: Function }} optsRef - Mutable ref to the options panel API
  * @returns {{ handleStationSelect, handleFavoriteToggle, onApplySettings, onLanguageChange }}
  */
-export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, optsRef, gpsRef = {}) {
+export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, optsRef, gpsRef = {}, scrollMoreRef = {}) {
 
   /**
    * Keep button tooltips in sync after a language change.
@@ -75,6 +76,10 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
 
     // Update the browser tab title
     try { document.title = station.name || document.title; } catch (_) {}
+
+    // Reset scroll-more temporary departure count on station change
+    setNumDeparturesOverride(null);
+    if (scrollMoreRef.current?.reset) scrollMoreRef.current.reset();
 
     // Kick off a refresh with the new station then restart the unified loop
     doRefresh(board.list)
@@ -155,6 +160,10 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
     applyTextSize(newOpts.TEXT_SIZE);
     updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
 
+    // Reset scroll-more temporary departure count when settings are applied
+    setNumDeparturesOverride(null);
+    if (scrollMoreRef.current?.reset) scrollMoreRef.current.reset();
+
     // Fetch with new settings then restart the unified loop so the new interval is used
     doRefresh(board.list)
       .catch(err => console.warn('Manual refresh failed', err))
@@ -168,6 +177,7 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
   function onLanguageChange() {
     updateFooterTranslations(board.footer);
     updateButtonTooltips();
+    if (scrollMoreRef.current?.updateTranslations) scrollMoreRef.current.updateTranslations();
   }
 
   return { handleStationSelect, handleGpsStationSelect, handleFavoriteToggle, onApplySettings, onLanguageChange };
