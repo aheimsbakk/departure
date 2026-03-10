@@ -334,6 +334,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
       bounceCancelled = true;
       currentDeltaY = 0;
       clearDisplacement();
+      boardEl.classList.remove('board--pulling');
       interruptedBounce = true;
       // Do NOT set pointerActive — let the browser handle this gesture natively
       return;
@@ -365,8 +366,15 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
         currentDeltaY = 0;
         rawPullDistance = 0;
       }
+      // Relinquish touch ownership so the browser can scroll normally
+      boardEl.classList.remove('board--pulling');
       return;
     }
+
+    // Upward pull confirmed — claim touch ownership from the browser.
+    // This eliminates the per-frame preventDefault handshake on Firefox mobile
+    // that causes visible scroll jank (Chrome handles this heuristically).
+    boardEl.classList.add('board--pulling');
 
     // Apply resistance: rubber-band effect — displacement grows slower the further you pull
     const absDelta = Math.abs(rawDelta);
@@ -394,11 +402,13 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     // Clear the bounce-interrupt flag so the next gesture is handled normally
     if (interruptedBounce) {
       interruptedBounce = false;
+      boardEl.classList.remove('board--pulling');
       return;
     }
 
     if (!pointerActive) return;
     pointerActive = false;
+    boardEl.classList.remove('board--pulling');
 
     // If content was re-rendered during the gesture (e.g. triggerLoadMore
     // added new departures), the tracked currentDeltaY may no longer match
@@ -476,6 +486,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     tempCount = null;
     loading = false;
     interruptedBounce = false;
+    boardEl.classList.remove('board--pulling');
     // Cancel any running bounce animation and restore the board to its
     // natural position.  Without this the rAF loop would continue writing
     // marginTop on boardEl after a station change, holding a stale DOM
@@ -521,6 +532,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     window.removeEventListener('mousemove', onPointerMove);
     window.removeEventListener('mouseup', onPointerEnd);
     window.removeEventListener('wheel', onWheel);
+    boardEl.classList.remove('board--pulling');
     if (bounceRafId !== null) {
       cancelAnimationFrame(bounceRafId);
       bounceRafId = null;

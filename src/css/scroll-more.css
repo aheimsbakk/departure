@@ -81,3 +81,14 @@
   /* Prevent iOS rubber-band from interfering with our custom pull */
   -webkit-overflow-scrolling: auto;
 }
+
+/*
+ * Applied by scroll-more.js only while an upward pull gesture is active.
+ * Tells Firefox (and all browsers) to hand full touch ownership to JS for
+ * this gesture — eliminating the per-frame preventDefault handshake that
+ * causes scroll jank on Firefox mobile.  Removed immediately on pointer-up
+ * so normal vertical scrolling is unaffected for every other gesture.
+ */
+.board--pulling {
+  touch-action: none;
+}
