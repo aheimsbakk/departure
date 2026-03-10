@@ -112,6 +112,18 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   let bounceRafId = null;
 
   /**
+   * Guard flag for the bounce-back rAF loop.  Set to true whenever the
+   * animation is cancelled (interrupt, reset, destroy).  The rAF step
+   * function checks this at the top of every frame and bails out if true.
+   *
+   * This is necessary because some browsers (notably Firefox mobile) may
+   * dispatch an already-queued rAF callback *after* cancelAnimationFrame()
+   * has been called.  Without this flag that stale callback would re-apply
+   * a non-zero marginTop, causing a visual jump.
+   */
+  let bounceCancelled = false;
+
+  /**
    * When true the current gesture was started while a bounce-back animation
    * was running.  The gesture is treated as an "interrupt" — the animation
    * stops and the entire gesture is passed through to the browser for native
@@ -218,7 +230,15 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     const startTime = performance.now();
     const duration = SCROLL_MORE.BOUNCE_DURATION_MS;
 
+    // Reset the cancellation flag — this animation is now the active one
+    bounceCancelled = false;
+
     function step(now) {
+      // Bail out if the animation was cancelled between frames.
+      // Firefox mobile may dispatch an already-queued rAF callback after
+      // cancelAnimationFrame(), so we need this secondary guard.
+      if (bounceCancelled) return;
+
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const eased = easeOutCubic(progress);
@@ -311,6 +331,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     if (bounceRafId !== null) {
       cancelAnimationFrame(bounceRafId);
       bounceRafId = null;
+      bounceCancelled = true;
       currentDeltaY = 0;
       clearDisplacement();
       interruptedBounce = true;
@@ -462,6 +483,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     if (bounceRafId !== null) {
       cancelAnimationFrame(bounceRafId);
       bounceRafId = null;
+      bounceCancelled = true;
       currentDeltaY = 0;
       clearDisplacement();
     }
@@ -502,6 +524,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     if (bounceRafId !== null) {
       cancelAnimationFrame(bounceRafId);
       bounceRafId = null;
+      bounceCancelled = true;
     }
     if (maxHintTimer) clearTimeout(maxHintTimer);
     if (wheelResetTimer) clearTimeout(wheelResetTimer);
