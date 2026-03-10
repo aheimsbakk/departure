@@ -10,7 +10,8 @@
   top: 0;
   height: 100vh;
   width: var(--options-panel-width);
-  background: var(--bg);
+  background-color: var(--bg-solid);
+  background-image: var(--bg);
   background-attachment: fixed;
   box-shadow: -8px 0 24px var(--shadow-color);
   transform: translateX(100%);

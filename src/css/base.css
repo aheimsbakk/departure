@@ -10,7 +10,8 @@
 html {
   height: 100%;
   margin: 0;
-  background: var(--bg);
+  background-color: var(--bg-solid);
+  background-image: var(--bg);
   background-attachment: fixed;
 }
 
