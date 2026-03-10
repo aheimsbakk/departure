@@ -1,6 +1,6 @@
 // Version is defined here and in src/sw.js (service worker)
 // Both must be kept in sync - use scripts/bump-version.sh to update both
-export const VERSION = '1.37.7';
+export const VERSION = '1.37.8';
 
 export const DEFAULTS = {
   STATION_NAME: 'Jernbanetorget, Oslo',
@@ -181,4 +181,6 @@ export const SCROLL_MORE = {
   WHEEL_THRESHOLD:    500,
   WHEEL_RESET_MS:     800,
   MAX_HINT_DURATION:  4000,
+  /** Duration (ms) of the bounce-back animation after finger release */
+  BOUNCE_DURATION_MS: 600,
 };

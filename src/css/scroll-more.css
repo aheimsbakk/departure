@@ -73,8 +73,8 @@
 /* ── Board drag feedback ────────────────────────────────────────────── */
 
 /* During active drag, disable transitions on the board so marginTop
-   tracks the finger without delay.  The bounce-back is JS-driven
-   via requestAnimationFrame so it doesn't need CSS transitions. */
+   tracks the finger without delay.  The bounce-back on release is driven
+   by an rAF ease-out-cubic loop in scroll-more.js (BOUNCE_DURATION_MS). */
 .board {
   transition: none;
   /* Prevent iOS rubber-band from interfering with our custom pull */

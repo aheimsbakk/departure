@@ -6,7 +6,7 @@
  *   - Fibonacci-like progression: 1, 2, 3, 5, 8, 13, 21 (max)
  *   - Detect pull-up gesture on the departure list (touch + mouse)
  *   - Apply visual drag feedback using top/marginTop (no GPU translate)
- *   - Snap back to origin instantly when released (no bounce animation)
+ *   - Animate bounce-back (ease-out-cubic, rAF) when finger is released
  *   - Show ⯆ "scroll for more" indicator, switching to ● "for more change in ⚙️" at max
  *   - Reset temporary count on station change or app reload
  *
@@ -20,6 +20,15 @@
 
 import { DEFAULTS, SCROLL_MORE } from '../config.js';
 import { t } from '../i18n.js';
+
+/**
+ * Ease-out cubic: decelerates quickly then glides to rest.
+ * @param {number} progress - Normalised time [0, 1]
+ * @returns {number}
+ */
+function easeOutCubic(progress) {
+  return 1 - Math.pow(1 - progress, 3);
+}
 
 // Fibonacci-like progression for temporary departure counts
 const SCROLL_STEPS = SCROLL_MORE.SCROLL_STEPS;
@@ -80,6 +89,9 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   let rawPullDistance = 0;
   /** Whether load-more was already triggered during this gesture */
   let thresholdTriggered = false;
+
+  /** rAF handle for the bounce-back animation */
+  let bounceRafId = null;
 
   /** Timer for the max-reached hint auto-dismiss */
   let maxHintTimer = null;
@@ -151,10 +163,40 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     boardEl.style.marginTop = `${dy}px`;
   }
 
-  /** Snap back to origin instantly (no bounce animation) */
+  /**
+   * Animate the board back to the origin using an ease-out-cubic curve.
+   * Cancels any in-progress bounce before starting a new one.
+   */
   function snapBack() {
-    applyDisplacement(0);
-    currentDeltaY = 0;
+    if (bounceRafId !== null) {
+      cancelAnimationFrame(bounceRafId);
+      bounceRafId = null;
+    }
+
+    const startDisplacement = currentDeltaY;
+    if (startDisplacement === 0) return;
+
+    const startTime = performance.now();
+    const duration = SCROLL_MORE.BOUNCE_DURATION_MS;
+
+    function step(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = easeOutCubic(progress);
+      const displacement = startDisplacement * (1 - eased);
+
+      applyDisplacement(displacement);
+
+      if (progress < 1) {
+        bounceRafId = requestAnimationFrame(step);
+      } else {
+        applyDisplacement(0);
+        currentDeltaY = 0;
+        bounceRafId = null;
+      }
+    }
+
+    bounceRafId = requestAnimationFrame(step);
   }
 
   /**
@@ -216,6 +258,12 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     // Only start tracking if we're near bottom (or list fits in viewport)
     if (!isNearBottom()) return;
 
+    // Cancel any in-progress bounce-back before starting a fresh drag
+    if (bounceRafId !== null) {
+      cancelAnimationFrame(bounceRafId);
+      bounceRafId = null;
+    }
+
     pointerActive = true;
     startY = e.touches ? e.touches[0].clientY : e.clientY;
     currentDeltaY = 0;
@@ -271,7 +319,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     if (!pointerActive) return;
     pointerActive = false;
 
-    // Snap back to origin instantly
+    // Animate back to origin with a slow ease-out bounce
     snapBack();
 
     rawPullDistance = 0;
@@ -366,6 +414,10 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     window.removeEventListener('mousemove', onPointerMove);
     window.removeEventListener('mouseup', onPointerEnd);
     window.removeEventListener('wheel', onWheel);
+    if (bounceRafId !== null) {
+      cancelAnimationFrame(bounceRafId);
+      bounceRafId = null;
+    }
     if (maxHintTimer) clearTimeout(maxHintTimer);
     if (wheelResetTimer) clearTimeout(wheelResetTimer);
     indicator.remove();
