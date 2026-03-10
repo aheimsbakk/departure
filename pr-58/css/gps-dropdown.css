@@ -1,0 +1,69 @@
+/* ======================================================================
+   GPS DROPDOWN
+   Compass button and nearby-stops temporary dropdown.
+   Mirrors: src/ui/gps-dropdown.js  /  src/app/gps-bar.js
+   ====================================================================== */
+
+/* Container is position:relative so the absolute menu aligns to the button */
+.gps-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+/* ── Dropdown menu shell ───────────────────────────────────────────── */
+.gps-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  background: var(--overlay-medium);
+  border-radius: var(--btn-border-radius);
+  padding: 6px;
+  width: max-content;
+  max-width: min(340px, calc(100vw - 36px));
+  max-height: 420px;
+  overflow-y: auto;
+  box-shadow: 0 6px 18px var(--shadow-color);
+  z-index: var(--z-dropdown);
+  display: none;
+}
+
+.gps-dropdown-menu.open {
+  display: grid;
+  grid-auto-rows: min-content;
+  gap: 4px;
+}
+
+/* ── Stop items ────────────────────────────────────────────────────── */
+.gps-dropdown-item {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.gps-dropdown-item:hover:not(:disabled),
+.gps-dropdown-item:focus-visible {
+  background: var(--highlight-bg);
+  color: var(--highlight-fg);
+  outline: none;
+}
+
+/* ── Status / error messages ───────────────────────────────────────── */
+.gps-dropdown-status {
+  padding: 8px 10px;
+  color: var(--text-secondary);
+  font-style: italic;
+  white-space: nowrap;
+}
+
+.gps-dropdown-error {
+  color: var(--danger);
+  font-style: normal;
+}
