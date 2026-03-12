@@ -61,6 +61,18 @@
   opacity: 0.5;
 }
 
+/* Threshold reached during drag — visual "ready to load" hint */
+.scroll-more-indicator--triggered .scroll-more-arrow {
+  opacity: 1;
+  color: var(--accent);
+  animation: scroll-more-bounce 0.5s ease-in-out infinite;
+}
+
+.scroll-more-indicator--triggered .scroll-more-label {
+  opacity: 1;
+  color: var(--accent);
+}
+
 /* ── Bounce animation for the down-arrow cue ────────────────────────── */
 @keyframes scroll-more-bounce {
   0%,
