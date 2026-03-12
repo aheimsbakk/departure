@@ -279,7 +279,13 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
 
     boardEl.addEventListener('transitionend', _snapEndHandler);
     boardEl.classList.add('board--snapping');
-    // Setting the target value triggers the CSS transition
+    // Force a reflow so the browser commits the current marginTop as the
+    // transition start value before we set the target.  Without this, both
+    // the class addition and the style change land in the same style-flush
+    // and the browser skips the transition entirely (no transitionend fires).
+    // eslint-disable-next-line no-unused-expressions
+    boardEl.offsetHeight; // reflow
+    // Setting the target value now triggers the CSS transition
     applyDisplacement(targetDisplacement);
   }
 
