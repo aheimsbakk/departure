@@ -228,6 +228,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
 
     if (rawPullDistance >= PULL_THRESHOLD && !thresholdTriggered) {
       thresholdTriggered = true;
+      indicator.classList.add('scroll-more-indicator--triggered');
     }
 
     if (e.cancelable && rawPullDistance > 10) {
@@ -238,6 +239,8 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   function onPointerEnd() {
     if (!pointerActive) return;
     pointerActive = false;
+
+    indicator.classList.remove('scroll-more-indicator--triggered');
 
     if (thresholdTriggered) {
       triggerLoadMore();
