@@ -16,6 +16,14 @@
  *   - Works on PC, Android, macOS, iOS (touch + mouse + wheel)
  *   - Resistance threshold prevents accidental loading
  *   - Memory-safe: all listeners are cleaned up via destroy()
+ *
+ * Mobile touch load-more strategy (v1.37.27+):
+ *   - On touch: snapBack() fires immediately on touchend; triggerLoadMore() is
+ *     called AFTER the bounce animation completes (BOUNCE_DURATION_MS delay).
+ *     This avoids the rAF stall caused by renderDepartures() DOM mutations
+ *     landing mid-animation on mobile browsers.
+ *   - On mouse drag (desktop): load-more fires mid-gesture at threshold (unchanged).
+ *   - snapBackPending has been removed; it is no longer needed.
  */
 
 import { DEFAULTS, SCROLL_MORE } from '../config.js';
@@ -100,12 +108,11 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   let loading = false;
 
   /**
-   * Set to true when the finger is released while a fetch is still in-flight.
-   * The snapBack() call is deferred until triggerLoadMore()'s finally block
-   * so that it starts in a clean frame AFTER the DOM mutation from
-   * renderDepartures() — preventing the rAF stall that leaves the board stuck.
+   * Timer handle for the post-bounce load-more call on touch.
+   * Set in onPointerEnd (touch path) when threshold was reached;
+   * cleared on reset/destroy to prevent stale loads after station change.
    */
-  let snapBackPending = false;
+  let postBounceLoadTimer = null;
 
   /** Active pointer tracking state */
   let pointerActive = false;
@@ -340,15 +347,6 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
       loading = false;
       indicator.classList.remove('scroll-more-loading');
       updateIndicator();
-      // If the finger was released while the fetch was still in-flight, the
-      // snapBack() call in onPointerEnd was deferred to avoid the rAF stall
-      // caused by renderDepartures()'s DOM mutation landing between the
-      // pointer-up event and the first rAF frame.  Fire it now — the DOM is
-      // stable and the compositor can schedule the animation cleanly.
-      if (snapBackPending) {
-        snapBackPending = false;
-        snapBack();
-      }
     }
   }
 
@@ -445,10 +443,15 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
 
     applyDisplacement(currentDeltaY);
 
-    // Trigger load-more seamlessly when threshold is reached (not on release)
+    // On mouse drag (desktop): trigger load-more mid-gesture at threshold.
+    // On touch (mobile): only mark thresholdTriggered here; the actual
+    // triggerLoadMore() call is deferred to after the snap-back animation
+    // in onPointerEnd to avoid rAF stalls from DOM mutations on mobile.
     if (rawPullDistance >= PULL_THRESHOLD && !thresholdTriggered) {
       thresholdTriggered = true;
-      triggerLoadMore();
+      if (!e.touches) {
+        triggerLoadMore();
+      }
     }
 
     // Prevent default scrolling while we're handling the pull gesture
@@ -457,7 +460,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     }
   }
 
-  function onPointerEnd() {
+  function onPointerEnd(e) {
     // Clear the bounce-interrupt flag so the next gesture is handled normally
     if (interruptedBounce) {
       interruptedBounce = false;
@@ -469,16 +472,21 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     pointerActive = false;
     boardEl.classList.remove('board--pulling');
 
-    // If a fetch triggered mid-gesture is still in-flight, defer snapBack()
-    // until triggerLoadMore()'s finally block.  Starting the rAF bounce while
-    // renderDepartures() is about to mutate the DOM causes a compositor stall
-    // on mobile browsers — the rAF callback never fires until the next touch.
-    // Note: we do NOT read current position here because the board will shift
-    // after new departures are added.  The actual position is read in snapBack().
-    if (loading) {
-      snapBackPending = true;
+    const isTouch = e && e.type && e.type.startsWith('touch');
+
+    if (isTouch && thresholdTriggered) {
+      // Mobile touch path: snap back immediately, then load after the
+      // bounce animation completes.  This prevents the rAF stall caused by
+      // renderDepartures() DOM mutations landing mid-animation on mobile.
+      snapBack();
+      if (postBounceLoadTimer) clearTimeout(postBounceLoadTimer);
+      postBounceLoadTimer = setTimeout(() => {
+        postBounceLoadTimer = null;
+        triggerLoadMore();
+      }, SCROLL_MORE.BOUNCE_DURATION_MS);
     } else {
-      // Animate back to origin with a slow ease-out bounce
+      // Desktop mouse path: load was already triggered mid-gesture; just
+      // animate back to origin.
       snapBack();
     }
 
@@ -545,10 +553,13 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   function reset() {
     tempCount = null;
     loading = false;
-    snapBackPending = false;
     lastLoadMoreAt = 0;
     interruptedBounce = false;
     boardEl.classList.remove('board--pulling');
+    if (postBounceLoadTimer) {
+      clearTimeout(postBounceLoadTimer);
+      postBounceLoadTimer = null;
+    }
     // Cancel any running bounce animation and restore the board to its
     // natural position.  Without this the rAF loop would continue writing
     // marginTop on boardEl after a station change, holding a stale DOM
@@ -595,7 +606,10 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     window.removeEventListener('mouseup', onPointerEnd);
     window.removeEventListener('wheel', onWheel);
     boardEl.classList.remove('board--pulling');
-    snapBackPending = false;
+    if (postBounceLoadTimer) {
+      clearTimeout(postBounceLoadTimer);
+      postBounceLoadTimer = null;
+    }
     if (bounceRafId !== null) {
       cancelAnimationFrame(bounceRafId);
       bounceRafId = null;
