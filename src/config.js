@@ -8,18 +8,19 @@ export const DEFAULTS = {
   NUM_DEPARTURES: 5,
   NUM_FAVORITES: 8,
   FETCH_INTERVAL: 60,
-  TRANSPORT_MODES: ['bus','tram','metro','rail','water','coach'],
+  TRANSPORT_MODES: ['bus', 'tram', 'metro', 'rail', 'water', 'coach'],
   CLIENT_NAME: 'kollektiv-sanntid-org',
   API_URL: 'https://api.entur.io/journey-planner/v3/graphql',
-  GITHUB_URL: 'https://github.com/aheimsbakk/kollektiv-sanntid-org/#kollektivsanntidorg'
+  GITHUB_URL: 'https://github.com/aheimsbakk/kollektiv-sanntid-org/#kollektivsanntidorg',
 };
 
 // Default favorite station encoded as base64 share link (minimal 3-element format)
 // Used when user has no favorites stored. Set to null to disable.
-export const DEFAULT_FAVORITE = 'WyJPc2xvIFMiLCJOU1I6U3RvcFBsYWNlOjU5ODcyIixbImJ1cyIsInRyYW0iLCJjb2FjaCIsIm1ldHJvIiwid2F0ZXIiLCJyYWlsIl1d';
+export const DEFAULT_FAVORITE =
+  'WyJPc2xvIFMiLCJOU1I6U3RvcFBsYWNlOjU5ODcyIixbImJ1cyIsInRyYW0iLCJjb2FjaCIsIm1ldHJvIiwid2F0ZXIiLCJyYWlsIl1d';
 
 // Immutable list of all transport modes for fallback when no modes are selected
-export const ALL_TRANSPORT_MODES = ['bus','tram','metro','rail','water','coach'];
+export const ALL_TRANSPORT_MODES = ['bus', 'tram', 'metro', 'rail', 'water', 'coach'];
 
 // Transport modes checkbox grid layout for the options panel: [row][col]
 export const MODE_GRID = [
@@ -31,8 +32,8 @@ export const MODE_GRID = [
 // Realtime data indicators
 // Used in the departure line template via {indicator} placeholder
 export const REALTIME_INDICATORS = {
-  realtime: '●',    // Solid dot for live realtime data
-  scheduled: '○'    // Hollow dot for scheduled/static data
+  realtime: '●', // Solid dot for live realtime data
+  scheduled: '○', // Hollow dot for scheduled/static data
 };
 
 // Transport mode emojis
@@ -44,7 +45,7 @@ export const TRANSPORT_MODE_EMOJIS = {
   rail: '🚅',
   water: '🛳️',
   coach: '🚍',
-  default: '🚆'  // Fallback for unknown transport types
+  default: '🚆', // Fallback for unknown transport types
 };
 
 // UI Button emojis
@@ -55,11 +56,11 @@ export const UI_EMOJIS = {
   themeLight: '🌞',
   themeAuto: '🌤️',
   themeDark: '🌥️',
-  heartSave: '🩶',    // Not in favorites — click to save (gray, theme-neutral)
-  heartSaved: '❤️',  // Already in favorites — click to remove
-  footerLink: '🔗',  // Entur data attribution link
+  heartSave: '🩶', // Not in favorites — click to save (gray, theme-neutral)
+  heartSaved: '❤️', // Already in favorites — click to remove
+  footerLink: '🔗', // Entur data attribution link
   footerReadme: '📘', // GitHub README link
-  compass: '🧭'       // GPS nearby-stops button (top-left toolbar)
+  compass: '🧭', // GPS nearby-stops button (top-left toolbar)
 };
 
 // Cancellation display wrapper
@@ -68,19 +69,19 @@ export const UI_EMOJIS = {
 // The styling is defined in CSS via .departure-cancelled class.
 export const CANCELLATION_WRAPPER = {
   open: '<span class="departure-cancelled">',
-  close: '</span>'
+  close: '</span>',
 };
 
 // Platform/Quay display symbols
 // Defines the visual symbols used to represent different types of boarding locations.
 // The symbol is selected using PLATFORM_SYMBOL_RULES (see below).
 export const PLATFORM_SYMBOLS = {
-  bay: '▣',       // Square for bus bays (terminals with alphanumeric codes like B10, C2)
-  gate: '◆',      // Diamond for gates (single-letter codes at transit hubs like A, P)
-  platform: '⚏',  // Railroad track for train/metro platforms (numeric codes like 1, 2)
-  stop: '▪',      // Small square for tram/bus stops (simple letter codes)
-  berth: '⚓',     // Anchor for ferry/boat berths
-  default: '•'    // Bullet for unknown/unclassified quays
+  bay: '▣', // Square for bus bays (terminals with alphanumeric codes like B10, C2)
+  gate: '◆', // Diamond for gates (single-letter codes at transit hubs like A, P)
+  platform: '⚏', // Railroad track for train/metro platforms (numeric codes like 1, 2)
+  stop: '▪', // Small square for tram/bus stops (simple letter codes)
+  berth: '⚓', // Anchor for ferry/boat berths
+  default: '•', // Bullet for unknown/unclassified quays
 };
 
 // Platform symbol selection rules
@@ -96,27 +97,27 @@ export const PLATFORM_SYMBOLS = {
 export const PLATFORM_SYMBOL_RULES = [
   // Water transport always gets berth symbol
   { transportMode: ['water'], publicCodePattern: null, symbol: 'berth' },
-  
+
   // Bus/Coach with alphanumeric codes = bay (e.g., B10, C2, A18 at terminals)
   { transportMode: ['bus', 'coach'], publicCodePattern: /^[A-Z]\d+$/i, symbol: 'bay' },
-  
+
   // Bus/Coach with single letter = gate (e.g., A, P, R at transit hubs)
   { transportMode: ['bus', 'coach'], publicCodePattern: /^[A-Z]$/i, symbol: 'gate' },
-  
+
   // Bus/Coach fallback = stop
   { transportMode: ['bus', 'coach'], publicCodePattern: null, symbol: 'stop' },
-  
+
   // Tram = stop
   { transportMode: ['tram'], publicCodePattern: null, symbol: 'stop' },
-  
+
   // Rail/Metro with numeric codes = platform
   { transportMode: ['rail', 'metro'], publicCodePattern: /^\d+$/, symbol: 'platform' },
-  
+
   // Rail/Metro fallback = platform
   { transportMode: ['rail', 'metro'], publicCodePattern: null, symbol: 'platform' },
-  
+
   // Final fallback for any unmatched mode
-  { transportMode: null, publicCodePattern: null, symbol: 'default' }
+  { transportMode: null, publicCodePattern: null, symbol: 'default' },
 ];
 
 // Departure line display template
@@ -137,8 +138,8 @@ export const PLATFORM_SYMBOL_RULES = [
 export const DEPARTURE_LINE_TEMPLATE = '{destination} {indicator} {lineNumber} {emoji} {platform}';
 
 // GPS nearby-stop search settings
-export const GPS_MAX_RESULTS      = 8;  // maximum stop places returned in the dropdown
-export const GPS_SEARCH_RADIUS_KM = 2;  // search radius for Entur Geocoder (boundary.circle.radius, unit: km)
+export const GPS_MAX_RESULTS = 8; // maximum stop places returned in the dropdown
+export const GPS_SEARCH_RADIUS_KM = 2; // search radius for Entur Geocoder (boundary.circle.radius, unit: km)
 
 // GPS nearby-stop dropdown item template
 // Available placeholders:
@@ -176,14 +177,11 @@ export const STATION_LINE_TEMPLATE = '{name} {modes}';
 // MAX_HINT_DURATION   — ms the "for more change in ⚙️" hint stays visible
 // DEBOUNCE_MS         — minimum ms between consecutive load-more triggers (prevents double-fires)
 export const SCROLL_MORE = {
-  SCROLL_STEPS:       [1, 2, 3, 5, 8, 13, 21],
-  PULL_THRESHOLD:     250,
-  RESISTANCE:         0.5,
-  WHEEL_THRESHOLD:    500,
-  WHEEL_RESET_MS:     800,
-  MAX_HINT_DURATION:  4000,
-  /** Duration (ms) of the bounce-back animation after finger release */
-  BOUNCE_DURATION_MS: 500,
+  SCROLL_STEPS: [1, 2, 3, 5, 8, 13, 21],
+  PULL_THRESHOLD: 250,
+  WHEEL_THRESHOLD: 500,
+  WHEEL_RESET_MS: 800,
+  MAX_HINT_DURATION: 4000,
   /** Minimum ms between consecutive load-more triggers (debounce guard) */
-  DEBOUNCE_MS:        600,
+  DEBOUNCE_MS: 600,
 };
