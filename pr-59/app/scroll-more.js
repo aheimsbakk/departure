@@ -222,15 +222,40 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   }
 
   /**
+   * Check if the board is in its natural centered position.
+   * Returns false if the user has scrolled the content off-screen (top of
+   * board is above the viewport). In that case, we skip the snap-back
+   * animation so the newly loaded content appears at the bottom of screen.
+   * @returns {boolean}
+   */
+  function isBoardInNaturalPosition() {
+    const boardRect = boardEl.getBoundingClientRect();
+    // If the top of the board is above the viewport (negative or near 0),
+    // the content has been scrolled off-screen
+    return boardRect.top > 10;
+  }
+
+  /**
    * Animate the board back to the origin using an ease-out-cubic curve.
    * Cancels any in-progress bounce before starting a new one.
    * Reads the actual board position at call time to handle cases where
    * the board shifted after new departures were loaded.
+   * Skips animation if content is already scrolled off-screen.
    */
   function snapBack() {
     if (bounceRafId !== null) {
       cancelAnimationFrame(bounceRafId);
       bounceRafId = null;
+    }
+
+    // If content has been scrolled off-screen (top of board is above viewport),
+    // skip the snap-back animation and just clear displacement. This lets the
+    // newly loaded content appear at the bottom of the screen instead of
+    // bouncing back to the centered position.
+    if (!isBoardInNaturalPosition()) {
+      clearDisplacement();
+      currentDeltaY = 0;
+      return;
     }
 
     // Read the actual current position at the moment snapBack runs.
