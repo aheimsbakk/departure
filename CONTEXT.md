@@ -1,4 +1,4 @@
-Overall Context: Kollektiv.Sanntid.org - Real-time Norwegian public transport departure board. Version 1.37.31.
+Overall Context: Kollektiv.Sanntid.org - Real-time Norwegian public transport departure board. Version 1.37.32.
 
 Current Goal: Stable mobile PWA experience across Chrome and Firefox.
 
