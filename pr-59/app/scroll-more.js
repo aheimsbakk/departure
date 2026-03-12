@@ -222,40 +222,16 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   }
 
   /**
-   * Check if the board is in its natural centered position.
-   * Returns false if the user has scrolled the content off-screen (top of
-   * board is above the viewport). In that case, we skip the snap-back
-   * animation so the newly loaded content appears at the bottom of screen.
-   * @returns {boolean}
-   */
-  function isBoardInNaturalPosition() {
-    const boardRect = boardEl.getBoundingClientRect();
-    // If the top of the board is above the viewport (negative or near 0),
-    // the content has been scrolled off-screen
-    return boardRect.top > 10;
-  }
-
-  /**
    * Animate the board back to the origin using an ease-out-cubic curve.
    * Cancels any in-progress bounce before starting a new one.
    * Reads the actual board position at call time to handle cases where
    * the board shifted after new departures were loaded.
-   * Skips animation if content is already scrolled off-screen.
+   * If content is taller than screen, clamp to keep bottom at screen bottom.
    */
   function snapBack() {
     if (bounceRafId !== null) {
       cancelAnimationFrame(bounceRafId);
       bounceRafId = null;
-    }
-
-    // If content has been scrolled off-screen (top of board is above viewport),
-    // skip the snap-back animation and just clear displacement. This lets the
-    // newly loaded content appear at the bottom of the screen instead of
-    // bouncing back to the centered position.
-    if (!isBoardInNaturalPosition()) {
-      clearDisplacement();
-      currentDeltaY = 0;
-      return;
     }
 
     // Read the actual current position at the moment snapBack runs.
@@ -264,6 +240,20 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     const startDisplacement = parseFloat(boardEl.style.marginTop) || 0;
     if (startDisplacement === 0) {
       // Even if there's nothing to animate, ensure no stale inline style
+      clearDisplacement();
+      currentDeltaY = 0;
+      return;
+    }
+
+    // Calculate target displacement: if content is taller than screen,
+    // clamp to keep bottom of content at bottom of screen.
+    const boardHeight = boardEl.getBoundingClientRect().height;
+    const screenHeight = window.innerHeight;
+    const minDisplacement = boardHeight > screenHeight ? -(boardHeight - screenHeight) : 0;
+    const targetDisplacement = Math.max(startDisplacement, minDisplacement);
+
+    // If already at or past the minimum, nothing to animate
+    if (targetDisplacement === startDisplacement) {
       clearDisplacement();
       currentDeltaY = 0;
       return;
@@ -284,18 +274,22 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
       const elapsed = now - startTime;
       const progress = Math.min(elapsed / duration, 1);
       const eased = easeOutCubic(progress);
-      const displacement = startDisplacement * (1 - eased);
+      const displacement = startDisplacement + (targetDisplacement - startDisplacement) * eased;
 
       applyDisplacement(displacement);
 
       if (progress < 1) {
         bounceRafId = requestAnimationFrame(step);
       } else {
-        // Remove the inline style entirely so CSS flexbox centering is
-        // restored cleanly — setting marginTop to "0px" would leave an
-        // inline override that can subtly interfere with layout.
-        clearDisplacement();
-        currentDeltaY = 0;
+        // If we clamped to minDisplacement, keep the inline style;
+        // otherwise remove it entirely so CSS flexbox centering is
+        // restored cleanly.
+        if (minDisplacement === 0) {
+          clearDisplacement();
+        } else {
+          applyDisplacement(targetDisplacement);
+        }
+        currentDeltaY = targetDisplacement;
         bounceRafId = null;
       }
     }
