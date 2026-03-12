@@ -290,13 +290,10 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
 
     boardEl.addEventListener('transitionend', _snapEndHandler);
     boardEl.classList.add('board--snapping');
-    // Force a reflow so the browser commits the current marginTop as the
-    // transition start value before we set the target.  Without this, both
-    // the class addition and the style change land in the same style-flush
-    // and the browser skips the transition entirely (no transitionend fires).
-    // eslint-disable-next-line no-unused-expressions
-    boardEl.offsetHeight; // reflow
-    // Setting the target value now triggers the CSS transition
+    // Setting the target value triggers the CSS transition.
+    // The caller (onPointerEnd) already forced a reflow after removing
+    // .board--pulling so the browser has committed the current marginTop
+    // as the transition start value before we get here.
     applyDisplacement(targetDisplacement);
   }
 
@@ -350,11 +347,16 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
    * Only then should pull-up gestures trigger load-more.
    */
   function isNearBottom() {
-    // If the list fits within the viewport, always allow pull
-    const boardRect = boardEl.getBoundingClientRect();
-    if (boardRect.height <= window.innerHeight) return true;
+    // Use the departure list's scrollHeight (actual content height) rather than
+    // boardEl.getBoundingClientRect().height.  The .board element has flex:1
+    // inside .app-root (min-height:100vh), so its bounding rect is always
+    // viewport-height regardless of how many departures are shown — making the
+    // old check always fall through to the scroll-position path and causing the
+    // drag to feel unresponsive (the "canvas too large" symptom).
+    const contentHeight = listEl.scrollHeight;
+    if (contentHeight <= window.innerHeight) return true;
 
-    // Otherwise, check if the page is scrolled near the bottom
+    // Content overflows — only allow pull when scrolled near the bottom
     const scrollBottom = window.innerHeight + window.scrollY;
     const docHeight = document.documentElement.scrollHeight;
     return docHeight - scrollBottom < 60;
@@ -469,6 +471,13 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     if (!pointerActive) return;
     pointerActive = false;
     boardEl.classList.remove('board--pulling');
+    // Force a reflow NOW — after removing .board--pulling (transition:none !important)
+    // and before snapBack() adds .board--snapping.  This ensures the browser flushes
+    // the "no transition" state and commits the current marginTop as the animation
+    // start value.  Without this reflow the browser may still see the suppressed
+    // transition from the just-removed class and skip the snap-back animation.
+    // eslint-disable-next-line no-unused-expressions
+    boardEl.offsetHeight; // reflow
 
     const isTouch = e && e.type && e.type.startsWith('touch');
     // Record touch-end time so onPointerDown can suppress the ghost mousedown
