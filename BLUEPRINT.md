@@ -25,7 +25,7 @@ User-facing features
 - Live countdown (MM:SS), updates every second.
 - Platform/quay display with configurable symbol rules (bay ▣, gate ◆, platform ⚏, stop ▪, berth ⚓).
 - Auto-centering both horizontally and vertically.
-- Pull-to-load-more departures: user pulls up on the departure list (touch drag, mouse drag, or mouse wheel with resistance) to progressively load more departures following the Fibonacci-like sequence 1→2→3→5→8→13→21. Shows ▼ with "scroll for more" label (animated bounce cue via transform, not margin-top); at max (21) switches to ● with temporary "for more change in ⚙️" hint. Load-more fires during the pull gesture when threshold is reached (not on finger release). Temporary count resets on station change, settings apply, or app reload. Drag uses marginTop (no GPU translate) with rubber-band resistance; animates back to origin with an ease-out-cubic rAF bounce (BOUNCE_DURATION_MS, default 600 ms) on release. The temporary count persists across automatic fetch-loop refreshes.
+- Pull-to-load-more departures: user pulls up on the departure list (touch drag, mouse drag, or mouse wheel with resistance) to progressively load more departures following the Fibonacci-like sequence 1→2→3→5→8→13→21. Shows ▼ with "scroll for more" label (animated bounce cue via transform, not margin-top); at max (21) switches to ● with temporary "for more change in ⚙️" hint. Temporary count resets on station change, settings apply, or app reload. Drag uses marginTop (no GPU translate) with rubber-band resistance. On release, snap-back is driven by a CSS transition on margin-top (.board--snapping, 500 ms cubic-bezier) — compositor-thread animation, immune to JS-thread stalls on mobile. On touch: load-more fires from the transitionend callback after snap-back completes. On mouse drag: load-more fires mid-gesture at threshold. The temporary count persists across automatic fetch-loop refreshes.
 - Settings persisted to `localStorage` (`departure:settings`): station name, stop ID, N, modes, text size, fetch interval.
 - Language persisted to `localStorage` (`departure:language`): 12 supported languages.
 - Theme persisted to `localStorage` (`departure:theme`): light / auto / dark cycle.
@@ -45,7 +45,7 @@ Architecture overview
   - `fetch-loop.js` — doRefresh, startRefreshLoop(listEl, statusEl), tickCountdowns; single unified 1-second interval drives both departure countdowns and the "update in" chip; fetch triggered when tick counter reaches 0; supports temporary numDepartures override via setNumDeparturesOverride()/getEffectiveNumDepartures() for scroll-more feature
   - `handlers.js` — handleStationSelect, handleFavoriteToggle, onApplySettings, onLanguageChange; resets scroll-more on station change and settings apply
   - `action-bar.js` — share + theme + settings buttons, global-gear container
-  - `scroll-more.js` — pull-to-load-more departures: Fibonacci progression (1→2→3→5→8→13→21), touch/mouse/wheel gesture detection, rubber-band drag feedback (marginTop, no GPU translate), ease-out-cubic rAF bounce-back on release (BOUNCE_DURATION_MS), ▼/"scroll for more" indicator → ●/"for more change in ⚙️" at max; load-more fires at threshold during gesture (not on release); resets on station change
+  - `scroll-more.js` — pull-to-load-more departures: Fibonacci progression (1→2→3→5→8→13→21), touch/mouse/wheel gesture detection, rubber-band drag feedback (marginTop, no GPU translate), CSS transition snap-back on release (.board--snapping, 500 ms cubic-bezier, compositor-driven), ▼/"scroll for more" indicator → ●/"for more change in ⚙️" at max; on touch load-more fires from transitionend after snap-back; on mouse load-more fires mid-gesture at threshold; resets on station change
   - `sw-updater.js` — SW registration, update toast, controllerchange reload
 - `src/config.js` — all configurable constants: VERSION, DEFAULTS (includes NUM_FAVORITES, FETCH_INTERVAL, GITHUB_URL), DEFAULT_FAVORITE, ALL_TRANSPORT_MODES, REALTIME_INDICATORS, TRANSPORT_MODE_EMOJIS, UI_EMOJIS, CANCELLATION_WRAPPER, PLATFORM_SYMBOLS, PLATFORM_SYMBOL_RULES, DEPARTURE_LINE_TEMPLATE, STATION_LINE_TEMPLATE, GPS_STOP_LINE_TEMPLATE, GPS_MAX_RESULTS, GPS_SEARCH_RADIUS_KM, SCROLL_MORE (includes DEBOUNCE_MS)
 - `src/entur/` — Entur API client (split into focused modules)
@@ -76,7 +76,7 @@ Architecture overview
   - `header.css` — station header row, dropdown, status chip, favorite btn
   - `toolbar.css` — fixed top-right .global-gear + fixed top-left .gps-bar action bars
   - `departures.css` — departure list, destination, time, platform, text-size-\* utilities
-  - `scroll-more.css` — pull-to-load-more indicator: ▼ bounce animation (transform-based, not margin-top), ● max state, loading dim, drag feedback
+  - `scroll-more.css` — pull-to-load-more indicator: ▼ bounce animation (transform-based, not margin-top), ● max state, loading dim, drag feedback; .board--pulling (touch-action:none, transition:none during drag), .board--snapping (CSS transition for compositor-driven snap-back)
   - `options-panel.css` — slide-in panel shell, .options-row, inputs, .options-actions
   - `autocomplete.css` — station search autocomplete list
   - `transport-modes.css`— mode filter checkbox grid
@@ -172,7 +172,7 @@ PWA & Service Worker
 - `src/sw.js`: versioned cache name (`kollektiv-v<VERSION>`), caches all app assets on install, serves from cache with network fallback.
 - Update flow: new SW detected → 5-second countdown toast shows old→new version → `skipWaiting` → `controllerchange` triggers hard reload with `?t=<timestamp>` cache-bust.
 - PWA wake-up on resume: `visibilitychange` in `fetch-loop.js` checks wall-clock elapsed time vs `FETCH_INTERVAL`; triggers immediate `doRefresh()` if stale. `pageshow` (event.persisted) in `app.js` forces full reload on BFCache cold-start.
-- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.37.24`.
+- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.37.28`.
 
 Performance & DOM update pattern
 
