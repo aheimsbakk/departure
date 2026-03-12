@@ -126,6 +126,17 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   let interruptedSnap = false;
 
   /**
+   * Timestamp (ms) of the most recent touchend event.
+   * Used to suppress the synthetic mousedown that iOS/Android fire ~300 ms
+   * after a touch gesture ends (ghost click).  Without this guard the ghost
+   * mousedown hits onPointerDown while the snap-back transition is still
+   * running, triggering the interrupt path and cancelling the animation.
+   */
+  let lastTouchEndAt = 0;
+  /** Grace period (ms) during which a mousedown after a touchend is ignored. */
+  const GHOST_CLICK_GUARD_MS = 600;
+
+  /**
    * Stable reference to the transitionend handler so it can be removed
    * correctly when a snap is interrupted or reset.
    * Assigned inside snapBack() before being registered.
@@ -354,6 +365,10 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     if (e.button && e.button !== 0) return;
     // Don't interfere when the options panel is open
     if (document.body.classList.contains('options-open')) return;
+    // Suppress the synthetic mousedown that iOS/Android emit ~300 ms after
+    // touchend (ghost click).  It would otherwise hit the snap-interrupt path
+    // and cancel the CSS snap-back animation mid-flight.
+    if (!e.touches && Date.now() - lastTouchEndAt < GHOST_CLICK_GUARD_MS) return;
 
     // Only start tracking if we're near bottom (or list fits in viewport)
     if (!isNearBottom()) return;
@@ -456,6 +471,9 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     boardEl.classList.remove('board--pulling');
 
     const isTouch = e && e.type && e.type.startsWith('touch');
+    // Record touch-end time so onPointerDown can suppress the ghost mousedown
+    // that mobile browsers synthesise ~300 ms after a touch gesture ends.
+    if (isTouch) lastTouchEndAt = Date.now();
 
     if (isTouch && thresholdTriggered) {
       // Mobile touch path: snap back via CSS transition; triggerLoadMore()
@@ -532,6 +550,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     loading = false;
     loadAfterSnap = false;
     lastLoadMoreAt = 0;
+    lastTouchEndAt = 0;
     interruptedSnap = false;
     pointerActive = false;
     boardEl.classList.remove('board--pulling');
