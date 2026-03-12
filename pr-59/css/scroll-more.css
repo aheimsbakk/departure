@@ -58,7 +58,7 @@
 
 /* Max-reached state */
 .scroll-more-maxed .scroll-more-label {
-  opacity: 0.5;
+  opacity: 1;
 }
 
 /* Threshold reached during drag — visual "ready to load" hint */
@@ -66,11 +66,6 @@
   opacity: 1;
   color: var(--accent);
   animation: scroll-more-bounce 0.5s ease-in-out infinite;
-}
-
-.scroll-more-indicator--triggered .scroll-more-label {
-  opacity: 1;
-  color: var(--accent);
 }
 
 /* ── Bounce animation for the down-arrow cue ────────────────────────── */
