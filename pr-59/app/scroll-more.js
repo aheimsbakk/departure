@@ -17,26 +17,21 @@
  *   - Resistance threshold prevents accidental loading
  *   - Memory-safe: all listeners are cleaned up via destroy()
  *
- * Mobile touch load-more strategy (v1.37.27+):
- *   - On touch: snapBack() fires immediately on touchend; triggerLoadMore() is
- *     called AFTER the bounce animation completes (BOUNCE_DURATION_MS delay).
- *     This avoids the rAF stall caused by renderDepartures() DOM mutations
- *     landing mid-animation on mobile browsers.
+ * Snap-back animation strategy (v1.37.28+):
+ *   - Uses a CSS transition on margin-top instead of a JS rAF loop.
+ *   - CSS transitions run on the compositor thread and are immune to the JS
+ *     thread stalls that caused the rAF animation to freeze on mobile browsers
+ *     after a touch gesture.
+ *   - During drag: .board--snapping is absent → margin-top tracks finger instantly.
+ *   - On release: .board--snapping is added → CSS transition animates to target.
+ *   - After transition ends (transitionend event): class is removed, inline style
+ *     is cleaned up, and (on touch) triggerLoadMore() is called.
  *   - On mouse drag (desktop): load-more fires mid-gesture at threshold (unchanged).
- *   - snapBackPending has been removed; it is no longer needed.
+ *   - All rAF / bounceRafId / bounceCancelled state has been removed.
  */
 
 import { DEFAULTS, SCROLL_MORE } from '../config.js';
 import { t } from '../i18n.js';
-
-/**
- * Ease-out cubic: decelerates quickly then glides to rest.
- * @param {number} progress - Normalised time [0, 1]
- * @returns {number}
- */
-function easeOutCubic(progress) {
-  return 1 - Math.pow(1 - progress, 3);
-}
 
 // Fibonacci-like progression for temporary departure counts
 const SCROLL_STEPS = SCROLL_MORE.SCROLL_STEPS;
@@ -108,11 +103,10 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   let loading = false;
 
   /**
-   * Timer handle for the post-bounce load-more call on touch.
-   * Set in onPointerEnd (touch path) when threshold was reached;
-   * cleared on reset/destroy to prevent stale loads after station change.
+   * Whether the threshold was reached on a touch gesture that is now
+   * snapping back. triggerLoadMore() will be called once transitionend fires.
    */
-  let postBounceLoadTimer = null;
+  let loadAfterSnap = false;
 
   /** Active pointer tracking state */
   let pointerActive = false;
@@ -123,29 +117,20 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   /** Whether load-more was already triggered during this gesture */
   let thresholdTriggered = false;
 
-  /** rAF handle for the bounce-back animation */
-  let bounceRafId = null;
+  /**
+   * When true the current gesture was started while a snap-back transition
+   * was running.  The gesture is treated as an "interrupt" — the transition
+   * is cancelled instantly and the gesture is passed through to the browser.
+   * Resets on pointer-up so the next gesture is handled normally.
+   */
+  let interruptedSnap = false;
 
   /**
-   * Guard flag for the bounce-back rAF loop.  Set to true whenever the
-   * animation is cancelled (interrupt, reset, destroy).  The rAF step
-   * function checks this at the top of every frame and bails out if true.
-   *
-   * This is necessary because some browsers (notably Firefox mobile) may
-   * dispatch an already-queued rAF callback *after* cancelAnimationFrame()
-   * has been called.  Without this flag that stale callback would re-apply
-   * a non-zero marginTop, causing a visual jump.
+   * Stable reference to the transitionend handler so it can be removed
+   * correctly when a snap is interrupted or reset.
+   * Assigned inside snapBack() before being registered.
    */
-  let bounceCancelled = false;
-
-  /**
-   * When true the current gesture was started while a bounce-back animation
-   * was running.  The gesture is treated as an "interrupt" — the animation
-   * stops and the entire gesture is passed through to the browser for native
-   * scrolling.  The flag resets on pointer-up so the next gesture is handled
-   * normally.
-   */
-  let interruptedBounce = false;
+  let _snapEndHandler = null;
 
   /** Timer for the max-reached hint auto-dismiss */
   let maxHintTimer = null;
@@ -229,83 +214,73 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   }
 
   /**
-   * Animate the board back to the origin using an ease-out-cubic curve.
-   * Cancels any in-progress bounce before starting a new one.
-   * Reads the actual board position at call time to handle cases where
-   * the board shifted after new departures were loaded.
-   * If content is taller than screen, clamp to keep bottom at screen bottom.
+   * Animate the board back to its natural position using a CSS transition.
+   * CSS transitions run on the compositor thread and are immune to JS-thread
+   * stalls caused by touch gesture handling on mobile browsers.
+   *
+   * Strategy:
+   *   1. Read current marginTop (the drag displacement).
+   *   2. If already at target, clean up and return.
+   *   3. Add .board--snapping to enable the CSS transition.
+   *   4. Set marginTop to the target value — the browser animates it.
+   *   5. On transitionend: remove .board--snapping, clean up inline style,
+   *      and (if loadAfterSnap) call triggerLoadMore().
+   *
+   * If content overflows the viewport, clamp target to keep the bottom
+   * of the board at the bottom of the viewport (same logic as before).
    */
   function snapBack() {
-    if (bounceRafId !== null) {
-      cancelAnimationFrame(bounceRafId);
-      bounceRafId = null;
-    }
-
-    // Read the actual current position at the moment snapBack runs.
-    // This is critical when called from triggerLoadMore's finally block:
-    // the board may have shifted after new departures were added to the DOM.
-    const startDisplacement = parseFloat(boardEl.style.marginTop) || 0;
-    if (startDisplacement === 0) {
-      // Even if there's nothing to animate, ensure no stale inline style
-      clearDisplacement();
-      currentDeltaY = 0;
-      return;
-    }
-
-    // Calculate target displacement: ideally 0 (natural position), but if
-    // content is taller than the screen after loading more departures, clamp
-    // so the bottom of the board stays at the bottom of the viewport.
-    const boardHeight = boardEl.getBoundingClientRect().height;
-    const screenHeight = window.innerHeight;
-    const minDisplacement = boardHeight > screenHeight ? -(boardHeight - screenHeight) : 0;
-    // Target is 0 (origin) clamped down to the minimum allowed position.
-    // minDisplacement is <= 0, so this picks minDisplacement only when the
-    // board overflows and needs to stay scrolled up.
-    const targetDisplacement = Math.min(0, minDisplacement);
-
-    // If already at the target, nothing to animate
-    if (startDisplacement === targetDisplacement) {
-      if (targetDisplacement === 0) clearDisplacement();
-      currentDeltaY = targetDisplacement;
-      return;
-    }
-
-    const startTime = performance.now();
-    const duration = SCROLL_MORE.BOUNCE_DURATION_MS;
-
-    // Reset the cancellation flag — this animation is now the active one
-    bounceCancelled = false;
-
-    function step(now) {
-      // Bail out if the animation was cancelled between frames.
-      // Firefox mobile may dispatch an already-queued rAF callback after
-      // cancelAnimationFrame(), so we need this secondary guard.
-      if (bounceCancelled) return;
-
-      const elapsed = now - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = easeOutCubic(progress);
-      const displacement = startDisplacement + (targetDisplacement - startDisplacement) * eased;
-
-      applyDisplacement(displacement);
-
-      if (progress < 1) {
-        bounceRafId = requestAnimationFrame(step);
-      } else {
-        // If we clamped to minDisplacement, keep the inline style;
-        // otherwise remove it entirely so CSS flexbox centering is
-        // restored cleanly.
-        if (minDisplacement === 0) {
-          clearDisplacement();
-        } else {
-          applyDisplacement(targetDisplacement);
-        }
-        currentDeltaY = targetDisplacement;
-        bounceRafId = null;
+    // If a snap is already in progress, cancel it instantly so we can
+    // start a fresh one from the current position.
+    if (boardEl.classList.contains('board--snapping')) {
+      boardEl.classList.remove('board--snapping');
+      if (_snapEndHandler) {
+        boardEl.removeEventListener('transitionend', _snapEndHandler);
+        _snapEndHandler = null;
       }
     }
 
-    bounceRafId = requestAnimationFrame(step);
+    const startDisplacement = parseFloat(boardEl.style.marginTop) || 0;
+
+    // Calculate target: 0 normally; clamped if board overflows viewport.
+    const boardHeight = boardEl.getBoundingClientRect().height;
+    const screenHeight = window.innerHeight;
+    const minDisplacement = boardHeight > screenHeight ? -(boardHeight - screenHeight) : 0;
+    const targetDisplacement = Math.min(0, minDisplacement);
+
+    if (startDisplacement === targetDisplacement) {
+      if (targetDisplacement === 0) clearDisplacement();
+      currentDeltaY = targetDisplacement;
+      // Still need to fire load if pending
+      if (loadAfterSnap) {
+        loadAfterSnap = false;
+        triggerLoadMore();
+      }
+      return;
+    }
+
+    _snapEndHandler = function onSnapEnd(ev) {
+      // Only react to margin-top transitions on boardEl itself
+      if (ev.target !== boardEl || ev.propertyName !== 'margin-top') return;
+      boardEl.classList.remove('board--snapping');
+      boardEl.removeEventListener('transitionend', _snapEndHandler);
+      _snapEndHandler = null;
+      if (targetDisplacement === 0) {
+        clearDisplacement();
+      } else {
+        applyDisplacement(targetDisplacement);
+      }
+      currentDeltaY = targetDisplacement;
+      if (loadAfterSnap) {
+        loadAfterSnap = false;
+        triggerLoadMore();
+      }
+    };
+
+    boardEl.addEventListener('transitionend', _snapEndHandler);
+    boardEl.classList.add('board--snapping');
+    // Setting the target value triggers the CSS transition
+    applyDisplacement(targetDisplacement);
   }
 
   /**
@@ -377,18 +352,20 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     // Only start tracking if we're near bottom (or list fits in viewport)
     if (!isNearBottom()) return;
 
-    // If a bounce-back animation is running, the user is interrupting it.
-    // Cancel the animation, clear displacement, and mark the gesture as an
-    // interrupt so that onPointerMove passes all events through to the
-    // browser for normal scrolling.
-    if (bounceRafId !== null) {
-      cancelAnimationFrame(bounceRafId);
-      bounceRafId = null;
-      bounceCancelled = true;
+    // If a snap-back transition is running, the user is interrupting it.
+    // Cancel the transition instantly, clear displacement, and mark the
+    // gesture as an interrupt so onPointerMove passes events to the browser.
+    if (boardEl.classList.contains('board--snapping')) {
+      boardEl.classList.remove('board--snapping');
+      if (_snapEndHandler) {
+        boardEl.removeEventListener('transitionend', _snapEndHandler);
+        _snapEndHandler = null;
+      }
       currentDeltaY = 0;
+      loadAfterSnap = false;
       clearDisplacement();
       boardEl.classList.remove('board--pulling');
-      interruptedBounce = true;
+      interruptedSnap = true;
       // Do NOT set pointerActive — let the browser handle this gesture natively
       return;
     }
@@ -461,9 +438,9 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   }
 
   function onPointerEnd(e) {
-    // Clear the bounce-interrupt flag so the next gesture is handled normally
-    if (interruptedBounce) {
-      interruptedBounce = false;
+    // Clear the snap-interrupt flag so the next gesture is handled normally
+    if (interruptedSnap) {
+      interruptedSnap = false;
       boardEl.classList.remove('board--pulling');
       return;
     }
@@ -475,20 +452,14 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     const isTouch = e && e.type && e.type.startsWith('touch');
 
     if (isTouch && thresholdTriggered) {
-      // Mobile touch path: snap back immediately, then load after the
-      // bounce animation completes.  This prevents the rAF stall caused by
-      // renderDepartures() DOM mutations landing mid-animation on mobile.
-      snapBack();
-      if (postBounceLoadTimer) clearTimeout(postBounceLoadTimer);
-      postBounceLoadTimer = setTimeout(() => {
-        postBounceLoadTimer = null;
-        triggerLoadMore();
-      }, SCROLL_MORE.BOUNCE_DURATION_MS);
-    } else {
-      // Desktop mouse path: load was already triggered mid-gesture; just
-      // animate back to origin.
-      snapBack();
+      // Mobile touch path: snap back via CSS transition; triggerLoadMore()
+      // is called from onSnapEnd (transitionend) once the animation completes.
+      // This is compositor-driven and immune to JS-thread stalls on mobile.
+      loadAfterSnap = true;
     }
+    // Both touch and mouse: start the snap-back transition.
+    // For mouse, load was already triggered mid-gesture; snapBack just animates.
+    snapBack();
 
     rawPullDistance = 0;
     thresholdTriggered = false;
@@ -553,21 +524,18 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   function reset() {
     tempCount = null;
     loading = false;
+    loadAfterSnap = false;
     lastLoadMoreAt = 0;
-    interruptedBounce = false;
+    interruptedSnap = false;
+    pointerActive = false;
     boardEl.classList.remove('board--pulling');
-    if (postBounceLoadTimer) {
-      clearTimeout(postBounceLoadTimer);
-      postBounceLoadTimer = null;
-    }
-    // Cancel any running bounce animation and restore the board to its
-    // natural position.  Without this the rAF loop would continue writing
-    // marginTop on boardEl after a station change, holding a stale DOM
-    // reference and potentially fighting any new layout applied by the render.
-    if (bounceRafId !== null) {
-      cancelAnimationFrame(bounceRafId);
-      bounceRafId = null;
-      bounceCancelled = true;
+    // Cancel any running snap-back transition and restore natural position.
+    if (boardEl.classList.contains('board--snapping')) {
+      boardEl.classList.remove('board--snapping');
+      if (_snapEndHandler) {
+        boardEl.removeEventListener('transitionend', _snapEndHandler);
+        _snapEndHandler = null;
+      }
       currentDeltaY = 0;
       clearDisplacement();
     }
@@ -606,15 +574,12 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     window.removeEventListener('mouseup', onPointerEnd);
     window.removeEventListener('wheel', onWheel);
     boardEl.classList.remove('board--pulling');
-    if (postBounceLoadTimer) {
-      clearTimeout(postBounceLoadTimer);
-      postBounceLoadTimer = null;
+    boardEl.classList.remove('board--snapping');
+    if (_snapEndHandler) {
+      boardEl.removeEventListener('transitionend', _snapEndHandler);
+      _snapEndHandler = null;
     }
-    if (bounceRafId !== null) {
-      cancelAnimationFrame(bounceRafId);
-      bounceRafId = null;
-      bounceCancelled = true;
-    }
+    loadAfterSnap = false;
     if (maxHintTimer) clearTimeout(maxHintTimer);
     if (wheelResetTimer) clearTimeout(wheelResetTimer);
     indicator.remove();

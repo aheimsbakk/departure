@@ -63,7 +63,8 @@
 
 /* ── Bounce animation for the down-arrow cue ────────────────────────── */
 @keyframes scroll-more-bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -73,12 +74,8 @@
 
 /* ── Board drag feedback ────────────────────────────────────────────── */
 
-/* During active drag, disable transitions on the board so marginTop
-   tracks the finger without delay.  The bounce-back on release is driven
-   by an rAF ease-out-cubic loop in scroll-more.js (BOUNCE_DURATION_MS). */
+/* Prevent iOS rubber-band from interfering with our custom pull */
 .board {
-  transition: none;
-  /* Prevent iOS rubber-band from interfering with our custom pull */
   -webkit-overflow-scrolling: auto;
 }
 
@@ -88,7 +85,20 @@
  * this gesture — eliminating the per-frame preventDefault handshake that
  * causes scroll jank on Firefox mobile.  Removed immediately on pointer-up
  * so normal vertical scrolling is unaffected for every other gesture.
+ * No transition during drag — margin-top must track the finger instantly.
  */
 .board--pulling {
   touch-action: none;
+  transition: none !important;
+}
+
+/*
+ * Applied by scroll-more.js on pointer-up to animate the board back to its
+ * natural position.  Uses a CSS transition so the animation runs on the
+ * compositor thread — immune to JS-thread stalls caused by touch gesture
+ * handling on mobile browsers (the rAF approach was unreliable on mobile).
+ * Removed by the transitionend handler in scroll-more.js once complete.
+ */
+.board--snapping {
+  transition: margin-top 500ms cubic-bezier(0.33, 1, 0.68, 1);
 }
