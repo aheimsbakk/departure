@@ -245,17 +245,21 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
       return;
     }
 
-    // Calculate target displacement: if content is taller than screen,
-    // clamp to keep bottom of content at bottom of screen.
+    // Calculate target displacement: ideally 0 (natural position), but if
+    // content is taller than the screen after loading more departures, clamp
+    // so the bottom of the board stays at the bottom of the viewport.
     const boardHeight = boardEl.getBoundingClientRect().height;
     const screenHeight = window.innerHeight;
     const minDisplacement = boardHeight > screenHeight ? -(boardHeight - screenHeight) : 0;
-    const targetDisplacement = Math.max(startDisplacement, minDisplacement);
+    // Target is 0 (origin) clamped down to the minimum allowed position.
+    // minDisplacement is <= 0, so this picks minDisplacement only when the
+    // board overflows and needs to stay scrolled up.
+    const targetDisplacement = Math.min(0, minDisplacement);
 
-    // If already at or past the minimum, nothing to animate
-    if (targetDisplacement === startDisplacement) {
-      clearDisplacement();
-      currentDeltaY = 0;
+    // If already at the target, nothing to animate
+    if (startDisplacement === targetDisplacement) {
+      if (targetDisplacement === 0) clearDisplacement();
+      currentDeltaY = targetDisplacement;
       return;
     }
 
@@ -393,7 +397,11 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
 
     pointerActive = true;
     startY = e.touches ? e.touches[0].clientY : e.clientY;
-    currentDeltaY = 0;
+    // Read the board's actual displacement so the gesture starts from the
+    // real visual position.  After a snapBack() that clamped to a non-zero
+    // minDisplacement the board may still carry an inline marginTop — zeroing
+    // currentDeltaY here would desync state from the DOM.
+    currentDeltaY = parseFloat(boardEl.style.marginTop) || 0;
     rawPullDistance = 0;
     thresholdTriggered = false;
 
