@@ -1,12 +1,12 @@
-Overall Context: Kollektiv.Sanntid.org - Real-time Norwegian public transport departure board. Version 1.37.27.
+Overall Context: Kollektiv.Sanntid.org - Real-time Norwegian public transport departure board. Version 1.37.28.
 
 Current Goal: Stable mobile PWA experience across Chrome and Firefox.
 
 Last 3 Changes:
 
-- Mobile scroll load-after-bounce (v1.37.27): Touch path now snaps back immediately on touchend, then calls triggerLoadMore() after BOUNCE_DURATION_MS; removes unreliable snapBackPending pattern
-- Scroll snapBack logic fix (v1.37.26): Fixed snapBack() target calculation (Math.max→Math.min) so bounce-back animates correctly when content overflows; fixed onPointerDown reading actual marginTop instead of zeroing currentDeltaY
-- Scroll bounce fix (v1.37.24): Modified snapBack() in scroll-more.js to read actual board position (marginTop) at call time instead of using stale currentDeltaY
+- CSS transition snap-back (v1.37.28): Replaced rAF bounce-back loop with CSS transition on margin-top (.board--snapping); compositor-driven, immune to JS-thread stalls on mobile; triggerLoadMore fires from transitionend callback
+- Mobile scroll load-after-bounce (v1.37.27): Touch path snaps back immediately on touchend, then loads after BOUNCE_DURATION_MS; removed snapBackPending
+- Scroll snapBack logic fix (v1.37.26): Fixed snapBack() target calculation and onPointerDown reading actual marginTop
 
 Next Steps:
 
