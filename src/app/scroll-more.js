@@ -224,6 +224,8 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   /**
    * Animate the board back to the origin using an ease-out-cubic curve.
    * Cancels any in-progress bounce before starting a new one.
+   * Reads the actual board position at call time to handle cases where
+   * the board shifted after new departures were loaded.
    */
   function snapBack() {
     if (bounceRafId !== null) {
@@ -231,10 +233,14 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
       bounceRafId = null;
     }
 
-    const startDisplacement = currentDeltaY;
+    // Read the actual current position at the moment snapBack runs.
+    // This is critical when called from triggerLoadMore's finally block:
+    // the board may have shifted after new departures were added to the DOM.
+    const startDisplacement = parseFloat(boardEl.style.marginTop) || 0;
     if (startDisplacement === 0) {
       // Even if there's nothing to animate, ensure no stale inline style
       clearDisplacement();
+      currentDeltaY = 0;
       return;
     }
 
@@ -338,7 +344,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     // Otherwise, check if the page is scrolled near the bottom
     const scrollBottom = window.innerHeight + window.scrollY;
     const docHeight = document.documentElement.scrollHeight;
-    return (docHeight - scrollBottom) < 60;
+    return docHeight - scrollBottom < 60;
   }
 
   function onPointerDown(e) {
@@ -436,19 +442,12 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     pointerActive = false;
     boardEl.classList.remove('board--pulling');
 
-    // If content was re-rendered during the gesture (e.g. triggerLoadMore
-    // added new departures), the tracked currentDeltaY may no longer match
-    // the visual displacement.  Read the actual computed marginTop so the
-    // bounce-back starts from the true visual position, avoiding a jump.
-    const computedMargin = parseFloat(boardEl.style.marginTop) || 0;
-    if (computedMargin !== 0 && Math.abs(computedMargin - currentDeltaY) > 1) {
-      currentDeltaY = computedMargin;
-    }
-
     // If a fetch triggered mid-gesture is still in-flight, defer snapBack()
     // until triggerLoadMore()'s finally block.  Starting the rAF bounce while
     // renderDepartures() is about to mutate the DOM causes a compositor stall
     // on mobile browsers — the rAF callback never fires until the next touch.
+    // Note: we do NOT read current position here because the board will shift
+    // after new departures are added.  The actual position is read in snapBack().
     if (loading) {
       snapBackPending = true;
     } else {
@@ -586,7 +585,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     reset,
     getTemporaryCount,
     updateTranslations,
-    indicatorEl: indicator
+    indicatorEl: indicator,
   };
   _activeInstance = instance;
   return instance;
