@@ -17,7 +17,7 @@
   min-height: 36px;
 }
 
-/* ⯆ Arrow with subtle bounce animation cue */
+/* ▼ Arrow with subtle bounce animation cue */
 .scroll-more-arrow {
   font-size: 1em;
   line-height: 1;
@@ -27,7 +27,7 @@
   display: inline-block;
 }
 
-/* ● Dot indicator when at max — sized to visually match the ▼ arrow */
+/* ● Dot indicator when at max */
 .scroll-more-dot {
   font-size: 1em;
   line-height: 1;
@@ -56,39 +56,25 @@
   opacity: 0.5;
 }
 
-/* Max-reached state — no bounce, just the dot */
+/* Max-reached state */
 .scroll-more-maxed .scroll-more-label {
-  opacity: 0.5;
+  opacity: 1;
+}
+
+/* Threshold reached during drag — visual "ready to load" hint */
+.scroll-more-indicator--triggered .scroll-more-arrow {
+  opacity: 1;
+  color: var(--accent);
+  animation: scroll-more-bounce 0.5s ease-in-out infinite;
 }
 
 /* ── Bounce animation for the down-arrow cue ────────────────────────── */
 @keyframes scroll-more-bounce {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
     transform: translateY(6px);
   }
-}
-
-/* ── Board drag feedback ────────────────────────────────────────────── */
-
-/* During active drag, disable transitions on the board so marginTop
-   tracks the finger without delay.  The bounce-back on release is driven
-   by an rAF ease-out-cubic loop in scroll-more.js (BOUNCE_DURATION_MS). */
-.board {
-  transition: none;
-  /* Prevent iOS rubber-band from interfering with our custom pull */
-  -webkit-overflow-scrolling: auto;
-}
-
-/*
- * Applied by scroll-more.js only while an upward pull gesture is active.
- * Tells Firefox (and all browsers) to hand full touch ownership to JS for
- * this gesture — eliminating the per-frame preventDefault handshake that
- * causes scroll jank on Firefox mobile.  Removed immediately on pointer-up
- * so normal vertical scrolling is unaffected for every other gesture.
- */
-.board--pulling {
-  touch-action: none;
 }
