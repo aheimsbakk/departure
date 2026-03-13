@@ -209,7 +209,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
     rawPullDistance = 0;
     thresholdTriggered = false;
 
-    if (!e.touches) e.preventDefault();
+    if (!e.touches && e.cancelable) e.preventDefault();
   }
 
   function onPointerMove(e) {
@@ -282,7 +282,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   boardEl.addEventListener('touchend', onPointerEnd, { passive: true });
   boardEl.addEventListener('touchcancel', onPointerEnd, { passive: true });
 
-  boardEl.addEventListener('mousedown', onPointerDown);
+  boardEl.addEventListener('mousedown', onPointerDown, { passive: false });
   window.addEventListener('mousemove', onPointerMove);
   window.addEventListener('mouseup', onPointerEnd);
 

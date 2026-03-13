@@ -14,7 +14,11 @@
 import { DEFAULTS, ALL_TRANSPORT_MODES } from '../config.js';
 import { t, getLanguage } from '../i18n.js';
 import { updateFooterTranslations, updateFavoriteButton } from '../ui/ui.js';
-import { addRecentStation, removeFromFavorites, isStationInFavorites } from '../ui/station-dropdown.js';
+import {
+  addRecentStation,
+  removeFromFavorites,
+  isStationInFavorites,
+} from '../ui/station-dropdown.js';
 import { saveSettings, applyTextSize } from './settings.js';
 import { doRefresh, startRefreshLoop } from './fetch-loop.js';
 import { setNumDeparturesOverride } from './fetch-loop.js';
@@ -29,15 +33,22 @@ import { setNumDeparturesOverride } from './fetch-loop.js';
  * @param {{ updateFields?: Function }} optsRef - Mutable ref to the options panel API
  * @returns {{ handleStationSelect, handleFavoriteToggle, onApplySettings, onLanguageChange }}
  */
-export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, optsRef, gpsRef = {}, scrollMoreRef = {}) {
-
+export function wireHandlers(
+  board,
+  shareComponents,
+  themeBtn,
+  settingsBtn,
+  optsRef,
+  gpsRef = {},
+  scrollMoreRef = {}
+) {
   /**
    * Keep button tooltips in sync after a language change.
    */
   function updateButtonTooltips() {
     shareComponents.button.title = t('shareBoard');
     shareComponents.button.setAttribute('aria-label', t('shareBoard'));
-    themeBtn.title    = t('themeTooltip');
+    themeBtn.title = t('themeTooltip');
     settingsBtn.title = t('settingsTooltip');
     if (gpsRef.current?.updateTooltip) gpsRef.current.updateTooltip();
     updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
@@ -52,7 +63,7 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
    */
   function applyStation(station, addToFavorites) {
     DEFAULTS.STATION_NAME = station.name;
-    DEFAULTS.STOP_ID      = station.stopId;
+    DEFAULTS.STOP_ID = station.stopId;
     if (Array.isArray(station.modes)) {
       DEFAULTS.TRANSPORT_MODES = station.modes;
     }
@@ -68,23 +79,26 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
       addRecentStation(station.name, station.stopId, station.modes || [], {
         numDepartures: station.numDepartures ?? DEFAULTS.NUM_DEPARTURES,
         fetchInterval: station.fetchInterval ?? DEFAULTS.FETCH_INTERVAL,
-        textSize:      station.textSize      ?? DEFAULTS.TEXT_SIZE,
-        language:      station.language      ?? getLanguage()
+        textSize: station.textSize ?? DEFAULTS.TEXT_SIZE,
+        language: station.language ?? getLanguage(),
       });
       board.stationDropdown.refresh();
     }
 
     // Update the browser tab title
-    try { document.title = station.name || document.title; } catch (_) {}
+    try {
+      document.title = station.name || document.title;
+    } catch (_) {}
 
     // Reset scroll-more temporary departure count on station change
     setNumDeparturesOverride(null);
     if (scrollMoreRef.current?.reset) scrollMoreRef.current.reset();
 
-    // Kick off a refresh with the new station then restart the unified loop
-    doRefresh(board.list)
-      .catch(err => console.warn('Station change refresh failed', err))
-      .finally(() => startRefreshLoop(board.list, board.status));
+    // Start the loop first so ticksUntilRefresh is owned by the new interval,
+    // then kick off an immediate refresh. doRefresh's own finally-reset is
+    // harmless here because startRefreshLoop already reset the counter.
+    startRefreshLoop(board.list, board.status);
+    doRefresh(board.list).catch((err) => console.warn('Station change refresh failed', err));
 
     // Persist updated settings
     saveSettings();
@@ -113,7 +127,10 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
    */
   function handleGpsStationSelect(station) {
     // Always apply all transport modes — the stop's modes are display-only in the dropdown list.
-    applyStation({ name: station.name, stopId: station.stopId, modes: ALL_TRANSPORT_MODES.slice() }, false);
+    applyStation(
+      { name: station.name, stopId: station.stopId, modes: ALL_TRANSPORT_MODES.slice() },
+      false
+    );
   }
 
   /**
@@ -128,8 +145,8 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
         addRecentStation(DEFAULTS.STATION_NAME, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES, {
           numDepartures: DEFAULTS.NUM_DEPARTURES,
           fetchInterval: DEFAULTS.FETCH_INTERVAL,
-          textSize:      DEFAULTS.TEXT_SIZE,
-          language:      getLanguage()
+          textSize: DEFAULTS.TEXT_SIZE,
+          language: getLanguage(),
         });
       }
       if (board.stationDropdown) board.stationDropdown.refresh();
@@ -144,18 +161,20 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
    * @param {Object} newOpts - New settings values (mirrors DEFAULTS shape)
    */
   function onApplySettings(newOpts) {
-    DEFAULTS.STATION_NAME    = newOpts.STATION_NAME;
-    DEFAULTS.STOP_ID         = newOpts.STOP_ID || null;
-    DEFAULTS.NUM_DEPARTURES  = newOpts.NUM_DEPARTURES;
-    DEFAULTS.FETCH_INTERVAL  = newOpts.FETCH_INTERVAL;
+    DEFAULTS.STATION_NAME = newOpts.STATION_NAME;
+    DEFAULTS.STOP_ID = newOpts.STOP_ID || null;
+    DEFAULTS.NUM_DEPARTURES = newOpts.NUM_DEPARTURES;
+    DEFAULTS.FETCH_INTERVAL = newOpts.FETCH_INTERVAL;
     DEFAULTS.TRANSPORT_MODES = newOpts.TRANSPORT_MODES;
-    DEFAULTS.TEXT_SIZE       = newOpts.TEXT_SIZE;
+    DEFAULTS.TEXT_SIZE = newOpts.TEXT_SIZE;
 
     // Sync the dropdown title
     if (board.stationDropdown) {
       board.stationDropdown.updateTitle(DEFAULTS.STATION_NAME, DEFAULTS.TRANSPORT_MODES);
     }
-    try { document.title = DEFAULTS.STATION_NAME || document.title; } catch (_) {}
+    try {
+      document.title = DEFAULTS.STATION_NAME || document.title;
+    } catch (_) {}
 
     applyTextSize(newOpts.TEXT_SIZE);
     updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
@@ -165,9 +184,8 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
     if (scrollMoreRef.current?.reset) scrollMoreRef.current.reset();
 
     // Fetch with new settings then restart the unified loop so the new interval is used
-    doRefresh(board.list)
-      .catch(err => console.warn('Manual refresh failed', err))
-      .finally(() => startRefreshLoop(board.list, board.status));
+    startRefreshLoop(board.list, board.status);
+    doRefresh(board.list).catch((err) => console.warn('Manual refresh failed', err));
   }
 
   /**
@@ -180,5 +198,11 @@ export function wireHandlers(board, shareComponents, themeBtn, settingsBtn, opts
     if (scrollMoreRef.current?.updateTranslations) scrollMoreRef.current.updateTranslations();
   }
 
-  return { handleStationSelect, handleGpsStationSelect, handleFavoriteToggle, onApplySettings, onLanguageChange };
+  return {
+    handleStationSelect,
+    handleGpsStationSelect,
+    handleFavoriteToggle,
+    onApplySettings,
+    onLanguageChange,
+  };
 }

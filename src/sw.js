@@ -1,4 +1,4 @@
-const VERSION = '1.38.0';
+const VERSION = '1.38.2';
 const CACHE_NAME = `departures-v${VERSION}`;
 const ASSETS = [
   './',
@@ -62,11 +62,12 @@ const ASSETS = [
   './ui/share-button.js',
   './ui/station-dropdown.js',
   './ui/theme-toggle.js',
+  './ui/mode-utils.js',
   './ui/gps-dropdown.js',
   './manifest.webmanifest',
   './icons/favicon.svg',
   './icons/icon-192.svg',
-  './icons/icon-512.svg'
+  './icons/icon-512.svg',
 ];
 
 // Install: cache core assets, bypassing the HTTP cache so that a new
@@ -74,22 +75,30 @@ const ASSETS = [
 // cache.addAll() uses the HTTP cache by default, which causes the bug
 // where the "new" cache silently stores old asset bodies.
 self.addEventListener('install', (ev) => {
-  ev.waitUntil((async () => {
-    const cache = await caches.open(CACHE_NAME);
-    const requests = ASSETS.map(url => new Request(url, { cache: 'reload' }));
-    await cache.addAll(requests);
-  })());
+  ev.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const requests = ASSETS.map((url) => new Request(url, { cache: 'reload' }));
+      await cache.addAll(requests);
+    })()
+  );
 });
 
 // Activate: remove old caches, then claim clients.
 // controllerchange fires on the client only after claim() resolves, which
 // guarantees old caches are gone before the page reloads into new assets.
 self.addEventListener('activate', (ev) => {
-  ev.waitUntil((async () => {
-    const keys = await caches.keys();
-    await Promise.all(keys.map(k => { if (k !== CACHE_NAME) return caches.delete(k); }));
-    await clients.claim();
-  })());
+  ev.waitUntil(
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.map((k) => {
+          if (k !== CACHE_NAME) return caches.delete(k);
+        })
+      );
+      await clients.claim();
+    })()
+  );
 });
 
 // Listen for messages from the page (e.g. SKIP_WAITING)
@@ -104,20 +113,26 @@ self.addEventListener('message', (ev) => {
 // fall back to cache when offline. For other requests prefer cache-first.
 self.addEventListener('fetch', (ev) => {
   const req = ev.request;
-  const isNavigation = req.mode === 'navigate' || (req.method === 'GET' && req.headers.get('accept') && req.headers.get('accept').includes('text/html'));
+  const isNavigation =
+    req.mode === 'navigate' ||
+    (req.method === 'GET' &&
+      req.headers.get('accept') &&
+      req.headers.get('accept').includes('text/html'));
   if (isNavigation) {
-    ev.respondWith((async () => {
-      try {
-        const netRes = await fetch(req);
-        // update the cache with the latest HTML
-        const cache = await caches.open(CACHE_NAME);
-        cache.put(req, netRes.clone()).catch(()=>{});
-        return netRes;
-      } catch (e) {
-        const cached = await caches.match(req) || await caches.match('./');
-        return cached || new Response('Offline', { status: 503, statusText: 'Offline' });
-      }
-    })());
+    ev.respondWith(
+      (async () => {
+        try {
+          const netRes = await fetch(req);
+          // update the cache with the latest HTML
+          const cache = await caches.open(CACHE_NAME);
+          cache.put(req, netRes.clone()).catch(() => {});
+          return netRes;
+        } catch (e) {
+          const cached = (await caches.match(req)) || (await caches.match('./'));
+          return cached || new Response('Offline', { status: 503, statusText: 'Offline' });
+        }
+      })()
+    );
     return;
   }
 
@@ -125,28 +140,30 @@ self.addEventListener('fetch', (ev) => {
   // EXCEPTION: Don't cache API requests from external domains (like api.entur.io)
   const url = new URL(req.url);
   const isExternalAPI = url.hostname !== self.location.hostname;
-  
+
   if (isExternalAPI) {
     // Network-only for external API requests - don't cache them
     ev.respondWith(fetch(req));
     return;
   }
-  
-  ev.respondWith((async () => {
-    const cache = await caches.open(CACHE_NAME);
-    // Exact match only — do NOT use ignoreSearch, as that would serve stale
-    // assets when the page reloads after a SW update.
-    const cached = await cache.match(req);
-    if (cached) return cached;
-    
-    try {
-      const netRes = await fetch(req);
-      // Cache the response for future use
-      cache.put(req, netRes.clone()).catch(()=>{});
-      return netRes;
-    } catch (e) {
-      // Offline and not in cache
-      return new Response('Offline', { status: 503, statusText: 'Offline' });
-    }
-  })());
+
+  ev.respondWith(
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      // Exact match only — do NOT use ignoreSearch, as that would serve stale
+      // assets when the page reloads after a SW update.
+      const cached = await cache.match(req);
+      if (cached) return cached;
+
+      try {
+        const netRes = await fetch(req);
+        // Cache the response for future use
+        cache.put(req, netRes.clone()).catch(() => {});
+        return netRes;
+      } catch (e) {
+        // Offline and not in cache
+        return new Response('Offline', { status: 503, statusText: 'Offline' });
+      }
+    })()
+  );
 });
