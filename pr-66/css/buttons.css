@@ -1,0 +1,74 @@
+/* ======================================================================
+   BUTTONS
+   Single source of truth for all interactive button elements.
+
+   Hierarchy:
+     button           — universal base: reset + shared defaults
+     .btn-icon        — icon-only toolbar button (gear, theme, share, favorite)
+     .header-btn      — alias for .btn-icon (backward compat)
+     .btn-action      — prominent action button (modal close/confirm)
+     .share-url-close — alias for .btn-action (backward compat)
+   ====================================================================== */
+
+button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--btn-padding-inline);
+  border-radius: var(--btn-border-radius);
+  background: var(--overlay-light);
+  color: var(--text-primary);
+  border: 1px solid var(--border-muted);
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+button:hover:not(:disabled) {
+  background: var(--overlay-light);
+  border-color: var(--accent);
+}
+
+button:active:not(:disabled) {
+  background: var(--overlay-strong);
+  transform: scale(0.97);
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+/* Icon-only buttons: gear, theme toggle, share, favorite */
+.btn-icon,
+.header-btn {
+  padding: var(--btn-padding-icon);
+  font-size: var(--btn-font-size-icon);
+}
+
+/* Prominent action button (modal close, confirm, etc.) */
+.btn-action,
+.share-url-close {
+  padding: var(--btn-padding-action);
+  font-size: 16px;
+  font-weight: 500;
+  background: var(--accent);
+  border-color: transparent;
+}
+
+.btn-action:hover:not(:disabled),
+.share-url-close:hover:not(:disabled) {
+  opacity: 0.9;
+  transform: scale(1.02);
+  border-color: transparent;
+}
+
+.btn-action:active:not(:disabled),
+.share-url-close:active:not(:disabled) {
+  transform: scale(0.98);
+}
