@@ -68,6 +68,10 @@ export function createGpsButton(onStationSelect) {
 
   let isOpen = false;
 
+  // Map from item element → stop data. Used by the delegated click handler so
+  // individual item buttons carry no listeners of their own (Rule §11).
+  const stopsMap = new Map();
+
   // ── Internal helpers ────────────────────────────────────────────────────────
 
   function closeDropdown() {
@@ -76,6 +80,7 @@ export function createGpsButton(onStationSelect) {
     btn.disabled = false;
     btn.setAttribute('aria-expanded', 'false');
     menu.classList.remove('open');
+    stopsMap.clear();
     menu.innerHTML = '';
   }
 
@@ -95,7 +100,11 @@ export function createGpsButton(onStationSelect) {
     return el;
   }
 
-  /** Build a clickable stop item from a fetchNearbyStops result entry. */
+  /**
+   * Build a clickable stop item from a fetchNearbyStops result entry.
+   * The stop data is registered in stopsMap so the delegated listener can
+   * retrieve it without attaching a per-item event listener (Rule §11).
+   */
   function buildStopItem(stop) {
     const item = document.createElement('button');
     item.className = 'gps-dropdown-item';
@@ -113,7 +122,19 @@ export function createGpsButton(onStationSelect) {
       .trim();
     item.textContent = text;
 
-    item.addEventListener('click', (e) => {
+    // Register stop data keyed by element — no per-item listener needed.
+    stopsMap.set(item, stop);
+
+    return item;
+  }
+
+  // ── Delegated click handler on the menu (single listener, Rule §11) ──────────
+
+  menu.addEventListener('click', (e) => {
+    const item = e.target.closest('.gps-dropdown-item');
+    if (!item) return;
+    const stop = stopsMap.get(item);
+    if (stop) {
       e.stopPropagation();
       closeDropdown();
       if (onStationSelect && stop.id) {
@@ -125,10 +146,8 @@ export function createGpsButton(onStationSelect) {
           modes: stop.modes.length ? stop.modes : ALL_TRANSPORT_MODES.slice(),
         });
       }
-    });
-
-    return item;
-  }
+    }
+  });
 
   // ── Main click handler ───────────────────────────────────────────────────────
 
@@ -211,16 +230,17 @@ export function createGpsButton(onStationSelect) {
   document.addEventListener('click', _onDocClick);
   document.addEventListener('keydown', _onKeyDown);
 
-  /** Remove document-level listeners and release DOM references. */
   /** Update button tooltip and aria-label to match the current language. */
   container.updateTooltip = function () {
     btn.title = t('gpsTooltip');
     btn.setAttribute('aria-label', t('gpsTooltip'));
   };
 
+  /** Remove document-level listeners and release DOM references. */
   container.destroy = function () {
     document.removeEventListener('click', _onDocClick);
     document.removeEventListener('keydown', _onKeyDown);
+    stopsMap.clear();
     menu.innerHTML = '';
   };
 

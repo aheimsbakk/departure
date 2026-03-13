@@ -91,7 +91,7 @@ Architecture overview
 - `src/manifest.webmanifest` — PWA manifest (icons, theme color, display mode)
 - `src/icons/` — PWA icon assets
 - `src/ui/`
-  - `ui.js` — DOM helpers, board element factory, render loop (minimize DOM thrash)
+  - `ui.js` — DOM helpers, board element factory (calls createFooter), render loop (minimize DOM thrash)
   - `departure.js` — single departure component (template rendering, countdown update)
   - `header.js` — station header toggle component
   - `options.js` — re-export shim → `./options/index.js` (backward compat)
@@ -172,7 +172,7 @@ PWA & Service Worker
 - `src/sw.js`: versioned cache name (`kollektiv-v<VERSION>`), caches all app assets on install, serves from cache with network fallback.
 - Update flow: new SW detected → 5-second countdown toast shows old→new version → `skipWaiting` → `controllerchange` triggers hard reload with `?t=<timestamp>` cache-bust.
 - PWA wake-up on resume: `visibilitychange` in `fetch-loop.js` checks wall-clock elapsed time vs `FETCH_INTERVAL`; triggers immediate `doRefresh()` if stale. `pageshow` (event.persisted) in `app.js` forces full reload on BFCache cold-start.
-- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.38.1`.
+- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.38.7`.
 
 Performance & DOM update pattern
 
@@ -207,6 +207,8 @@ Testing & dev workflow (no deps)
   - Place tests under `tests/` as ESM modules (e.g. `tests/time.test.mjs`). Run: `node tests/run.mjs` or `npm test`.
   - Use Node's built-in `assert` API — no test framework.
   - Keep tests hermetic: no DOM APIs or `fetch`.
+  - Tests with async top-level `await` (e.g. `gps-dropdown-click.test.mjs`) are statically imported by `run.mjs`; an `unhandledRejection` handler in `run.mjs` catches failures and exits with code 1.
+  - Regression tests: `tests/autocomplete-input-wipe.test.mjs` (station-autocomplete input-wipe guard), `tests/gps-dropdown-click.test.mjs` (GPS dropdown click delegation).
 
 - Logging: minimal console logs only. `console.debug` is banned. Use `console.warn` for recoverable failures and `console.error` for unexpected errors. No empty `catch` blocks.
 
@@ -233,6 +235,7 @@ Current file tree (implemented)
 - `src/manifest.webmanifest`
 - `src/icons/`
 - `src/ui/ui.js`
+- `src/ui/footer.js` — footer DOM factory (`createFooter`) and `updateFooterTranslations`; imported by ui.js
 - `src/ui/departure.js`
 - `src/ui/header.js`
 - `src/ui/options.js` (shim)

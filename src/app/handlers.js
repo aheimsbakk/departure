@@ -20,8 +20,7 @@ import {
   isStationInFavorites,
 } from '../ui/station-dropdown.js';
 import { saveSettings, applyTextSize } from './settings.js';
-import { doRefresh, startRefreshLoop } from './fetch-loop.js';
-import { setNumDeparturesOverride } from './fetch-loop.js';
+import { doRefresh, startRefreshLoop, setNumDeparturesOverride } from './fetch-loop.js';
 
 /**
  * Wire all user-action handlers and return them as a plain object.

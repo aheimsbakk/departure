@@ -54,7 +54,7 @@ let numDeparturesOverride = null;
  * @param {number|null} count - Override value or null to clear
  */
 export function setNumDeparturesOverride(count) {
-  numDeparturesOverride = (typeof count === 'number' && count > 0) ? count : null;
+  numDeparturesOverride = typeof count === 'number' && count > 0 ? count : null;
 }
 
 /**
@@ -75,12 +75,21 @@ export function getEffectiveNumDepartures() {
 export async function doRefresh(listEl) {
   if (fetchInFlight) return;
   fetchInFlight = true;
+  // Snapshot all DEFAULTS values before the first await to prevent a TOCTOU
+  // race: another module (e.g. the user changes station) can mutate DEFAULTS
+  // while an async geocoder lookup is in flight, causing the response to be
+  // rendered against the wrong station context.
+  const stopId0 = DEFAULTS.STOP_ID;
+  const stationName = DEFAULTS.STATION_NAME;
+  const modes = DEFAULTS.TRANSPORT_MODES.slice();
+  const apiUrl = DEFAULTS.API_URL;
+  const clientName = DEFAULTS.CLIENT_NAME;
   try {
-    let stopId = DEFAULTS.STOP_ID;
+    let stopId = stopId0;
     if (!stopId) {
       stopId = await lookupStopId({
-        stationName: DEFAULTS.STATION_NAME,
-        clientName:  DEFAULTS.CLIENT_NAME
+        stationName,
+        clientName,
       });
     }
 
@@ -88,10 +97,10 @@ export async function doRefresh(listEl) {
       ? await fetchDepartures({
           stopId,
           numDepartures: getEffectiveNumDepartures(),
-          modes:         DEFAULTS.TRANSPORT_MODES,
-          lang:          getLanguage(),
-          apiUrl:        DEFAULTS.API_URL,
-          clientName:    DEFAULTS.CLIENT_NAME
+          modes,
+          lang: getLanguage(),
+          apiUrl,
+          clientName,
         })
       : [];
 
@@ -139,7 +148,7 @@ export function startRefreshLoop(listEl, statusEl) {
     const elapsedSec = (Date.now() - lastFetchAt) / 1000;
     if (elapsedSec >= DEFAULTS.FETCH_INTERVAL) {
       ticksUntilRefresh = DEFAULTS.FETCH_INTERVAL; // reset chip display
-      doRefresh(listEl).catch(err => console.warn('Wake-up refresh failed', err));
+      doRefresh(listEl).catch((err) => console.warn('Wake-up refresh failed', err));
     }
   };
   document.addEventListener('visibilitychange', _visibilityHandler);
@@ -154,7 +163,7 @@ export function startRefreshLoop(listEl, statusEl) {
       // Reset eagerly before the async call so the chip immediately shows
       // the full interval rather than staying at 0 for the fetch duration.
       ticksUntilRefresh = DEFAULTS.FETCH_INTERVAL;
-      doRefresh(listEl).catch(err => console.warn('Refresh failed', err));
+      doRefresh(listEl).catch((err) => console.warn('Refresh failed', err));
     }
 
     // 3. Tick all countdowns and update the status chip in the same frame.
@@ -174,8 +183,8 @@ export function tickCountdowns(listEl, statusEl) {
   const now = Date.now();
 
   // Update all visible departure countdowns
-  listEl.querySelectorAll('.departure-time').forEach(el => {
-    const raw   = el.dataset.epochMs;
+  listEl.querySelectorAll('.departure-time').forEach((el) => {
+    const raw = el.dataset.epochMs;
     const epoch = raw == null || raw === '' ? NaN : Number(raw);
     el.textContent = Number.isFinite(epoch) ? (formatCountdown(epoch, now, t) ?? '—') : '—';
   });

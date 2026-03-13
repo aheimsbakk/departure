@@ -4,9 +4,9 @@
  *
  * Verifies that:
  *   - GITHUB_URL in config.js points to the correct URL with anchor fragment
- *   - ui.js uses DEFAULTS.GITHUB_URL for the footer GitHub link
- *   - ui.js uses UI_EMOJIS.footerReadme for the GitHub link emoji
- *   - ui.js uses UI_EMOJIS.footerLink for the Entur data link emoji
+ *   - footer.js uses DEFAULTS.GITHUB_URL for the footer GitHub link
+ *   - footer.js uses UI_EMOJIS.footerReadme for the GitHub link emoji
+ *   - footer.js uses UI_EMOJIS.footerLink for the Entur data link emoji
  *   - both emoji keys are defined in config.js UI_EMOJIS
  */
 
@@ -16,12 +16,12 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const configPath = join(__dirname, '../src/config.js');
-const uiPath     = join(__dirname, '../src/ui/ui.js');
+const footerPath = join(__dirname, '../src/ui/footer.js');
 
 const EXPECTED_URL = 'https://github.com/aheimsbakk/kollektiv-sanntid-org/#kollektivsanntidorg';
 
 const configContent = readFileSync(configPath, 'utf-8');
-const uiContent     = readFileSync(uiPath, 'utf-8');
+const footerContent = readFileSync(footerPath, 'utf-8');
 
 let passed = 0;
 let failed = 0;
@@ -44,9 +44,9 @@ test('GITHUB_URL in config.js contains correct URL with anchor', () => {
   }
 });
 
-test('ui.js uses DEFAULTS.GITHUB_URL for the footer GitHub link', () => {
-  if (!uiContent.includes('DEFAULTS.GITHUB_URL')) {
-    throw new Error('ui.js does not reference DEFAULTS.GITHUB_URL for the footer link');
+test('footer.js uses DEFAULTS.GITHUB_URL for the footer GitHub link', () => {
+  if (!footerContent.includes('DEFAULTS.GITHUB_URL')) {
+    throw new Error('footer.js does not reference DEFAULTS.GITHUB_URL for the footer link');
   }
 });
 
@@ -62,15 +62,15 @@ test('config.js defines UI_EMOJIS.footerLink', () => {
   }
 });
 
-test('ui.js uses UI_EMOJIS.footerReadme for the GitHub link emoji', () => {
-  if (!uiContent.includes('UI_EMOJIS.footerReadme')) {
-    throw new Error('ui.js does not use UI_EMOJIS.footerReadme for the GitHub link emoji');
+test('footer.js uses UI_EMOJIS.footerReadme for the GitHub link emoji', () => {
+  if (!footerContent.includes('UI_EMOJIS.footerReadme')) {
+    throw new Error('footer.js does not use UI_EMOJIS.footerReadme for the GitHub link emoji');
   }
 });
 
-test('ui.js uses UI_EMOJIS.footerLink for the Entur data link emoji', () => {
-  if (!uiContent.includes('UI_EMOJIS.footerLink')) {
-    throw new Error('ui.js does not use UI_EMOJIS.footerLink for the Entur data link emoji');
+test('footer.js uses UI_EMOJIS.footerLink for the Entur data link emoji', () => {
+  if (!footerContent.includes('UI_EMOJIS.footerLink')) {
+    throw new Error('footer.js does not use UI_EMOJIS.footerLink for the Entur data link emoji');
   }
 });
 

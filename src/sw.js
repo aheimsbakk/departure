@@ -1,4 +1,4 @@
-const VERSION = '1.38.2';
+const VERSION = '1.38.7';
 const CACHE_NAME = `departures-v${VERSION}`;
 const ASSETS = [
   './',
@@ -50,6 +50,7 @@ const ASSETS = [
   './i18n/store.js',
   './time.js',
   './ui/ui.js',
+  './ui/footer.js',
   './ui/departure.js',
   './ui/header.js',
   './ui/options.js',
@@ -125,7 +126,7 @@ self.addEventListener('fetch', (ev) => {
           const netRes = await fetch(req);
           // update the cache with the latest HTML
           const cache = await caches.open(CACHE_NAME);
-          cache.put(req, netRes.clone()).catch(() => {});
+          cache.put(req, netRes.clone()).catch((err) => console.warn('[SW] cache.put failed', err));
           return netRes;
         } catch (e) {
           const cached = (await caches.match(req)) || (await caches.match('./'));
@@ -158,7 +159,7 @@ self.addEventListener('fetch', (ev) => {
       try {
         const netRes = await fetch(req);
         // Cache the response for future use
-        cache.put(req, netRes.clone()).catch(() => {});
+        cache.put(req, netRes.clone()).catch((err) => console.warn('[SW] cache.put failed', err));
         return netRes;
       } catch (e) {
         // Offline and not in cache
