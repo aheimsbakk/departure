@@ -47,7 +47,7 @@ Architecture overview
   - `action-bar.js` — share + theme + settings buttons, global-gear container
   - `scroll-more.js` — pull-to-load-more departures: Fibonacci progression (1→2→3→5→8→13→21), touch/mouse/wheel gesture detection, no visual drag displacement (no marginTop, no snap-back), load fires on pointer/touch release at threshold (leading-edge debounce via SCROLL_MORE.DEBOUNCE_MS), `.scroll-more-indicator--triggered` applied at threshold (accent arrow + fast bounce), ▼/"scroll for more" indicator → ●/"for more change in ⚙️" at max; resets on station change
   - `sw-updater.js` — SW registration, update toast, controllerchange reload
-- `src/config.js` — all configurable constants: VERSION, DEFAULTS (includes NUM_FAVORITES, FETCH_INTERVAL, GITHUB_URL), DEFAULT_FAVORITE, ALL_TRANSPORT_MODES, REALTIME_INDICATORS, TRANSPORT_MODE_EMOJIS, UI_EMOJIS, CANCELLATION_WRAPPER, PLATFORM_SYMBOLS, PLATFORM_SYMBOL_RULES, DEPARTURE_LINE_TEMPLATE, STATION_LINE_TEMPLATE, GPS_STOP_LINE_TEMPLATE, GPS_MAX_RESULTS, GPS_SEARCH_RADIUS_KM, SCROLL_MORE (includes DEBOUNCE_MS)
+- `src/config.js` — all configurable constants: VERSION, DEFAULTS (includes NUM_FAVORITES, FETCH_INTERVAL, GITHUB_URL), DEFAULT_FAVORITE, ALL_TRANSPORT_MODES, REALTIME_INDICATORS, TRANSPORT_MODE_EMOJIS, UI_EMOJIS, CANCELLATION_WRAPPER, PLATFORM_SYMBOLS, PLATFORM_SYMBOL_RULES, DEPARTURE_LINE_TEMPLATE, STATION_LINE_TEMPLATE, GPS_STOP_LINE_TEMPLATE, GPS_MAX_RESULTS, GPS_SEARCH_RADIUS_KM, SCROLL_MORE (includes DEBOUNCE_MS, SYMBOL_ARROW, SYMBOL_MAX)
 - `src/entur/` — Entur API client (split into focused modules)
   - `index.js` — public re-export facade (drop-in for former entur.js)
   - `modes.js` — CANONICAL_MODE_MAP, token→canonical mapping, raw mode detection
