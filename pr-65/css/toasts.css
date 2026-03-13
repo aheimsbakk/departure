@@ -1,0 +1,45 @@
+/* ======================================================================
+   TOASTS
+   Ephemeral notification pills: options panel save confirmation
+   and service worker update countdown.
+   Mirrors: src/ui/options/panel-lifecycle.js, src/app/sw-updater.js
+   ====================================================================== */
+
+/* Options panel save toast */
+.options-toast {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 18px;
+  padding: 8px 12px;
+  background: var(--overlay-strong);
+  color: var(--text-primary);
+  border-radius: var(--btn-border-radius);
+  transition: opacity var(--transition-toast);
+  display: none;
+}
+
+.options-toast.visible {
+  display: block;
+}
+
+/* Service worker update toast */
+#sw-update-toast {
+  position: fixed;
+  bottom: 18px;
+  left: 18px;
+  z-index: var(--z-share-modal);
+  font-size: 12px;
+  color: var(--text-primary);
+  background: var(--overlay-strong);
+  padding: 8px 12px;
+  border-radius: var(--btn-border-radius);
+  backdrop-filter: blur(8px);
+  opacity: 1;
+  transition: opacity var(--transition-toast);
+}
+
+#sw-update-toast.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
