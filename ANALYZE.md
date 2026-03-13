@@ -19,8 +19,8 @@
 | [6](#6-swjs--silent-cachepatch-failures)                                                   | `src/sw.js`               | `cache.put(…).catch(() => {})` swallows quota errors — Rule §9                  | 🟡 Low    | ✅ Fixed |
 | [7](#7-fetch-loopjs--defaults-read-live-inside-async-gap-race-condition)                   | `src/app/fetch-loop.js`   | `DEFAULTS` read live across `await` — race condition — Rule §12                 | 🟠 Medium | ✅ Fixed |
 | [8](#8-optionsindexjs--dual-loadsettings-call-paths)                                       | `src/ui/options/index.js` | Two separate `loadSettings()` paths to same key — Rule §9                       | 🟡 Low    | ✅ Fixed |
-| [9](#9-uijs--footer-factory-mixed-into-createboardelements)                                | `src/ui/ui.js`            | Footer DOM built inside `createBoardElements` — Rule §8 §13                     | 🟡 Low    | 🔴 Open  |
-| [10](#10-gps-dropdownjs--innerhtml--does-not-remove-item-listeners)                        | `src/ui/gps-dropdown.js`  | `innerHTML = ''` without explicit listener removal — Rule §11                   | 🟡 Low    | 🔴 Open  |
+| [9](#9-uijs--footer-factory-mixed-into-createboardelements)                                | `src/ui/ui.js`            | Footer DOM built inside `createBoardElements` — Rule §8 §13                     | 🟡 Low    | ✅ Fixed |
+| [10](#10-gps-dropdownjs--innerhtml--does-not-remove-item-listeners)                        | `src/ui/gps-dropdown.js`  | `innerHTML = ''` without explicit listener removal — Rule §11                   | 🟡 Low    | ✅ Fixed |
 | [11](#11-configjs--mutable-defaults-written-by-multiple-modules)                           | `src/config.js`           | Mutable `DEFAULTS` mutated by 5 modules — Rule §12                              | 🟠 Medium | ✅ Fixed |
 | [12](#12-settingsjs--savesettings-serialises-all-of-defaults-including-non-persisted-keys) | `src/app/settings.js`     | `saveSettings()` serialises entire `DEFAULTS` including runtime keys — Rule §6  | 🟡 Low    | ✅ Fixed |
 | [13](#13-optionsindexjs--panel-title-is-a-hardcoded-string-not-a-constant)                 | `src/ui/options/index.js` | `'Kollektiv.Sanntid.org'` hardcoded, not from `config.js` — Rule §21            | 🟡 Low    | ✅ Fixed |
@@ -36,7 +36,7 @@
 
 ## Open Issues
 
-Only issues #9 and #10 remain open (architectural refactors deferred).
+All 20 issues resolved.
 
 ---
 
@@ -219,13 +219,8 @@ Remove the `loadSettings()` call in `options/index.js`. The `defaults` parameter
 
 **Severity:** 🟡 Low  
 **File:** `src/ui/ui.js`  
-**Rule:** §8 (SRP), §13 (anti-monolith)
-
-**Problem:**  
-`createBoardElements` assembles board scaffolding **and** builds a two-line footer with its own DOM structure and `updateFooterTranslations` export. Footer construction is a distinct responsibility from board layout.
-
-**Fix direction:**  
-Extract `createFooter()` and `updateFooterTranslations()` into `src/ui/footer.js`. `createBoardElements` calls `createFooter()` and returns its result in the `board` object.
+**Rule:** §8 (SRP), §13 (anti-monolith)  
+**Status:** ✅ Fixed — `createFooter()` and `updateFooterTranslations()` extracted into `src/ui/footer.js`; `ui.js` calls `createFooter()` and re-exports `updateFooterTranslations` for backward compatibility.
 
 ---
 
@@ -233,26 +228,8 @@ Extract `createFooter()` and `updateFooterTranslations()` into `src/ui/footer.js
 
 **Severity:** 🟡 Low  
 **File:** `src/ui/gps-dropdown.js` lines 79, 85, 224  
-**Rule:** §11 (memory & resource lifecycle)
-
-**Problem:**  
-`closeDropdown()`, `openWith()`, and `destroy()` all use `menu.innerHTML = ''` to clear items. Each `buildStopItem` attaches a `click` listener to a `<button>` that closes over `closeDropdown`. Setting `innerHTML = ''` removes DOM nodes without explicitly calling `removeEventListener`. The closure chain keeps the component reachable until GC — not synchronously freed, contrary to Rule §11.
-
-**Fix direction:**  
-Switch to event delegation: attach a single `click` listener on the `menu` element rather than per-item:
-
-```js
-menu.addEventListener('click', (e) => {
-  const item = e.target.closest('.gps-dropdown-item');
-  if (!item) return;
-  const stop = stopsMap.get(item);
-  if (stop) {
-    e.stopPropagation();
-    closeDropdown();
-    onStationSelect(stop);
-  }
-});
-```
+**Rule:** §11 (memory & resource lifecycle)  
+**Status:** ✅ Fixed — switched to event delegation: a single `click` listener on `menu` uses `e.target.closest('.gps-dropdown-item')` + a `Map` keyed by element to dispatch actions. `buildStopItem` no longer attaches per-item listeners. `stopsMap.clear()` is called in `closeDropdown()`, `openWith()`, and `destroy()` so all stop references are released synchronously.
 
 ---
 
