@@ -40,6 +40,15 @@ initTheme();
 // Root element that holds the board (defined in index.html)
 const ROOT = document.getElementById('app');
 
+/**
+ * Module-level refs populated by init() for use in the pagehide teardown.
+ * These allow the pagehide handler to call destroy() on components that hold
+ * document-level event listeners, preventing listener accumulation across
+ * navigations and BFCache restores.
+ */
+let _teardownBoard = null;
+let _teardownGpsRef = null;
+
 async function init() {
   // 1. Load persisted settings
   loadSettings();
@@ -59,14 +68,14 @@ async function init() {
   //    DEFAULT_FAVORITE is applied to DEFAULTS only, never saved to the favorites list.
   if (!urlImported && !DEFAULTS.STOP_ID) {
     if (favorites.length > 0) {
-      DEFAULTS.STATION_NAME    = favorites[0].name;
-      DEFAULTS.STOP_ID         = favorites[0].stopId;
+      DEFAULTS.STATION_NAME = favorites[0].name;
+      DEFAULTS.STOP_ID = favorites[0].stopId;
       DEFAULTS.TRANSPORT_MODES = favorites[0].modes || DEFAULTS.TRANSPORT_MODES;
     } else {
       const defaultStation = getDefaultStation();
       if (defaultStation) {
-        DEFAULTS.STATION_NAME    = defaultStation.name;
-        DEFAULTS.STOP_ID         = defaultStation.stopId;
+        DEFAULTS.STATION_NAME = defaultStation.name;
+        DEFAULTS.STOP_ID = defaultStation.stopId;
         DEFAULTS.TRANSPORT_MODES = defaultStation.modes.length
           ? defaultStation.modes
           : DEFAULTS.TRANSPORT_MODES;
@@ -78,13 +87,13 @@ async function init() {
   // optsRef is a mutable box so handlers.js can call opts.updateFields()
   // without a circular import — it is filled in after createOptionsPanel.
   const optsRef = { current: null };
-  const gpsRef  = { current: null };
+  const gpsRef = { current: null };
   const scrollMoreRef = { current: null };
 
   const board = createBoardElements(
     DEFAULTS.STATION_NAME,
     (station) => handlers.handleStationSelect(station),
-    ()        => handlers.handleFavoriteToggle()
+    () => handlers.handleFavoriteToggle()
   );
 
   // Sync dropdown title so mode icons show up when a filter is active
@@ -108,7 +117,15 @@ async function init() {
   //    wireHandlers must receive the action-bar button refs (step 6) so it can
   //    update their tooltips; createOptionsPanel must come after so `opts` is
   //    available when the closures above are eventually called.
-  const handlers = wireHandlers(board, shareComponents, themeBtn, settingsBtn, optsRef, gpsRef, scrollMoreRef);
+  const handlers = wireHandlers(
+    board,
+    shareComponents,
+    themeBtn,
+    settingsBtn,
+    optsRef,
+    gpsRef,
+    scrollMoreRef
+  );
   const opts = createOptionsPanel(DEFAULTS, handlers.onApplySettings, handlers.onLanguageChange);
   optsRef.current = opts;
   document.body.appendChild(opts.panel);
@@ -116,6 +133,12 @@ async function init() {
   // 7b. Mount the GPS compass bar (top-left) — uses dedicated handler that does NOT auto-save to favorites
   const { gpsContainer } = buildGpsBar((station) => handlers.handleGpsStationSelect(station));
   gpsRef.current = gpsContainer;
+
+  // Expose board and gpsRef to the module-level pagehide teardown so that
+  // document-level listeners in station-dropdown and gps-dropdown are removed
+  // on page unload / BFCache entry, preventing listener accumulation.
+  _teardownBoard = board;
+  _teardownGpsRef = gpsRef;
 
   // 8. Header gear icon (opens options from the station header)
   const headerControls = createHeaderToggle(() => opts.open());
@@ -130,16 +153,18 @@ async function init() {
   // Mount footer outside the board so pull-to-scroll displacement doesn't affect it
   document.body.appendChild(board.footer);
   applyTextSize(DEFAULTS.TEXT_SIZE || 'medium');
-  try { document.title = DEFAULTS.STATION_NAME || document.title; } catch (_) {}
+  try {
+    document.title = DEFAULTS.STATION_NAME || document.title;
+  } catch (_) {}
 
   // 10. Initialise scroll-more (pull-to-load-more departures)
   const scrollMore = initScrollMore({
     boardEl: board.el,
-    listEl:  board.list,
+    listEl: board.list,
     onLoadMore: async (newCount) => {
       setNumDeparturesOverride(newCount);
       await doRefresh(board.list);
-    }
+    },
   });
   scrollMoreRef.current = scrollMore;
 
@@ -177,6 +202,19 @@ async function init() {
 // ensures fresh data and a clean timer state.
 window.addEventListener('pageshow', (event) => {
   if (event.persisted) location.reload();
+});
+
+// Teardown guard: remove document-level listeners held by station-dropdown and
+// gps-dropdown before the page is unloaded or enters the BFCache. Without this,
+// each navigation or BFCache restore can accumulate a new listener without the
+// old one being removed (issues #5 and #6).
+window.addEventListener('pagehide', () => {
+  if (_teardownBoard?.stationDropdown?.destroy) {
+    _teardownBoard.stationDropdown.destroy();
+  }
+  if (_teardownGpsRef?.current?.destroy) {
+    _teardownGpsRef.current.destroy();
+  }
 });
 
 document.addEventListener('DOMContentLoaded', init);

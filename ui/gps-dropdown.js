@@ -11,7 +11,15 @@
  */
 
 import { fetchNearbyStops } from '../entur/gps-search.js';
-import { TRANSPORT_MODE_EMOJIS, ALL_TRANSPORT_MODES, UI_EMOJIS, DEFAULTS, GPS_STOP_LINE_TEMPLATE, GPS_MAX_RESULTS, GPS_SEARCH_RADIUS_KM } from '../config.js';
+import {
+  TRANSPORT_MODE_EMOJIS,
+  ALL_TRANSPORT_MODES,
+  UI_EMOJIS,
+  DEFAULTS,
+  GPS_STOP_LINE_TEMPLATE,
+  GPS_MAX_RESULTS,
+  GPS_SEARCH_RADIUS_KM,
+} from '../config.js';
 import { t } from '../i18n.js';
 
 const KNOWN_MODES = ['bus', 'tram', 'metro', 'rail', 'water', 'coach'];
@@ -26,9 +34,9 @@ const KNOWN_MODES = ['bus', 'tram', 'metro', 'rail', 'water', 'coach'];
 function getModeEmojis(modes) {
   if (!Array.isArray(modes) || modes.length === 0) return '';
   return modes
-    .map(m => String(m).toLowerCase())
-    .filter(m => KNOWN_MODES.includes(m))
-    .map(m => TRANSPORT_MODE_EMOJIS[m] || '')
+    .map((m) => String(m).toLowerCase())
+    .filter((m) => KNOWN_MODES.includes(m))
+    .map((m) => TRANSPORT_MODE_EMOJIS[m] || '')
     .filter(Boolean)
     .join('');
 }
@@ -46,9 +54,9 @@ export function createGpsButton(onStationSelect) {
   // ── Compass button ──────────────────────────────────────────────────────────
   const btn = document.createElement('button');
   btn.className = 'header-btn gps-btn';
-  btn.type      = 'button';
+  btn.type = 'button';
   btn.textContent = UI_EMOJIS.compass;
-  btn.title       = t('gpsTooltip');
+  btn.title = t('gpsTooltip');
   btn.setAttribute('aria-label', t('gpsTooltip'));
   btn.setAttribute('aria-haspopup', 'true');
   btn.setAttribute('aria-expanded', 'false');
@@ -75,7 +83,7 @@ export function createGpsButton(onStationSelect) {
     isOpen = true;
     btn.setAttribute('aria-expanded', 'true');
     menu.innerHTML = '';
-    nodes.forEach(n => menu.appendChild(n));
+    nodes.forEach((n) => menu.appendChild(n));
     menu.classList.add('open');
   }
 
@@ -91,17 +99,16 @@ export function createGpsButton(onStationSelect) {
   function buildStopItem(stop) {
     const item = document.createElement('button');
     item.className = 'gps-dropdown-item';
-    item.type      = 'button';
+    item.type = 'button';
     item.setAttribute('role', 'option');
 
     // Render from GPS_STOP_LINE_TEMPLATE.
     // {distance} includes the unit (e.g. "186m"); empty string when unavailable.
     const distStr = stop.distance != null ? `${stop.distance}${t('gpsMeters')}` : '';
-    const text = GPS_STOP_LINE_TEMPLATE
-      .replace('{name}',     stop.name)
-      .replace('{modes}',    getModeEmojis(stop.modes))
+    const text = GPS_STOP_LINE_TEMPLATE.replace('{name}', stop.name)
+      .replace('{modes}', getModeEmojis(stop.modes))
       .replace('{distance}', distStr)
-      .replace(/\s*·\s*$/, '')   // strip trailing separator when {distance} is empty
+      .replace(/\s*·\s*$/, '') // strip trailing separator when {distance} is empty
       .replace(/[ \t]{2,}/g, ' ') // collapse double spaces when {modes} is empty
       .trim();
     item.textContent = text;
@@ -111,11 +118,11 @@ export function createGpsButton(onStationSelect) {
       closeDropdown();
       if (onStationSelect && stop.id) {
         onStationSelect({
-          name:   stop.name,
+          name: stop.name,
           stopId: stop.id,
           // Provide all modes reported for this stop; fall back to ALL_TRANSPORT_MODES
           // so the board shows every service available at the selected station.
-          modes:  stop.modes.length ? stop.modes : ALL_TRANSPORT_MODES.slice()
+          modes: stop.modes.length ? stop.modes : ALL_TRANSPORT_MODES.slice(),
         });
       }
     });
@@ -139,16 +146,29 @@ export function createGpsButton(onStationSelect) {
     btn.disabled = true;
     openWith([statusNode(t('gpsLocating'))]);
 
+    // Hard fallback: if the platform silently swallows the geolocation request
+    // (e.g. OS-level dialog dismissed without browser callback), re-enable the
+    // button after 12 s (slightly longer than the 10 s timeout option).
+    let geoCallbackFired = false;
+    const geoFallbackId = setTimeout(() => {
+      if (!geoCallbackFired) {
+        btn.disabled = false;
+        openWith([statusNode(t('gpsUnavailable'), true)]);
+      }
+    }, 12000);
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
+        geoCallbackFired = true;
+        clearTimeout(geoFallbackId);
         const { latitude: lat, longitude: lon } = pos.coords;
         try {
           const stops = await fetchNearbyStops({
             lat,
             lon,
             maxResults: GPS_MAX_RESULTS,
-            radiusKm:   GPS_SEARCH_RADIUS_KM,
-            clientName: DEFAULTS.CLIENT_NAME
+            radiusKm: GPS_SEARCH_RADIUS_KM,
+            clientName: DEFAULTS.CLIENT_NAME,
           });
           if (stops.length === 0) {
             openWith([statusNode(t('gpsNoResults'))]);
@@ -162,6 +182,8 @@ export function createGpsButton(onStationSelect) {
         btn.disabled = false;
       },
       (err) => {
+        geoCallbackFired = true;
+        clearTimeout(geoFallbackId);
         console.warn('Geolocation error', err.message);
         const msg = err.code === 1 ? t('gpsPermissionDenied') : t('gpsUnavailable');
         openWith([statusNode(msg, true)]);
@@ -186,7 +208,7 @@ export function createGpsButton(onStationSelect) {
     if (e.key === 'Escape' && isOpen) closeDropdown();
   }
 
-  document.addEventListener('click',   _onDocClick);
+  document.addEventListener('click', _onDocClick);
   document.addEventListener('keydown', _onKeyDown);
 
   /** Remove document-level listeners and release DOM references. */
@@ -197,7 +219,7 @@ export function createGpsButton(onStationSelect) {
   };
 
   container.destroy = function () {
-    document.removeEventListener('click',   _onDocClick);
+    document.removeEventListener('click', _onDocClick);
     document.removeEventListener('keydown', _onKeyDown);
     menu.innerHTML = '';
   };

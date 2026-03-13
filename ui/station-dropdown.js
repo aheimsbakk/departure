@@ -1,6 +1,7 @@
 import { t } from '../i18n.js';
-import { TRANSPORT_MODE_EMOJIS, DEFAULTS, DEFAULT_FAVORITE, STATION_LINE_TEMPLATE } from '../config.js';
+import { DEFAULTS, DEFAULT_FAVORITE, STATION_LINE_TEMPLATE } from '../config.js';
 import { decodeSettings } from './share-button.js';
+import { emojiForMode } from './mode-utils.js';
 
 const STORAGE_KEY = 'recent-stations';
 
@@ -13,62 +14,45 @@ const STORAGE_KEY = 'recent-stations';
 const MODE_ORDER = ['bus', 'metro', 'tram', 'rail', 'water', 'coach'];
 
 /**
- * Get emoji icon for a transport mode
- * @param {string} mode 
- * @returns {string}
- */
-function getModeIcon(mode) {
-  if (!mode) return TRANSPORT_MODE_EMOJIS.default;
-  const m = String(mode).toLowerCase();
-  if (m === 'bus') return TRANSPORT_MODE_EMOJIS.bus;
-  if (m === 'tram') return TRANSPORT_MODE_EMOJIS.tram;
-  if (m === 'metro') return TRANSPORT_MODE_EMOJIS.metro;
-  if (m === 'rail') return TRANSPORT_MODE_EMOJIS.rail;
-  if (m === 'water') return TRANSPORT_MODE_EMOJIS.water;
-  if (m === 'coach') return TRANSPORT_MODE_EMOJIS.coach;
-  return TRANSPORT_MODE_EMOJIS.default;
-}
-
-/**
  * Get mode icons in consistent order (as they appear in options panel)
  * Returns empty string if all modes are selected (default state)
- * @param {Array<string>} modes 
+ * @param {Array<string>} modes
  * @returns {string} Space-separated emoji string
  */
 function getModesDisplay(modes) {
   if (!modes || modes.length === 0) return '';
-  
+
   // If all modes are selected, don't show any icons (default state)
   if (modes.length === MODE_ORDER.length) {
-    const allSelected = MODE_ORDER.every(mode => modes.includes(mode));
+    const allSelected = MODE_ORDER.every((mode) => modes.includes(mode));
     if (allSelected) return '';
   }
-  
+
   // Sort by MODE_ORDER
   const sorted = modes.slice().sort((a, b) => {
     const idxA = MODE_ORDER.indexOf(a);
     const idxB = MODE_ORDER.indexOf(b);
     return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
   });
-  return sorted.map(getModeIcon).join('');
+  return sorted.map(emojiForMode).join('');
 }
 
 /**
  * Compare two mode arrays for equality (order doesn't matter)
- * @param {Array<string>} modes1 
- * @param {Array<string>} modes2 
+ * @param {Array<string>} modes1
+ * @param {Array<string>} modes2
  * @returns {boolean}
  */
 export function modesEqual(modes1, modes2) {
   const m1 = modes1 || [];
   const m2 = modes2 || [];
-  
+
   if (m1.length !== m2.length) return false;
-  
+
   // Sort both arrays and compare
   const sorted1 = m1.slice().sort();
   const sorted2 = m2.slice().sort();
-  
+
   return sorted1.every((mode, i) => mode === sorted2[i]);
 }
 
@@ -98,9 +82,9 @@ export function getDefaultStation() {
     const decoded = decodeSettings(DEFAULT_FAVORITE);
     if (decoded && decoded.stationName && decoded.stopId) {
       return {
-        name:  decoded.stationName,
+        name: decoded.stationName,
         stopId: decoded.stopId,
-        modes: decoded.transportModes || []
+        modes: decoded.transportModes || [],
       };
     }
   } catch (e) {
@@ -118,29 +102,29 @@ export function getDefaultStation() {
  */
 export function addRecentStation(name, stopId, modes = [], settings = {}) {
   if (!name || !stopId) return;
-  
+
   let recent = getRecentStations();
-  
+
   // Remove exact duplicate (same stopId AND same modes)
-  recent = recent.filter(s => !(s.stopId === stopId && modesEqual(s.modes, modes)));
-  
+  recent = recent.filter((s) => !(s.stopId === stopId && modesEqual(s.modes, modes)));
+
   // Add to top with full settings
-  recent.unshift({ 
-    name, 
-    stopId, 
+  recent.unshift({
+    name,
+    stopId,
     modes: modes || [],
     // Store all settings for future use (but don't apply them on restore yet)
     numDepartures: settings.numDepartures,
     fetchInterval: settings.fetchInterval,
     textSize: settings.textSize,
-    language: settings.language
+    language: settings.language,
   });
-  
+
   // Keep only NUM_FAVORITES
   if (recent.length > DEFAULTS.NUM_FAVORITES) {
     recent = recent.slice(0, DEFAULTS.NUM_FAVORITES);
   }
-  
+
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recent));
   } catch (e) {
@@ -158,7 +142,7 @@ export function addRecentStation(name, stopId, modes = [], settings = {}) {
 export function isStationInFavorites(stopId, modes) {
   if (!stopId) return false;
   const recent = getRecentStations();
-  return recent.some(s => s.stopId === stopId && modesEqual(s.modes, modes));
+  return recent.some((s) => s.stopId === stopId && modesEqual(s.modes, modes));
 }
 
 /**
@@ -178,7 +162,7 @@ export function removeFromFavorites(stopId, modes) {
     return false;
   }
   const before = recent.length;
-  recent = recent.filter(s => !(s.stopId === stopId && modesEqual(s.modes, modes)));
+  recent = recent.filter((s) => !(s.stopId === stopId && modesEqual(s.modes, modes)));
   if (recent.length === before) return false;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(recent));
@@ -197,7 +181,7 @@ export function removeFromFavorites(stopId, modes) {
 export function createStationDropdown(currentStationName, onStationSelect) {
   const container = document.createElement('div');
   container.className = 'station-dropdown-container';
-  
+
   // Station title button
   const titleBtn = document.createElement('button');
   titleBtn.className = 'station-title';
@@ -205,24 +189,24 @@ export function createStationDropdown(currentStationName, onStationSelect) {
   titleBtn.setAttribute('aria-expanded', 'false');
   titleBtn.title = t('stationNameTooltip');
   titleBtn.textContent = currentStationName || t('noStationSelected');
-  
+
   // Dropdown arrow indicator
   const arrow = document.createElement('span');
   arrow.className = 'dropdown-arrow';
   arrow.textContent = ' ▼';
   titleBtn.appendChild(arrow);
-  
+
   // Dropdown menu
   const menu = document.createElement('div');
   menu.className = 'station-dropdown-menu';
   menu.setAttribute('role', 'listbox');
-  
+
   let isOpen = false;
   let selectedIndex = -1;
-  
+
   // Explicitly remove listeners from existing menu children before clearing
   function _clearMenuItems() {
-    Array.from(menu.children).forEach(child => {
+    Array.from(menu.children).forEach((child) => {
       const clone = child.cloneNode(false);
       child.replaceWith(clone);
     });
@@ -241,33 +225,32 @@ export function createStationDropdown(currentStationName, onStationSelect) {
       menu.appendChild(emptyMsg);
       return;
     }
-    
+
     recent.forEach((station, index) => {
       const item = document.createElement('button');
       item.className = 'station-dropdown-item';
       item.setAttribute('role', 'option');
 
       // Render from STATION_LINE_TEMPLATE — {modes} is '' when all modes selected
-      item.textContent = STATION_LINE_TEMPLATE
-        .replace('{name}',  station.name)
+      item.textContent = STATION_LINE_TEMPLATE.replace('{name}', station.name)
         .replace('{modes}', getModesDisplay(station.modes))
         .replace(/[ \t]{2,}/g, ' ')
         .trim();
-      
+
       item.dataset.stopId = station.stopId;
       item.dataset.name = station.name;
       item.dataset.modes = JSON.stringify(station.modes || []);
       item.dataset.index = index;
-      
+
       item.addEventListener('click', (e) => {
         e.stopPropagation();
         selectStation(station);
       });
-      
+
       menu.appendChild(item);
     });
   }
-  
+
   // Toggle dropdown
   function toggleDropdown() {
     isOpen = !isOpen;
@@ -278,13 +261,13 @@ export function createStationDropdown(currentStationName, onStationSelect) {
     }
     titleBtn.setAttribute('aria-expanded', isOpen.toString());
     arrow.textContent = isOpen ? ' ▲' : ' ▼';
-    
+
     if (isOpen) {
       populateMenu();
       selectedIndex = -1;
     }
   }
-  
+
   // Close dropdown
   function closeDropdown() {
     if (!isOpen) return;
@@ -293,12 +276,12 @@ export function createStationDropdown(currentStationName, onStationSelect) {
     titleBtn.setAttribute('aria-expanded', 'false');
     arrow.textContent = ' ▼';
     selectedIndex = -1;
-    
+
     // Clear selection highlight
     const items = menu.querySelectorAll('.station-dropdown-item');
-    items.forEach(item => item.classList.remove('selected'));
+    items.forEach((item) => item.classList.remove('selected'));
   }
-  
+
   // Select station
   function selectStation(station) {
     closeDropdown();
@@ -306,7 +289,7 @@ export function createStationDropdown(currentStationName, onStationSelect) {
       onStationSelect(station);
     }
   }
-  
+
   // Keyboard navigation
   function handleKeyDown(e) {
     if (!isOpen) {
@@ -316,42 +299,42 @@ export function createStationDropdown(currentStationName, onStationSelect) {
       }
       return;
     }
-    
+
     const items = Array.from(menu.querySelectorAll('.station-dropdown-item'));
     if (items.length === 0) return;
-    
+
     switch (e.key) {
       case 'ArrowDown':
         e.preventDefault();
         selectedIndex = Math.min(selectedIndex + 1, items.length - 1);
         updateSelection(items);
         break;
-        
+
       case 'ArrowUp':
         e.preventDefault();
         selectedIndex = Math.max(selectedIndex - 1, 0);
         updateSelection(items);
         break;
-        
+
       case 'Enter':
         e.preventDefault();
         if (selectedIndex >= 0 && items[selectedIndex]) {
           const station = {
             name: items[selectedIndex].dataset.name,
             stopId: items[selectedIndex].dataset.stopId,
-            modes: JSON.parse(items[selectedIndex].dataset.modes || '[]')
+            modes: JSON.parse(items[selectedIndex].dataset.modes || '[]'),
           };
           selectStation(station);
         }
         break;
-        
+
       case 'Escape':
         e.preventDefault();
         closeDropdown();
         break;
     }
   }
-  
+
   // Update visual selection
   function updateSelection(items) {
     items.forEach((item, index) => {
@@ -363,22 +346,22 @@ export function createStationDropdown(currentStationName, onStationSelect) {
       }
     });
   }
-  
+
   // Update station title with optional transport mode icons
   function updateTitle(name, modes = []) {
     const arrowText = arrow.textContent;
     titleBtn.textContent = name || t('noStationSelected');
-    
+
     // Add mode icons if there's a filter (not all modes selected)
     const modesDisplay = getModesDisplay(modes);
     if (modesDisplay) {
       titleBtn.textContent += ' ' + modesDisplay;
     }
-    
+
     arrow.textContent = arrowText;
     titleBtn.appendChild(arrow);
   }
-  
+
   // Named outside-click handler so it can be removed on destroy
   function _onDocClick(e) {
     if (!container.contains(e.target)) {

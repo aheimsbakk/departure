@@ -11,16 +11,17 @@ import { UI_EMOJIS } from '../config.js';
 export function encodeSettings(settings) {
   try {
     // Encode as compact array: [name, stopId, modes]
-    const data = [
-      settings.STATION_NAME,
-      settings.STOP_ID,
-      settings.TRANSPORT_MODES
-    ];
-    
+    const data = [settings.STATION_NAME, settings.STOP_ID, settings.TRANSPORT_MODES];
+
     const json = JSON.stringify(data);
     // Use TextEncoder for correct UTF-8 → binary → base64 (replaces deprecated unescape/encodeURIComponent trick)
     const bytes = new TextEncoder().encode(json);
-    const base64 = btoa(String.fromCharCode(...bytes));
+    // Safe loop: spreading a large Uint8Array as function arguments can exceed
+    // the engine's maximum argument count and throw RangeError for long station
+    // names (user-controlled input). Iterate instead.
+    let binary = '';
+    for (const b of bytes) binary += String.fromCharCode(b);
+    const base64 = btoa(binary);
 
     // Make URL-safe
     return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
@@ -40,24 +41,24 @@ export function decodeSettings(encoded) {
   try {
     // Restore URL-safe base64 to standard base64
     let base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
-    
+
     // Add padding if needed
     while (base64.length % 4) {
       base64 += '=';
     }
-    
+
     // Use TextDecoder for correct base64 → binary → UTF-8 (replaces deprecated escape/decodeURIComponent trick)
     const binary = atob(base64);
-    const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+    const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
     const json = new TextDecoder().decode(bytes);
     const data = JSON.parse(json);
-    
+
     // Support both array formats:
     // - New: [name, stopId, modes] (3 elements)
     // - Legacy: [name, stopId, modes, departures, interval, size, lang] (7 elements)
     // - Also legacy object format: {n, s, m, d, i, t, l}
     let n, s, m, d, i, t, l;
-    
+
     if (Array.isArray(data)) {
       if (data.length >= 7) {
         // Legacy format: [name, stopId, modes, departures, interval, size, lang]
@@ -72,7 +73,7 @@ export function decodeSettings(encoded) {
       // Legacy object format
       ({ n, s, m, d, i, t, l } = data);
     }
-    
+
     // Validate all fields.
     // Optional fields (numDepartures, fetchInterval, textSize, language) are
     // initialised to null so callers can distinguish "field was present in the
@@ -86,53 +87,53 @@ export function decodeSettings(encoded) {
       numDepartures: null,
       fetchInterval: null,
       textSize: null,
-      language: null
+      language: null,
     };
-    
+
     // Validate station name (required string)
     if (typeof n === 'string' && n.length > 0 && n.length < 200) {
       settings.stationName = n;
     } else {
       return null;
     }
-    
+
     // Validate stop ID (required string, NSR format)
     if (typeof s === 'string' && s.length > 0 && s.length < 100) {
       settings.stopId = s;
     } else {
       return null;
     }
-    
+
     // Validate transport modes (array of valid modes)
     const validModes = ['bus', 'tram', 'metro', 'rail', 'water', 'coach'];
     if (Array.isArray(m)) {
-      const modes = m.filter(mode => validModes.includes(mode));
+      const modes = m.filter((mode) => validModes.includes(mode));
       settings.transportModes = modes.length > 0 ? modes : validModes;
     } else {
       settings.transportModes = validModes;
     }
-    
+
     // Validate number of departures (1-20) - only from legacy format
     if (typeof d === 'number' && d >= 1 && d <= 20) {
       settings.numDepartures = Math.floor(d);
     }
-    
+
     // Validate fetch interval (minimum 20 seconds, max 300) - only from legacy format
     if (typeof i === 'number' && i >= 20 && i <= 300) {
       settings.fetchInterval = Math.floor(i);
     }
-    
+
     // Validate text size (one of the valid sizes) - only from legacy format
     const validSizes = ['tiny', 'small', 'medium', 'large', 'xlarge'];
     if (typeof t === 'string' && validSizes.includes(t)) {
       settings.textSize = t;
     }
-    
+
     // Validate language (2-3 letter code) - only from legacy format
     if (typeof l === 'string' && /^[a-z]{2,3}$/.test(l)) {
       settings.language = l;
     }
-    
+
     return settings;
   } catch (e) {
     console.warn('Failed to decode settings:', e.message);
@@ -151,60 +152,60 @@ export function createShareButton(getSettings) {
   button.setAttribute('aria-label', t('shareBoard'));
   button.title = t('shareBoard');
   button.textContent = UI_EMOJIS.share;
-  
+
   // URL display box (fallback if clipboard fails)
   const urlBox = document.createElement('div');
   urlBox.className = 'share-url-box';
   urlBox.style.display = 'none';
-  
+
   const urlBoxContent = document.createElement('div');
   urlBoxContent.className = 'share-url-content';
-  
+
   const urlInput = document.createElement('input');
   urlInput.type = 'text';
   urlInput.readOnly = true;
   urlInput.className = 'share-url-input';
-  
+
   const closeBtn = document.createElement('button');
   closeBtn.textContent = t('close');
   closeBtn.className = 'share-url-close';
-  
+
   urlBoxContent.appendChild(urlInput);
   urlBoxContent.appendChild(closeBtn);
   urlBox.appendChild(urlBoxContent);
-  
+
   closeBtn.addEventListener('click', () => {
     urlBox.style.display = 'none';
   });
-  
+
   // Click outside to close
   urlBox.addEventListener('click', (e) => {
     if (e.target === urlBox) {
       urlBox.style.display = 'none';
     }
   });
-  
+
   function showUrlBox(url) {
     urlInput.value = url;
     urlBox.style.display = 'flex';
     urlInput.select();
   }
-  
+
   button.addEventListener('click', async () => {
     const settings = getSettings();
     if (!settings || !settings.STATION_NAME || !settings.STOP_ID) {
       alert(t('noStationToShare'));
       return;
     }
-    
+
     const encoded = encodeSettings(settings);
     if (!encoded) {
       alert(t('shareFailed'));
       return;
     }
-    
+
     const url = `${window.location.origin}${window.location.pathname}?b=${encoded}`;
-    
+
     // Try to copy to clipboard
     try {
       if (navigator.clipboard && window.isSecureContext) {
@@ -214,7 +215,7 @@ export function createShareButton(getSettings) {
       // Clipboard write is a best-effort operation; failure is not fatal
       console.warn('clipboard.writeText failed:', e);
     }
-    
+
     // Show brief success indicator
     const originalText = button.textContent;
     button.textContent = UI_EMOJIS.shareSuccess;
@@ -222,6 +223,6 @@ export function createShareButton(getSettings) {
       button.textContent = originalText;
     }, 2000);
   });
-  
+
   return { button, urlBox, showUrlBox };
 }
