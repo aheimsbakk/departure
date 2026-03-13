@@ -1,19 +1,26 @@
 // Minimal UI helpers: create container and manage departure list
 import { t } from '../i18n.js';
-import { VERSION, DEFAULTS, UI_EMOJIS } from '../config.js';
+import { DEFAULTS, UI_EMOJIS } from '../config.js';
 import { createStationDropdown, isStationInFavorites } from './station-dropdown.js';
+import { createFooter } from './footer.js';
+export { updateFooterTranslations } from './footer.js';
 
-export function createBoardElements(stationName, onStationSelect, onFavoriteToggle){
-  const el = document.createElement('div'); el.className='board';
+export function createBoardElements(stationName, onStationSelect, onFavoriteToggle) {
+  const el = document.createElement('div');
+  el.className = 'board';
   // station dropdown (replaces simple title)
   const stationDropdown = createStationDropdown(stationName, onStationSelect);
   // status chip (Live / Demo) should appear under the station title
-  const status = document.createElement('div'); status.className='status-chip';
-  const list = document.createElement('div'); list.className='departures';
-  const headerWrap = document.createElement('div'); headerWrap.className='header-wrap';
+  const status = document.createElement('div');
+  status.className = 'status-chip';
+  const list = document.createElement('div');
+  list.className = 'departures';
+  const headerWrap = document.createElement('div');
+  headerWrap.className = 'header-wrap';
   // header-left stacks title and status vertically; header-controls (gear) live to the right
-  const headerLeft = document.createElement('div'); headerLeft.className = 'header-left';
-  
+  const headerLeft = document.createElement('div');
+  headerLeft.className = 'header-left';
+
   // Favorite heart button in front of station name
   const favoriteBtn = document.createElement('button');
   favoriteBtn.type = 'button';
@@ -27,47 +34,24 @@ export function createBoardElements(stationName, onStationSelect, onFavoriteTogg
       onFavoriteToggle();
     }
   });
-  
+
   // Station row: heart + station dropdown side by side
-  const stationRow = document.createElement('div'); stationRow.className = 'station-row';
+  const stationRow = document.createElement('div');
+  stationRow.className = 'station-row';
   stationRow.append(favoriteBtn, stationDropdown);
-  
+
   headerLeft.append(stationRow, status);
   headerWrap.append(headerLeft);
-  
-  // Footer: two lines — data attribution above, version + GitHub below
-  const footer = document.createElement('div'); footer.className='app-footer';
 
-  // Line 1: "Data from Entur 🔗"
-  const dataLine = document.createElement('div'); dataLine.className='footer-data-line';
-  const dataText = document.createElement('span');
-  dataText.textContent = `${t('dataFrom')} Entur `;
-  const enturLink = document.createElement('a');
-  enturLink.href = 'https://data.entur.no/';
-  enturLink.target = '_blank';
-  enturLink.rel = 'noopener noreferrer';
-  enturLink.textContent = UI_EMOJIS.footerLink;
-  dataLine.append(dataText, enturLink);
+  // Footer delegated to footer.js (SRP §8, §13)
+  const footer = createFooter();
 
-  // Line 2: "Version X.Y.Z 📘"
-  const versionLine = document.createElement('div'); versionLine.className='footer-version-line';
-  const versionText = document.createElement('span');
-  versionText.textContent = `${t('version')} ${VERSION} `;
-  const githubLink = document.createElement('a');
-  githubLink.href = DEFAULTS.GITHUB_URL || 'https://github.com/aheimsbakk/departure';
-  githubLink.target = '_blank';
-  githubLink.rel = 'noopener noreferrer';
-  githubLink.textContent = UI_EMOJIS.footerReadme;
-  versionLine.append(versionText, githubLink);
-
-  footer.append(dataLine, versionLine);
-  
   el.append(headerWrap, list);
   // expose header-wrap for other modules to attach controls
   el.headerWrap = headerWrap;
   // expose station dropdown for updating
   el.stationDropdown = stationDropdown;
-  return {el, list, status, footer, stationDropdown, favoriteBtn};
+  return { el, list, status, footer, stationDropdown, favoriteBtn };
 }
 
 /**
@@ -95,35 +79,20 @@ export function updateFavoriteButton(btn, stopId, modes) {
   }
 }
 
-// Update footer translations when language changes
-export function updateFooterTranslations(footer) {
-  if (!footer) return;
-  const dataLine = footer.querySelector('.footer-data-line');
-  const versionLine = footer.querySelector('.footer-version-line');
-  if (dataLine) {
-    const dataSpan = dataLine.querySelector('span');
-    if (dataSpan) dataSpan.textContent = `${t('dataFrom')} Entur `;
-  }
-  if (versionLine) {
-    const versionSpan = versionLine.querySelector('span');
-    if (versionSpan) versionSpan.textContent = `${t('version')} ${VERSION} `;
-  }
+export function clearList(listEl) {
+  while (listEl.firstChild) listEl.removeChild(listEl.firstChild);
 }
 
-export function clearList(listEl){
-  while(listEl.firstChild) listEl.removeChild(listEl.firstChild);
-}
-
-export function findKey(item){
+export function findKey(item) {
   return `${item.destination}::${item.expectedDepartureISO}`;
 }
 
 // Compute minimal diff metadata between old keys and new keys (pure function for testing)
-export function computeDiff(oldKeys, newKeys){
+export function computeDiff(oldKeys, newKeys) {
   const oldSet = new Set(oldKeys);
   const newSet = new Set(newKeys);
-  const toAdd = newKeys.filter(k => !oldSet.has(k));
-  const toRemove = oldKeys.filter(k => !newSet.has(k));
+  const toAdd = newKeys.filter((k) => !oldSet.has(k));
+  const toRemove = oldKeys.filter((k) => !newSet.has(k));
   // newOrder is simply newKeys (we'll re-append nodes to match)
   return { toAdd, toRemove, newOrder: newKeys };
 }
