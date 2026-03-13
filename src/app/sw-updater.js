@@ -22,6 +22,14 @@ function reloadWithCacheBust() {
 }
 
 /**
+ * ID for the 2 s fallback reload setTimeout set by showUpdateNotification.
+ * Stored at module scope so the controllerchange handler in registerServiceWorker
+ * can cancel it — preventing a double-reload when controllerchange fires first.
+ * @type {ReturnType<typeof setTimeout> | null}
+ */
+let _fallbackReloadId = null;
+
+/**
  * Show a 5-second countdown toast, then trigger skipWaiting so the new
  * service worker activates and the page reloads with fresh assets.
  *
@@ -48,7 +56,7 @@ function showUpdateNotification(reg, newVersion) {
   // Pre-create child elements once; update only textContent on each tick
   // so the setInterval never causes innerHTML-driven DOM teardown/rebuild.
   const lineAvail = document.createElement('div');
-  const lineFrom  = document.createElement('div');
+  const lineFrom = document.createElement('div');
   const lineCount = document.createElement('div');
   toast.append(lineAvail, lineFrom, lineCount);
 
@@ -56,7 +64,7 @@ function showUpdateNotification(reg, newVersion) {
 
   const renderToast = () => {
     lineAvail.textContent = t('newVersionAvailable');
-    lineFrom.textContent  = `${t('upgradingFrom')} ${VERSION} ${t('to')} ${newVersion}`;
+    lineFrom.textContent = `${t('upgradingFrom')} ${VERSION} ${t('to')} ${newVersion}`;
     lineCount.textContent = `${t('updatingIn')} ${countdown}${t('seconds')}`;
   };
   renderToast();
@@ -77,7 +85,9 @@ function showUpdateNotification(reg, newVersion) {
 
       // Fallback reload: if controllerchange does not fire within 2 s
       // (e.g. the SW was already active, or the event was missed), reload directly.
-      setTimeout(reloadWithCacheBust, 2000);
+      // The ID is stored at module scope so the controllerchange handler can cancel
+      // it — preventing a double-reload when controllerchange fires before 2 s.
+      _fallbackReloadId = setTimeout(reloadWithCacheBust, 2000);
     }
   }, 1000);
 }
@@ -92,12 +102,21 @@ export async function registerServiceWorker() {
   try {
     // Wire controllerchange BEFORE register() so the event cannot be missed
     // if skipWaiting fires during the async register/update calls.
+    // { once: true } ensures the handler self-removes after the first fire so
+    // a second registerServiceWorker() call cannot accumulate a stale listener.
     let reloading = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (reloading) return;
-      reloading = true;
-      reloadWithCacheBust();
-    });
+    navigator.serviceWorker.addEventListener(
+      'controllerchange',
+      () => {
+        if (reloading) return;
+        reloading = true;
+        // Cancel the 2 s fallback — controllerchange fired first, so there is no
+        // need for a second reload after the page already navigated.
+        clearTimeout(_fallbackReloadId);
+        reloadWithCacheBust();
+      },
+      { once: true }
+    );
 
     const reg = await navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' });
     // Check for a newer SW immediately on load
@@ -109,10 +128,12 @@ export async function registerServiceWorker() {
     let newVersion = 'new version';
     const fetchNewVersion = async () => {
       try {
-        const swText = await fetch('./sw.js', { cache: 'reload' }).then(r => r.text());
-        const match  = swText.match(/VERSION\s*=\s*['"]([^'"]+)['"]/);
+        const swText = await fetch('./sw.js', { cache: 'reload' }).then((r) => r.text());
+        const match = swText.match(/VERSION\s*=\s*['"]([^'"]+)['"]/);
         if (match) newVersion = match[1];
-      } catch (_) { /* keep fallback */ }
+      } catch (_) {
+        /* keep fallback */
+      }
     };
 
     // If there is already a waiting worker (e.g. page was open in background)
@@ -133,5 +154,7 @@ export async function registerServiceWorker() {
         }
       });
     });
-  } catch (_) { /* SW registration failure is non-fatal */ }
+  } catch (_) {
+    /* SW registration failure is non-fatal */
+  }
 }

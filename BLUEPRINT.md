@@ -172,7 +172,7 @@ PWA & Service Worker
 - `src/sw.js`: versioned cache name (`kollektiv-v<VERSION>`), caches all app assets on install, serves from cache with network fallback.
 - Update flow: new SW detected → 5-second countdown toast shows old→new version → `skipWaiting` → `controllerchange` triggers hard reload with `?t=<timestamp>` cache-bust.
 - PWA wake-up on resume: `visibilitychange` in `fetch-loop.js` checks wall-clock elapsed time vs `FETCH_INTERVAL`; triggers immediate `doRefresh()` if stale. `pageshow` (event.persisted) in `app.js` forces full reload on BFCache cold-start.
-- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.37.35`.
+- VERSION in `src/config.js` and `src/sw.js` must stay in sync — use `scripts/bump-version.sh`. Current version: `1.38.1`.
 
 Performance & DOM update pattern
 
@@ -240,6 +240,7 @@ Current file tree (implemented)
 - `src/ui/share-button.js`
 - `src/ui/station-dropdown.js`
 - `src/ui/theme-toggle.js`
+- `src/ui/mode-utils.js` — shared helpers: `emojiForMode(mode)`, `labelForMode(mode)` (consolidated from departure.js, station-dropdown.js, transport-modes.js)
 
 Commit & agent protocol notes (required)
 
