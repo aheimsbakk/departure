@@ -24,13 +24,18 @@ import { getRecentStations, getDefaultStation } from './ui/station-dropdown.js';
 import { loadSettings, applyTextSize } from './app/settings.js';
 import { processUrlParams } from './app/url-import.js';
 import { renderDepartures } from './app/render.js';
-import { doRefresh, startRefreshLoop, tickCountdowns, data } from './app/fetch-loop.js';
+import {
+  doRefresh,
+  startRefreshLoop,
+  tickCountdowns,
+  data,
+  setNumDeparturesOverride,
+} from './app/fetch-loop.js';
 import { wireHandlers } from './app/handlers.js';
 import { buildActionBar } from './app/action-bar.js';
 import { buildGpsBar } from './app/gps-bar.js';
 import { registerServiceWorker } from './app/sw-updater.js';
 import { initScrollMore } from './app/scroll-more.js';
-import { setNumDeparturesOverride } from './app/fetch-loop.js';
 
 // Initialise language and theme before any DOM is built so that the correct
 // strings and colours are in place from the very first render.
@@ -222,4 +227,4 @@ window.addEventListener('pagehide', () => {
   }
 });
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', init, { once: true });

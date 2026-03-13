@@ -8,10 +8,8 @@
  *   - Return references needed by other modules (tooltips, theme callback)
  */
 
-import { UI_EMOJIS } from '../config.js';
-import { t } from '../i18n.js';
-import { DEFAULTS } from '../config.js';
-import { getLanguage } from '../i18n.js';
+import { UI_EMOJIS, DEFAULTS } from '../config.js';
+import { t, getLanguage } from '../i18n.js';
 import { createShareButton } from '../ui/share-button.js';
 import { createThemeToggle } from '../ui/theme-toggle.js';
 import { updateFavoriteButton } from '../ui/ui.js';
@@ -29,13 +27,13 @@ export function buildActionBar(board, onOpenSettings, onCloseSettings) {
   const shareComponents = createShareButton(() => {
     if (!DEFAULTS.STATION_NAME || !DEFAULTS.STOP_ID) return null;
     return {
-      STATION_NAME:    DEFAULTS.STATION_NAME,
-      STOP_ID:         DEFAULTS.STOP_ID,
+      STATION_NAME: DEFAULTS.STATION_NAME,
+      STOP_ID: DEFAULTS.STOP_ID,
       TRANSPORT_MODES: DEFAULTS.TRANSPORT_MODES,
-      NUM_DEPARTURES:  DEFAULTS.NUM_DEPARTURES,
-      FETCH_INTERVAL:  DEFAULTS.FETCH_INTERVAL,
-      TEXT_SIZE:       DEFAULTS.TEXT_SIZE,
-      language:        getLanguage()
+      NUM_DEPARTURES: DEFAULTS.NUM_DEPARTURES,
+      FETCH_INTERVAL: DEFAULTS.FETCH_INTERVAL,
+      TEXT_SIZE: DEFAULTS.TEXT_SIZE,
+      language: getLanguage(),
     };
   });
 
@@ -46,10 +44,10 @@ export function buildActionBar(board, onOpenSettings, onCloseSettings) {
 
   // Settings gear button (opens / closes the options panel)
   const settingsBtn = document.createElement('button');
-  settingsBtn.className   = 'header-btn gear-btn';
-  settingsBtn.type        = 'button';
+  settingsBtn.className = 'header-btn gear-btn';
+  settingsBtn.type = 'button';
   settingsBtn.textContent = UI_EMOJIS.settings;
-  settingsBtn.title       = t('settingsTooltip');
+  settingsBtn.title = t('settingsTooltip');
   settingsBtn.addEventListener('click', () => {
     if (document.body.classList.contains('options-open')) {
       onCloseSettings();
