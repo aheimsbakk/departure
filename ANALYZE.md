@@ -1,6 +1,6 @@
 # Code Analysis Report
 
-**Generated:** 2026-03-13T00:00:00Z  
+**Generated:** 2026-03-13T12:00:00Z  
 **Model:** github-copilot/claude-sonnet-4.6  
 **Version analysed:** 1.38.2  
 **Rules reference:** `agents/RULES.md`, `docs/PROJECT_RULES.md`
@@ -9,28 +9,28 @@
 
 ## Issue Index
 
-| #                                                                                          | File                      | Category                                                                        | Severity  | Status  |
-| ------------------------------------------------------------------------------------------ | ------------------------- | ------------------------------------------------------------------------------- | --------- | ------- |
-| [1](#1-appjs--duplicate-import-statements-from-fetch-loopjs)                               | `src/app.js`              | Duplicate `import` from same module — Rule §8                                   | 🟢 Minor  | 🔴 Open |
-| [2](#2-handlersjs--duplicate-import-statements-from-fetch-loopjs)                          | `src/app/handlers.js`     | Duplicate `import` from same module — Rule §8                                   | 🟢 Minor  | 🔴 Open |
-| [3](#3-share-buttonjs--alert-blocks-the-ui-thread)                                         | `src/ui/share-button.js`  | `alert()` freezes JS thread and all timers — Rule §9                            | 🟠 Medium | 🔴 Open |
-| [4](#4-geocoderjs--searchstations-outer-catch-is-silent)                                   | `src/entur/geocoder.js`   | Silent `catch (_)` hides all errors — Rule §9                                   | 🟡 Low    | 🔴 Open |
-| [5](#5-gps-searchjs--fetchnearbystops-outer-catch-is-silent)                               | `src/entur/gps-search.js` | Silent `catch (_)` hides all errors — Rule §9                                   | 🟡 Low    | 🔴 Open |
-| [6](#6-swjs--silent-cachepatch-failures)                                                   | `src/sw.js`               | `cache.put(…).catch(() => {})` swallows quota errors — Rule §9                  | 🟡 Low    | 🔴 Open |
-| [7](#7-fetch-loopjs--defaults-read-live-inside-async-gap-race-condition)                   | `src/app/fetch-loop.js`   | `DEFAULTS` read live across `await` — race condition — Rule §12                 | 🟠 Medium | 🔴 Open |
-| [8](#8-optionsindexjs--dual-loadsettings-call-paths)                                       | `src/ui/options/index.js` | Two separate `loadSettings()` paths to same key — Rule §9                       | 🟡 Low    | 🔴 Open |
-| [9](#9-uijs--footer-factory-mixed-into-createboardelements)                                | `src/ui/ui.js`            | Footer DOM built inside `createBoardElements` — Rule §8 §13                     | 🟡 Low    | 🔴 Open |
-| [10](#10-gps-dropdownjs--innerhtml---does-not-remove-item-listeners)                       | `src/ui/gps-dropdown.js`  | `innerHTML = ''` without explicit listener removal — Rule §11                   | 🟡 Low    | 🔴 Open |
-| [11](#11-configjs--mutable-defaults-written-by-multiple-modules)                           | `src/config.js`           | Mutable `DEFAULTS` mutated by 5 modules — Rule §12                              | 🟠 Medium | 🔴 Open |
-| [12](#12-settingsjs--saveSettings-serialises-all-of-defaults-including-non-persisted-keys) | `src/app/settings.js`     | `saveSettings()` serialises entire `DEFAULTS` including runtime keys            | 🟡 Low    | 🔴 Open |
-| [13](#13-optionsindexjs--panel-title-is-a-hardcoded-string-not-a-constant)                 | `src/ui/options/index.js` | `'Kollektiv.Sanntid.org'` hardcoded, not from `config.js` — Rule §21            | 🟡 Low    | 🔴 Open |
-| [14](#14-sitemapxml--lastmod-not-updated-on-release)                                       | `src/sitemap.xml`         | `<lastmod>` not updated on release — `docs/PROJECT_RULES.md` §1                 | 🟡 Low    | 🔴 Open |
-| [15](#15-action-barjs--duplicate-import-of-config-and-i18n)                                | `src/app/action-bar.js`   | Two separate `import` statements from `config.js` and `i18n.js` — Rule §8       | 🟢 Minor  | 🔴 Open |
-| [16](#16-parserjs--bare-catch-discards-error-context)                                      | `src/entur/parser.js`     | Bare `catch (_)` silently resets `explicitMode` and `publicCode` — Rule §9      | 🟡 Low    | 🔴 Open |
-| [17](#17-departurejs--silent-empty-catch-on-aria-label-assignment)                         | `src/ui/departure.js`     | Empty `catch (e) {}` on `aria-label` attribution — Rule §9                      | 🟡 Low    | 🔴 Open |
-| [18](#18-appjs--dOMcontentloaded-callback-is-never-removed)                                | `src/app.js`              | `DOMContentLoaded` listener never removed — Rule §11                            | 🟢 Minor  | 🔴 Open |
-| [19](#19-scroll-morejs--mousemove-and-mouseup-on-window-never-removed-on-pagehide)         | `src/app/scroll-more.js`  | `window.mousemove/mouseup/wheel` listeners not removed on `pagehide` — Rule §11 | 🟠 Medium | 🔴 Open |
-| [20](#20-appjs--scrollmoreref-destroy-not-called-on-pagehide)                              | `src/app.js`              | `scrollMoreRef` not torn down in `pagehide` handler — Rule §11                  | 🟠 Medium | 🔴 Open |
+| #                                                                                          | File                      | Category                                                                        | Severity  | Status   |
+| ------------------------------------------------------------------------------------------ | ------------------------- | ------------------------------------------------------------------------------- | --------- | -------- |
+| [1](#1-appjs--duplicate-import-statements-from-fetch-loopjs)                               | `src/app.js`              | Duplicate `import` from same module — Rule §8                                   | 🟢 Minor  | 🔴 Open  |
+| [2](#2-handlersjs--duplicate-import-statements-from-fetch-loopjs)                          | `src/app/handlers.js`     | Duplicate `import` from same module — Rule §8                                   | 🟢 Minor  | 🔴 Open  |
+| [3](#3-share-buttonjs--alert-blocks-the-ui-thread)                                         | `src/ui/share-button.js`  | `alert()` freezes JS thread and all timers — Rule §9                            | 🟠 Medium | ✅ Fixed |
+| [4](#4-geocoderjs--searchstations-outer-catch-is-silent)                                   | `src/entur/geocoder.js`   | Silent `catch (_)` hides all errors — Rule §9                                   | 🟡 Low    | 🔴 Open  |
+| [5](#5-gps-searchjs--fetchnearbystops-outer-catch-is-silent)                               | `src/entur/gps-search.js` | Silent `catch (_)` hides all errors — Rule §9                                   | 🟡 Low    | 🔴 Open  |
+| [6](#6-swjs--silent-cachepatch-failures)                                                   | `src/sw.js`               | `cache.put(…).catch(() => {})` swallows quota errors — Rule §9                  | 🟡 Low    | 🔴 Open  |
+| [7](#7-fetch-loopjs--defaults-read-live-inside-async-gap-race-condition)                   | `src/app/fetch-loop.js`   | `DEFAULTS` read live across `await` — race condition — Rule §12                 | 🟠 Medium | ✅ Fixed |
+| [8](#8-optionsindexjs--dual-loadsettings-call-paths)                                       | `src/ui/options/index.js` | Two separate `loadSettings()` paths to same key — Rule §9                       | 🟡 Low    | 🔴 Open  |
+| [9](#9-uijs--footer-factory-mixed-into-createboardelements)                                | `src/ui/ui.js`            | Footer DOM built inside `createBoardElements` — Rule §8 §13                     | 🟡 Low    | 🔴 Open  |
+| [10](#10-gps-dropdownjs--innerhtml--does-not-remove-item-listeners)                        | `src/ui/gps-dropdown.js`  | `innerHTML = ''` without explicit listener removal — Rule §11                   | 🟡 Low    | 🔴 Open  |
+| [11](#11-configjs--mutable-defaults-written-by-multiple-modules)                           | `src/config.js`           | Mutable `DEFAULTS` mutated by 5 modules — Rule §12                              | 🟠 Medium | ✅ Fixed |
+| [12](#12-settingsjs--savesettings-serialises-all-of-defaults-including-non-persisted-keys) | `src/app/settings.js`     | `saveSettings()` serialises entire `DEFAULTS` including runtime keys — Rule §6  | 🟡 Low    | 🔴 Open  |
+| [13](#13-optionsindexjs--panel-title-is-a-hardcoded-string-not-a-constant)                 | `src/ui/options/index.js` | `'Kollektiv.Sanntid.org'` hardcoded, not from `config.js` — Rule §21            | 🟡 Low    | 🔴 Open  |
+| [14](#14-sitemapxml--lastmod-not-updated-on-release)                                       | `src/sitemap.xml`         | `<lastmod>` not updated on release — `docs/PROJECT_RULES.md` §1                 | 🟡 Low    | 🔴 Open  |
+| [15](#15-action-barjs--duplicate-import-of-config-and-i18n)                                | `src/app/action-bar.js`   | Two separate `import` statements from `config.js` and `i18n.js` — Rule §8       | 🟢 Minor  | 🔴 Open  |
+| [16](#16-parserjs--bare-catch-discards-error-context)                                      | `src/entur/parser.js`     | Bare `catch (_)` silently resets `explicitMode` and `publicCode` — Rule §9      | 🟡 Low    | 🔴 Open  |
+| [17](#17-departurejs--silent-empty-catch-on-aria-label-assignment)                         | `src/ui/departure.js`     | Empty `catch (e) {}` on `aria-label` attribution — Rule §9                      | 🟡 Low    | 🔴 Open  |
+| [18](#18-appjs--domcontentloaded-callback-is-never-removed)                                | `src/app.js`              | `DOMContentLoaded` listener never removed — Rule §11                            | 🟢 Minor  | 🔴 Open  |
+| [19](#19-scroll-morejs--mousemove-and-mouseup-on-window-never-removed-on-pagehide)         | `src/app/scroll-more.js`  | `window.mousemove/mouseup/wheel` listeners not removed on `pagehide` — Rule §11 | 🟠 Medium | ✅ Fixed |
+| [20](#20-appjs--scrollmoreref-destroy-not-called-on-pagehide)                              | `src/app.js`              | `scrollMoreRef` not torn down in `pagehide` handler — Rule §11                  | 🟠 Medium | ✅ Fixed |
 
 ---
 
@@ -99,33 +99,9 @@ import { doRefresh, startRefreshLoop, setNumDeparturesOverride } from './fetch-l
 ### 3. `share-button.js` — `alert()` blocks the UI thread
 
 **Severity:** 🟠 Medium  
-**File:** `src/ui/share-button.js` lines 197, 203  
-**Rule:** §9 (graceful degradation), §12 (concurrency)
-
-**Problem:**  
-Two `alert()` calls are used for error states:
-
-```js
-// line 197
-alert(t('noStationToShare'));
-// line 203
-alert(t('shareFailed'));
-```
-
-`alert()` is a synchronous, blocking, UI-thread modal. It suspends JavaScript execution entirely — including the `setInterval` that drives the 1-second departure countdown and the auto-refresh loop. On mobile browsers it can produce a permission-level OS dialog. It is also not translatable via `t()` since the text is provided via the alert call itself (though `t()` is called, the modal chrome is not translated). The blocking behaviour violates Rule §12's requirement to prevent JS execution interruption.
-
-**Fix direction:**  
-Replace with non-blocking inline feedback:
-
-```js
-// Option A: temporarily change button label
-button.textContent = '⚠️';
-setTimeout(() => {
-  button.textContent = UI_EMOJIS.share;
-}, 2000);
-
-// Option B: reuse lifecycle.showToast() (already available in the codebase)
-```
+**File:** `src/ui/share-button.js`  
+**Rule:** §9 (graceful degradation), §12 (concurrency)  
+**Status:** ✅ Fixed — both `alert()` calls replaced with `showButtonError('⚠️')` (non-blocking 2.5 s button label swap + `console.warn`).
 
 ---
 
@@ -206,57 +182,16 @@ cache.put(req, netRes.clone()).catch((err) => console.warn('[SW] cache.put faile
 ### 7. `fetch-loop.js` — `DEFAULTS` read live inside an async gap (race condition)
 
 **Severity:** 🟠 Medium  
-**File:** `src/app/fetch-loop.js` lines 79–95  
-**Rule:** §12 (state management, race-condition guards)
-
-**Problem:**  
-`doRefresh` reads `DEFAULTS.STOP_ID`, `DEFAULTS.STATION_NAME`, `DEFAULTS.TRANSPORT_MODES`, `DEFAULTS.CLIENT_NAME`, and `DEFAULTS.API_URL` across `await` points without snapshotting them first:
-
-```js
-export async function doRefresh(listEl) {
-  // ...
-  let stopId = DEFAULTS.STOP_ID;               // read #1
-  if (!stopId) {
-    stopId = await lookupStopId({ stationName: DEFAULTS.STATION_NAME, … }); // AWAIT
-  }
-  const fresh = stopId
-    ? await fetchDepartures({
-        stopId,
-        modes: DEFAULTS.TRANSPORT_MODES,       // read #2 — after first await
-        apiUrl: DEFAULTS.API_URL,
-        clientName: DEFAULTS.CLIENT_NAME,
-      })
-    : [];
-```
-
-During the first `await` (geocoder lookup), another module can mutate `DEFAULTS.STOP_ID` or `DEFAULTS.TRANSPORT_MODES` (e.g. the user changes station). The response will then be rendered against the **new** station's context while the data is actually for the **old** one. This is a classic TOCTOU race.
-
-**Fix direction:**  
-Snapshot all `DEFAULTS` values at the start of `doRefresh`, before the first `await`:
-
-```js
-export async function doRefresh(listEl) {
-  if (fetchInFlight) return;
-  fetchInFlight = true;
-  // Snapshot before any await to prevent TOCTOU race
-  const stopId0    = DEFAULTS.STOP_ID;
-  const stationName = DEFAULTS.STATION_NAME;
-  const modes      = DEFAULTS.TRANSPORT_MODES.slice();
-  const apiUrl     = DEFAULTS.API_URL;
-  const clientName = DEFAULTS.CLIENT_NAME;
-  try {
-    let stopId = stopId0 || await lookupStopId({ stationName, clientName });
-    const fresh = stopId ? await fetchDepartures({ stopId, modes, apiUrl, clientName, … }) : [];
-    …
-  }
-```
+**File:** `src/app/fetch-loop.js`  
+**Rule:** §12 (state management, race-condition guards)  
+**Status:** ✅ Fixed — `DEFAULTS.STOP_ID`, `.STATION_NAME`, `.TRANSPORT_MODES` (`.slice()`), `.API_URL`, and `.CLIENT_NAME` are now snapshotted at the top of `doRefresh` before the first `await`.
 
 ---
 
 ### 8. `options/index.js` — Dual `loadSettings()` call paths
 
 **Severity:** 🟡 Low  
-**File:** `src/ui/options/index.js` line 101  
+**File:** `src/ui/options/index.js` lines 101–108  
 **Rule:** §9 (reliability)
 
 **Problem:**  
@@ -316,14 +251,9 @@ menu.addEventListener('click', (e) => {
 ### 11. `config.js` — Mutable exported `DEFAULTS` written by multiple modules
 
 **Severity:** 🟠 Medium  
-**File:** `src/config.js`; mutated in `handlers.js`, `url-import.js`, `app.js`, `settings.js`, `fetch-loop.js`  
-**Rule:** §12 (unidirectional state mutations)
-
-**Problem:**  
-`DEFAULTS` is a plain exported object that is treated as shared mutable global state. Five modules write to it directly. This makes it impossible to statically track what holds the "source of truth" at any point in time and, combined with issue #7, creates race conditions during async operations. There is no immutability guarantee or access control.
-
-**Fix direction:**  
-Short-term: apply the snapshot fix from #7 everywhere `DEFAULTS` is read across an `await`. Long-term: introduce a dedicated `state.js` module with explicit `get/set` accessors that centralise mutation, making cross-module writes traceable.
+**File:** `src/config.js`; mutated in `handlers.js`, `url-import.js`, `app.js`, `settings.js`  
+**Rule:** §12 (unidirectional state mutations)  
+**Status:** ✅ Fixed (short-term) — `doRefresh` in `fetch-loop.js` now snapshots all `DEFAULTS` values before the first `await`, eliminating the TOCTOU race at the fetch boundary. The underlying architectural issue (no access-control on the exported object) remains; long-term mitigation is a dedicated `state.js` module with explicit `get/set` accessors.
 
 ---
 
@@ -340,7 +270,7 @@ Short-term: apply the snapshot fix from #7 everywhere `DEFAULTS` is read across 
 localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULTS));
 ```
 
-`DEFAULTS` contains keys that should not be persisted: `CLIENT_NAME`, `API_URL`, and `GITHUB_URL` are runtime/config constants, not user preferences. If these are ever modified at runtime (e.g. a future feature override), they will be silently persisted and restored on reload, overriding the correct values from `config.js`. Additionally, serialising `null` for `STOP_ID` means a cleared station gets re-loaded as `null` instead of the `getDefaultStation()` fallback.
+`DEFAULTS` contains keys that should not be persisted: `CLIENT_NAME`, `API_URL`, `GITHUB_URL`, and `NUM_FAVORITES` are runtime/config constants, not user preferences. If any of these are mutated at runtime (e.g. a future feature override), they will be silently persisted and restored on next load, overriding the correct values from `config.js`. Additionally, serialising `null` for `STOP_ID` means a cleared station is restored as `null` instead of triggering the `getDefaultStation()` fallback.
 
 **Fix direction:**  
 Serialise only the user preference keys:
@@ -378,7 +308,7 @@ title.textContent = 'Kollektiv.Sanntid.org';
 The `<h3>` panel title is a hardcoded string literal duplicated from the HTML `<title>` tag. All other panel labels use `t()` and are refreshed on language change. While this is a brand name (intentionally untranslated), having it as a bare string literal means a rename requires hunting across files.
 
 **Fix direction:**  
-Reference from `config.js` as a named constant. Add a comment explaining it is intentionally not translated:
+Reference from `config.js` as a named constant:
 
 ```js
 // config.js
@@ -474,7 +404,7 @@ If a programming error or unexpected API shape causes a throw inside this block 
 ### 17. `departure.js` — Empty `catch (e) {}` on `aria-label` assignment
 
 **Severity:** 🟡 Low  
-**File:** `src/ui/departure.js` lines 131–142  
+**File:** `src/ui/departure.js` line 142  
 **Rule:** §9 (no silent failures)
 
 **Problem:**  
@@ -502,7 +432,7 @@ A failure here silently degrades accessibility without any diagnostic signal.
 ### 18. `app.js` — `DOMContentLoaded` listener is never removed
 
 **Severity:** 🟢 Minor  
-**File:** `src/app.js` line 220  
+**File:** `src/app.js` line 225  
 **Rule:** §11 (resource lifecycle)
 
 **Problem:**
@@ -525,71 +455,26 @@ document.addEventListener('DOMContentLoaded', init, { once: true });
 ### 19. `scroll-more.js` — `window` listeners not removed on `pagehide`
 
 **Severity:** 🟠 Medium  
-**File:** `src/app/scroll-more.js` lines 286–289  
-**Rule:** §11 (resource lifecycle)
-
-**Problem:**  
-Three `window`-level listeners are attached by `initScrollMore`:
-
-```js
-window.addEventListener('mousemove', onPointerMove);
-window.addEventListener('mouseup', onPointerEnd);
-window.addEventListener('wheel', onWheel, { passive: true });
-```
-
-The `destroy()` method correctly removes them, but `scrollMoreRef` is **not** torn down in the `pagehide` handler in `app.js` (lines 211–218). The `pagehide` handler calls `destroy()` only for `stationDropdown` and `gpsRef`. If the page enters the BFCache and is restored, these three `window` listeners accumulate on every restore cycle.
-
-**Fix direction:**  
-See also issue #20. `app.js`'s `pagehide` handler must call `scrollMoreRef.current?.destroy()`.
+**File:** `src/app/scroll-more.js`, `src/app.js`  
+**Rule:** §11 (resource lifecycle)  
+**Status:** ✅ Fixed — `app.js` now holds a module-level `_teardownScrollMoreRef` that is assigned in `init()` and its `destroy()` is called in the `pagehide` handler alongside `stationDropdown` and `gpsRef`.
 
 ---
 
 ### 20. `app.js` — `scrollMoreRef` not torn down in `pagehide`
 
 **Severity:** 🟠 Medium  
-**File:** `src/app.js` lines 211–218  
-**Rule:** §11 (resource lifecycle)
-
-**Problem:**  
-The `pagehide` teardown handler destroys `stationDropdown` and `gpsRef`, but omits `scrollMoreRef`:
-
-```js
-window.addEventListener('pagehide', () => {
-  if (_teardownBoard?.stationDropdown?.destroy) {
-    _teardownBoard.stationDropdown.destroy();
-  }
-  if (_teardownGpsRef?.current?.destroy) {
-    _teardownGpsRef.current.destroy();
-  }
-  // ← scrollMoreRef is never destroyed here
-});
-```
-
-This leaves the `window.mousemove`, `window.mouseup`, and `window.wheel` listeners attached (see #19), plus the `maxHintTimer` and `wheelResetTimer` are not cleared on BFCache entry.
-
-**Fix direction:**  
-Add a module-level `_teardownScrollMoreRef` and wire it in `pagehide`:
-
-```js
-// app.js — module scope
-let _teardownScrollMoreRef = null;
-
-// inside init(), after scrollMore is created:
-_teardownScrollMoreRef = scrollMoreRef;
-
-// in pagehide handler:
-if (_teardownScrollMoreRef?.current?.destroy) {
-  _teardownScrollMoreRef.current.destroy();
-}
-```
+**File:** `src/app.js`  
+**Rule:** §11 (resource lifecycle)  
+**Status:** ✅ Fixed — see #19.
 
 ---
 
 ## Notes
 
-- Issues #7 and #11 are closely related: the snapshot fix for #7 is the concrete short-term mitigation for the broader mutable-`DEFAULTS` problem described in #11.
-- Issues #19 and #20 are a single root-cause split across two files — fix together in one pass.
-- Issues #1, #2, and #15 are trivial one-line merges; fix in the same commit as any other change to those files to avoid noisy standalone commits.
+- Issues #7 and #11 are closely related: the snapshot fix for #7 is the concrete short-term mitigation for the broader mutable-`DEFAULTS` problem described in #11. Long-term solution is a `state.js` module with explicit accessors.
+- Issues #19 and #20 were a single root-cause split across two files — fixed together.
+- Issues #1, #2, and #15 are trivial one-line merges; fix in the same commit as any other change to those files.
 - Issues #4 and #5 are one-liner `console.warn` additions; fix together in a single pass.
-- Issue #3 (`alert()`) is the highest-impact open issue: it blocks the entire JS thread including the 1-second departure countdown loop and the auto-refresh timer.
 - Issue #12 (`saveSettings` serialising all of `DEFAULTS`) is a latent data-hygiene bug; no user-visible impact today but it will bite on any future addition of runtime-only keys to `DEFAULTS`.
+- Issue #8 (`options/index.js` dual `loadSettings`) creates a silent divergence risk in private-browsing mode; low risk today but worth fixing before adding more settings keys.

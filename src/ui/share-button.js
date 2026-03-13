@@ -191,16 +191,27 @@ export function createShareButton(getSettings) {
     urlInput.select();
   }
 
+  /** Show a temporary error label on the button without blocking the JS thread */
+  function showButtonError(msg) {
+    const prev = button.textContent;
+    button.textContent = msg;
+    setTimeout(() => {
+      button.textContent = prev;
+    }, 2500);
+  }
+
   button.addEventListener('click', async () => {
     const settings = getSettings();
     if (!settings || !settings.STATION_NAME || !settings.STOP_ID) {
-      alert(t('noStationToShare'));
+      showButtonError('⚠️');
+      console.warn('[share-button] noStationToShare');
       return;
     }
 
     const encoded = encodeSettings(settings);
     if (!encoded) {
-      alert(t('shareFailed'));
+      showButtonError('⚠️');
+      console.warn('[share-button] shareFailed — encodeSettings returned null');
       return;
     }
 
