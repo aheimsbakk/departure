@@ -18,7 +18,7 @@ import { mapTokenToCanonical, detectModeFromRaw } from './modes.js';
  */
 function pickLocalised(entries, lang) {
   if (!Array.isArray(entries) || entries.length === 0) return null;
-  const find = code => entries.find(d => d.language === code);
+  const find = (code) => entries.find((d) => d.language === code);
   const entry = find(lang) ?? find('en') ?? entries[0];
   return entry?.value ?? null;
 }
@@ -49,18 +49,18 @@ export function parseEnturResponse(json, lang = 'en') {
   if (!json || !json.data || !json.data.stopPlace) return [];
   const calls = json.data.stopPlace.estimatedCalls || [];
 
-  return calls.map(call => {
+  return calls.map((call) => {
     // --- Destination ---
     const destination = call.destinationDisplay?.frontText ?? '';
 
     // --- Departure times ---
-    const expectedDepartureISO   = call.expectedDepartureTime  ?? null;
-    const aimedDepartureISO      = call.aimedDepartureTime     ?? null;
-    const actualDepartureISO     = call.actualDepartureTime    ?? null;
+    const expectedDepartureISO = call.expectedDepartureTime ?? null;
+    const aimedDepartureISO = call.aimedDepartureTime ?? null;
+    const actualDepartureISO = call.actualDepartureTime ?? null;
 
     // --- Realtime flags ---
-    const realtime             = call.realtime             === true;
-    const cancellation         = call.cancellation         === true;
+    const realtime = call.realtime === true;
+    const cancellation = call.cancellation === true;
     const predictionInaccurate = call.predictionInaccurate === true;
 
     // --- Quay / platform ---
@@ -74,9 +74,11 @@ export function parseEnturResponse(json, lang = 'en') {
     if (Array.isArray(call.situations)) {
       for (const s of call.situations) {
         // Prefer description (more detailed) over summary.
-        const source = Array.isArray(s?.description) ? s.description
-                     : Array.isArray(s?.summary)     ? s.summary
-                     : null;
+        const source = Array.isArray(s?.description)
+          ? s.description
+          : Array.isArray(s?.summary)
+            ? s.summary
+            : null;
         const text = pickLocalised(source, lang);
         if (text) situations.push(text);
       }
@@ -85,7 +87,7 @@ export function parseEnturResponse(json, lang = 'en') {
     // --- Transport mode ---
     // Prefer explicit server-provided fields; fall back to recursive raw scan.
     let explicitMode = null;
-    let publicCode   = null;
+    let publicCode = null;
     try {
       const sj = call.serviceJourney;
       if (sj) {
@@ -98,9 +100,7 @@ export function parseEnturResponse(json, lang = 'en') {
 
         // Fallback path: serviceJourney.journey.transportMode
         if (!explicitMode && sj.journey) {
-          const jMode = sj.journey.transportMode
-                     ?? sj.journey.transport?.transportMode
-                     ?? null;
+          const jMode = sj.journey.transportMode ?? sj.journey.transport?.transportMode ?? null;
           if (jMode) explicitMode = mapTokenToCanonical(jMode);
         }
 
@@ -111,9 +111,10 @@ export function parseEnturResponse(json, lang = 'en') {
           else if (pc.startsWith('m')) explicitMode = 'metro';
         }
       }
-    } catch (_) {
+    } catch (err) {
+      console.warn('[parser] mode/publicCode extraction failed', err);
       explicitMode = null;
-      publicCode   = null;
+      publicCode = null;
     }
 
     const mode = explicitMode ?? detectModeFromRaw(call);
@@ -130,7 +131,7 @@ export function parseEnturResponse(json, lang = 'en') {
       mode,
       quay,
       situations,
-      raw: call
+      raw: call,
     };
   });
 }

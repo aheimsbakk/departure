@@ -21,17 +21,17 @@ const VALID_MODES = new Set(['bus', 'tram', 'metro', 'rail', 'water', 'coach']);
  *   other               → no canonical mode
  */
 const CATEGORY_TO_MODE = {
-  onstreetbus:            'bus',
-  busstation:             'bus',
-  coachstation:           'coach',
-  onstreettram:           'tram',
-  tramstation:            'tram',
-  railstation:            'rail',
+  onstreetbus: 'bus',
+  busstation: 'bus',
+  coachstation: 'coach',
+  onstreettram: 'tram',
+  tramstation: 'tram',
+  railstation: 'rail',
   vehiclerailinterchange: 'rail',
-  metrostation:           'metro',
-  harbourport:            'water',
-  ferryport:              'water',
-  ferrystop:              'water',
+  metrostation: 'metro',
+  harbourport: 'water',
+  ferryport: 'water',
+  ferrystop: 'water',
 };
 
 /**
@@ -48,17 +48,15 @@ const CATEGORY_TO_MODE = {
 function extractModes(props) {
   // 1. `modes` — plain string array (test / hypothetical future format)
   if (Array.isArray(props.modes) && props.modes.length) {
-    return props.modes.map(m => String(m).toLowerCase()).filter(m => VALID_MODES.has(m));
+    return props.modes.map((m) => String(m).toLowerCase()).filter((m) => VALID_MODES.has(m));
   }
 
   // 2. `mode` — live API returns [{metro: null}, {bus: null}] or a string array
   if (Array.isArray(props.mode) && props.mode.length) {
-    const raw = props.mode.flatMap(m =>
-      typeof m === 'string'
-        ? [m]
-        : (m && typeof m === 'object' ? Object.keys(m) : [])
+    const raw = props.mode.flatMap((m) =>
+      typeof m === 'string' ? [m] : m && typeof m === 'object' ? Object.keys(m) : []
     );
-    const result = raw.map(m => String(m).toLowerCase()).filter(m => VALID_MODES.has(m));
+    const result = raw.map((m) => String(m).toLowerCase()).filter((m) => VALID_MODES.has(m));
     if (result.length) return result;
   }
 
@@ -69,11 +67,11 @@ function extractModes(props) {
 
   // 3. `category` — geocoder category strings, map to mode names
   if (Array.isArray(props.category) && props.category.length) {
-    return [...new Set(
-      props.category
-        .map(c => CATEGORY_TO_MODE[String(c).toLowerCase()])
-        .filter(Boolean)
-    )];
+    return [
+      ...new Set(
+        props.category.map((c) => CATEGORY_TO_MODE[String(c).toLowerCase()]).filter(Boolean)
+      ),
+    ];
   }
 
   return [];
@@ -96,25 +94,25 @@ export async function fetchNearbyStops({
   lat,
   lon,
   maxResults = 7,
-  radiusKm   = 2,
+  radiusKm = 2,
   clientName = 'personal-js-app',
-  fetchFn    = fetch,
-  geocodeUrl = GEOCODE_REVERSE_URL
+  fetchFn = fetch,
+  geocodeUrl = GEOCODE_REVERSE_URL,
 }) {
   if (lat == null || lon == null) throw new Error('lat and lon are required');
 
   const params = new URLSearchParams({
-    'point.lat':                String(lat),
-    'point.lon':                String(lon),
-    size:                       String(maxResults),
-    layers:                     'venue',
-    'boundary.circle.radius':   String(radiusKm),
-    'boundary.country':         'NOR'
+    'point.lat': String(lat),
+    'point.lon': String(lon),
+    size: String(maxResults),
+    layers: 'venue',
+    'boundary.circle.radius': String(radiusKm),
+    'boundary.country': 'NOR',
   });
 
   try {
     const r = await fetchFn(`${geocodeUrl}?${params}`, {
-      headers: { 'ET-Client-Name': clientName }
+      headers: { 'ET-Client-Name': clientName },
     });
 
     if (!r || (typeof r.ok !== 'undefined' && r.ok === false)) return [];
@@ -123,18 +121,19 @@ export async function fetchNearbyStops({
     if (!j || !Array.isArray(j.features)) return [];
 
     return j.features
-      .filter(f => f?.properties?.layer === 'venue')
-      .map(f => {
+      .filter((f) => f?.properties?.layer === 'venue')
+      .map((f) => {
         const p = f.properties || {};
         return {
-          id:       p.id    || null,
-          name:     p.name  || p.label || '',
-          modes:    extractModes(p),
-          distance: typeof p.distance === 'number' ? Math.round(p.distance * 1000) : null
+          id: p.id || null,
+          name: p.name || p.label || '',
+          modes: extractModes(p),
+          distance: typeof p.distance === 'number' ? Math.round(p.distance * 1000) : null,
         };
       })
-      .filter(s => s.id && s.name);
-  } catch (_) {
+      .filter((s) => s.id && s.name);
+  } catch (err) {
+    console.warn('[gps-search] fetchNearbyStops failed', err);
     return [];
   }
 }

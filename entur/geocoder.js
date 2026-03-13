@@ -20,20 +20,20 @@ import { getContentType } from './http.js';
  */
 export async function lookupStopId({
   stationName,
-  clientName  = 'personal-js-app',
-  fetchFn     = fetch,
-  geocodeUrl  = 'https://api.entur.io/geocoder/v1/autocomplete'
+  clientName = 'personal-js-app',
+  fetchFn = fetch,
+  geocodeUrl = 'https://api.entur.io/geocoder/v1/autocomplete',
 }) {
   if (!stationName) throw new Error('stationName required');
 
   const url = `${geocodeUrl}?text=${encodeURIComponent(stationName)}&lang=no`;
-  const r   = await fetchFn(url, { headers: { 'ET-Client-Name': clientName } });
+  const r = await fetchFn(url, { headers: { 'ET-Client-Name': clientName } });
 
-  if (!r)                                               return null;
-  if (typeof r.ok !== 'undefined' && r.ok === false)    return null;
+  if (!r) return null;
+  if (typeof r.ok !== 'undefined' && r.ok === false) return null;
 
   const ct = getContentType(r);
-  if (ct && !/application\/json/i.test(ct))             return null;
+  if (ct && !/application\/json/i.test(ct)) return null;
 
   try {
     const j = await r.json();
@@ -69,11 +69,11 @@ export async function lookupStopId({
  */
 export async function searchStations({
   text,
-  limit       = 5,
-  fetchFn     = fetch,
-  clientName  = 'personal-js-app',
-  geocodeUrl  = 'https://api.entur.io/geocoder/v1/autocomplete',
-  signal      = undefined
+  limit = 5,
+  fetchFn = fetch,
+  clientName = 'personal-js-app',
+  geocodeUrl = 'https://api.entur.io/geocoder/v1/autocomplete',
+  signal = undefined,
 }) {
   if (!text || String(text).trim().length < 1) return [];
 
@@ -85,30 +85,30 @@ export async function searchStations({
     const fetchOpts = { headers: { 'ET-Client-Name': clientName } };
     if (signal) fetchOpts.signal = signal;
     const r = await fetchFn(url, fetchOpts);
-    if (!r)                                               return [];
-    if (typeof r.ok !== 'undefined' && r.ok === false)    return [];
+    if (!r) return [];
+    if (typeof r.ok !== 'undefined' && r.ok === false) return [];
 
     const ct = getContentType(r);
-    if (ct && !/application\/json/i.test(ct))             return [];
+    if (ct && !/application\/json/i.test(ct)) return [];
 
     const j = await r.json();
     if (!j || !Array.isArray(j.features)) return [];
 
     // Keep only venue-layer results (actual transport stops, not addresses)
-    const venues = j.features.filter(f => f?.properties?.layer === 'venue');
+    const venues = j.features.filter((f) => f?.properties?.layer === 'venue');
 
     // Score results by how well the name matches the search query, so that
     // exact/prefix matches rank higher than fuzzy matches from the API.
     const queryLower = text.toLowerCase();
-    const scored = venues.map(f => {
-      const name  = (f.properties.name  || '').toLowerCase();
+    const scored = venues.map((f) => {
+      const name = (f.properties.name || '').toLowerCase();
       const label = (f.properties.label || '').toLowerCase();
       let score = 0;
-      if (name === queryLower)            score += 1000;
-      else if (name.startsWith(queryLower)) score +=  500;
-      else if (name.includes(queryLower))   score +=  100;
-      if (label.startsWith(queryLower))   score +=   50;
-      else if (label.includes(queryLower)) score +=   10;
+      if (name === queryLower) score += 1000;
+      else if (name.startsWith(queryLower)) score += 500;
+      else if (name.includes(queryLower)) score += 100;
+      if (label.startsWith(queryLower)) score += 50;
+      else if (label.includes(queryLower)) score += 10;
       return { feature: f, score };
     });
 
@@ -116,12 +116,13 @@ export async function searchStations({
     scored.sort((a, b) => b.score - a.score);
 
     return scored.slice(0, limit).map(({ feature: f }) => ({
-      id:    f?.properties?.id    ?? null,
+      id: f?.properties?.id ?? null,
       title: f?.properties?.label ?? f?.properties?.name ?? f?.properties?.title ?? f?.text ?? '',
-      name:  f?.properties?.name  ?? f?.properties?.title ?? f?.text ?? '',
-      raw:   f
+      name: f?.properties?.name ?? f?.properties?.title ?? f?.text ?? '',
+      raw: f,
     }));
-  } catch (_) {
+  } catch (err) {
+    console.warn('[geocoder] searchStations failed', err);
     return [];
   }
 }

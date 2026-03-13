@@ -139,7 +139,9 @@ export function createDepartureNode(item) {
       'aria-label',
       cancelledPrefix + linePrefix + destinationText + modeText + platformText
     );
-  } catch (e) {}
+  } catch (err) {
+    console.warn('[departure] aria-label assignment failed', err);
+  }
 
   timeWrap.append(time);
   // place situation between destination and countdown so alerts are read in context

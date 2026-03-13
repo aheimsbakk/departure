@@ -24,13 +24,18 @@ import { getRecentStations, getDefaultStation } from './ui/station-dropdown.js';
 import { loadSettings, applyTextSize } from './app/settings.js';
 import { processUrlParams } from './app/url-import.js';
 import { renderDepartures } from './app/render.js';
-import { doRefresh, startRefreshLoop, tickCountdowns, data } from './app/fetch-loop.js';
+import {
+  doRefresh,
+  startRefreshLoop,
+  tickCountdowns,
+  data,
+  setNumDeparturesOverride,
+} from './app/fetch-loop.js';
 import { wireHandlers } from './app/handlers.js';
 import { buildActionBar } from './app/action-bar.js';
 import { buildGpsBar } from './app/gps-bar.js';
 import { registerServiceWorker } from './app/sw-updater.js';
 import { initScrollMore } from './app/scroll-more.js';
-import { setNumDeparturesOverride } from './app/fetch-loop.js';
 
 // Initialise language and theme before any DOM is built so that the correct
 // strings and colours are in place from the very first render.
@@ -48,6 +53,7 @@ const ROOT = document.getElementById('app');
  */
 let _teardownBoard = null;
 let _teardownGpsRef = null;
+let _teardownScrollMoreRef = null;
 
 async function init() {
   // 1. Load persisted settings
@@ -139,6 +145,7 @@ async function init() {
   // on page unload / BFCache entry, preventing listener accumulation.
   _teardownBoard = board;
   _teardownGpsRef = gpsRef;
+  _teardownScrollMoreRef = scrollMoreRef;
 
   // 8. Header gear icon (opens options from the station header)
   const headerControls = createHeaderToggle(() => opts.open());
@@ -215,6 +222,9 @@ window.addEventListener('pagehide', () => {
   if (_teardownGpsRef?.current?.destroy) {
     _teardownGpsRef.current.destroy();
   }
+  if (_teardownScrollMoreRef?.current?.destroy) {
+    _teardownScrollMoreRef.current.destroy();
+  }
 });
 
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded', init, { once: true });
