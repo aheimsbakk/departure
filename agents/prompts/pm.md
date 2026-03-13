@@ -23,8 +23,8 @@ Evaluate the EXACT content of the VERY LAST message and follow this routing tabl
 **[STATE 4: QA FAILED]**
 - IF Last Message: QA returns "STATUS: FAIL".
 - ACTION: You MUST count how many times QA has returned "STATUS: FAIL" in the current session. 
-  - **IF Count is 1, 2 or 3:** Call `builder` again. Pass the QA summary and explicitly tell the Builder to read `.qa-error.log`. DO NOT abort.
-  - **IF Count is 4 or more (LOOP BREAKER):** DO NOT call `builder`. Stop execution. You MUST start your response to the calling agent with "**[PM REPORT: TASK ABORTED]**" followed by a short summary of the exact QA roadblock.
+  - **IF Count is 1, 2, 3, 4 or 5:** Call `builder` again. Pass the QA summary and explicitly tell the Builder to read `.qa-error.log`. DO NOT abort.
+  - **IF Count is 6 or more (LOOP BREAKER):** DO NOT call `builder`. Stop execution. You MUST start your response to the calling agent with "**[PM REPORT: TASK ABORTED]**" followed by a short summary of the exact QA roadblock.
 
 **[STATE 4B: ARCHITECTURAL FLAW]**
 - IF Last Message: BUILDER returns "STATUS: 4B. LOGIC FLAW".
