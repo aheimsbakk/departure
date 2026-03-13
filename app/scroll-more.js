@@ -98,7 +98,7 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
 
   const arrow = document.createElement('span');
   arrow.className = 'scroll-more-arrow';
-  arrow.textContent = '▼';
+  arrow.textContent = SCROLL_MORE.SYMBOL_ARROW;
 
   const label = document.createElement('span');
   label.className = 'scroll-more-label';
@@ -123,14 +123,14 @@ export function initScrollMore({ boardEl, listEl, onLoadMore }) {
   function updateIndicator() {
     const count = getEffectiveCount();
     if (isAtMax(count)) {
-      arrow.textContent = '●';
+      arrow.textContent = SCROLL_MORE.SYMBOL_MAX;
       arrow.classList.remove('scroll-more-arrow');
       arrow.classList.add('scroll-more-dot');
       label.textContent = '';
       indicator.classList.add('scroll-more-maxed');
       indicator.classList.remove('scroll-more-loading');
     } else {
-      arrow.textContent = '▼';
+      arrow.textContent = SCROLL_MORE.SYMBOL_ARROW;
       arrow.classList.remove('scroll-more-dot');
       arrow.classList.add('scroll-more-arrow');
       label.textContent = t('scrollForMore');

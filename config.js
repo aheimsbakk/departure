@@ -1,6 +1,6 @@
 // Version is defined here and in src/sw.js (service worker)
 // Both must be kept in sync - use scripts/bump-version.sh to update both
-export const VERSION = '1.37.35';
+export const VERSION = '1.38.0';
 
 export const DEFAULTS = {
   STATION_NAME: 'Jernbanetorget, Oslo',
@@ -176,12 +176,18 @@ export const STATION_LINE_TEMPLATE = '{name} {modes}';
 // WHEEL_RESET_MS      — ms of wheel inactivity before the accumulator resets
 // MAX_HINT_DURATION   — ms the "for more change in ⚙️" hint stays visible
 // DEBOUNCE_MS         — minimum ms between consecutive load-more triggers (prevents double-fires)
+// SYMBOL_ARROW        — symbol shown when more departures are available (pull-to-load)
+// SYMBOL_MAX          — symbol shown when the maximum departure count is reached
 export const SCROLL_MORE = {
   SCROLL_STEPS: [1, 2, 3, 5, 8, 13, 21],
-  PULL_THRESHOLD: 250,
+  PULL_THRESHOLD: 200,
   WHEEL_THRESHOLD: 500,
   WHEEL_RESET_MS: 800,
   MAX_HINT_DURATION: 4000,
   /** Minimum ms between consecutive load-more triggers (debounce guard) */
   DEBOUNCE_MS: 600,
+  /** Symbol shown on the scroll-more indicator when more departures can be loaded */
+  SYMBOL_ARROW: '▼',
+  /** Symbol shown on the scroll-more indicator when the maximum step is reached */
+  SYMBOL_MAX: '●',
 };
