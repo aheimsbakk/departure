@@ -33,6 +33,7 @@ If you have no favorites yet, the app pre-seeds **Jernbanetorget, Oslo** as a st
 ### Sharing Your Board
 
 Click the **📋 share** button (next to the theme toggle) to copy a shareable link to your clipboard. This link includes:
+
 - Your current station
 - Selected transport modes
 
@@ -51,9 +52,21 @@ Click the **🧭 compass** button in the top left to find stops near your curren
 
 The dropdown closes automatically when you select a stop or press **Escape**.
 
+### Loading More Departures
+
+Scroll down past the last departure to progressively load more:
+
+- **Touch/mouse drag** — pull upward from the bottom of the departure list; a ▼ indicator bounces to confirm the gesture is registered. Release to load.
+- **Mouse wheel** — scroll down at the bottom of the list until the threshold is reached; loads automatically.
+
+Departures load in steps: **1 → 2 → 3 → 5 → 8 → 13 → 21**. When the maximum (21) is reached, the indicator switches to ● and a short hint suggests using ⚙️ settings to change the default number of departures.
+
+The extra departures are temporary — the count resets when you switch station, apply settings, or reload the app.
+
 ### Live Departures
 
 The app displays upcoming departures with:
+
 - **Line number and destination** for each service (e.g., "Ski ● L2 🚅")
 - **Realtime indicators** - ● solid dot for live tracking, ○ hollow dot for scheduled times
 - **Platform/gate information** - Shows platforms (⚏10), gates (◆A), or stops (▪B) where available
@@ -67,19 +80,25 @@ The app displays upcoming departures with:
 Access all settings by clicking the **⚙️ settings** button:
 
 #### Station or Stop Name
+
 Type to search for any station or stop in Norway. The app suggests matches as you type.
 
 #### Number of Departures
+
 Choose how many upcoming departures to display (default: 5)
 
 #### Update Interval
+
 Set how often the app refreshes departure times in seconds (default: 60)
 
 #### Text Size
+
 Pick from five sizes: Tiny, Small, Medium, Large, or Extra Large. Changes apply immediately.
 
 #### Transport Modes
+
 Filter which transport types appear on your board:
+
 - 🚌 Bus
 - 🚇 Metro (T-bane)
 - 🚋 Tram (Trikk)
@@ -90,11 +109,13 @@ Filter which transport types appear on your board:
 Uncheck any type to hide it from your departures.
 
 #### Language
+
 Choose from 12 languages using the flag buttons. The entire interface updates instantly.
 
 ### Theme Toggle
 
 Click the **theme button** (left of settings) to cycle through three themes:
+
 - 🌞 **Light** - Bright theme for daytime
 - 🌤️ **Auto** - Follows your device's preference
 - 🌥️ **Dark** - Easy on the eyes at night
@@ -120,9 +141,11 @@ This is a pure JavaScript web app with no dependencies or build step. It works o
 Departure data is provided by [Entur](https://entur.no/). The footer displays a translated "Data from Entur" attribution in all 12 supported languages.
 
 ### Languages Supported
+
 English, Norwegian, German, Spanish, Italian, Greek, Persian, Hindi, Icelandic, Ukrainian, French, Polish
 
 ### Browser Requirements
+
 Modern browsers with service worker support (Chrome 102+, Firefox 112+, Safari 15.5+)
 
 ## License
