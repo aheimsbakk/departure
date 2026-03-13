@@ -87,7 +87,6 @@ export function createGpsButton(onStationSelect) {
   function openWith(nodes) {
     isOpen = true;
     btn.setAttribute('aria-expanded', 'true');
-    stopsMap.clear();
     menu.innerHTML = '';
     nodes.forEach((n) => menu.appendChild(n));
     menu.classList.add('open');

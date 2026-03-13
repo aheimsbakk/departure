@@ -52,7 +52,9 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
   function clearAutocomplete() {
     try {
       if (acList && acList.parentElement) acList.parentElement.removeChild(acList);
-    } catch (e) { /* ignore */ }
+    } catch (e) {
+      /* ignore */
+    }
     acList = null;
     highlighted = -1;
     lastCandidates = [];
@@ -60,7 +62,10 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
 
   function showCandidates(cands) {
     lastCandidates = Array.isArray(cands) ? cands.slice() : [];
-    if (lastCandidates.length === 0) { clearAutocomplete(); return; }
+    if (lastCandidates.length === 0) {
+      clearAutocomplete();
+      return;
+    }
 
     if (!acList) {
       acList = document.createElement('ul');
@@ -73,10 +78,9 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
     lastCandidates.forEach((c, idx) => {
       const li = document.createElement('li');
       // Render bare name at full opacity; locality suffix (e.g. ", Oslo") dimmed
-      const name   = c.name || c.title || '';
-      const suffix = (c.name && c.title && c.title.startsWith(c.name))
-        ? c.title.slice(c.name.length)
-        : '';
+      const name = c.name || c.title || '';
+      const suffix =
+        c.name && c.title && c.title.startsWith(c.name) ? c.title.slice(c.name.length) : '';
       const nameSpan = document.createElement('span');
       nameSpan.textContent = name;
       li.appendChild(nameSpan);
@@ -89,9 +93,12 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
       li.setAttribute('role', 'option');
       li.setAttribute('data-id', String(c.id || ''));
       li.dataset.index = String(idx);
-      li.addEventListener('mousedown', (e) => { e.preventDefault(); selectCandidateIndex(idx); });
+      li.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        selectCandidateIndex(idx);
+      });
       li.addEventListener('mouseover', () => {
-        Array.from(acList.children).forEach(ch => ch.classList.remove('highlighted'));
+        Array.from(acList.children).forEach((ch) => ch.classList.remove('highlighted'));
         li.classList.add('highlighted');
         highlighted = idx;
       });
@@ -99,11 +106,16 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
     });
     highlighted = -1;
     acList.classList.add('open');
-    try { inpStation.setAttribute('aria-expanded', 'true'); } catch (e) { /* ignore */ }
+    try {
+      inpStation.setAttribute('aria-expanded', 'true');
+    } catch (e) {
+      /* ignore */
+    }
   }
 
   function selectCandidateIndex(idx) {
-    if (!Array.isArray(lastCandidates) || idx == null || idx < 0 || idx >= lastCandidates.length) return;
+    if (!Array.isArray(lastCandidates) || idx == null || idx < 0 || idx >= lastCandidates.length)
+      return;
     const c = lastCandidates[idx];
     if (!c) return;
     inpStation.value = c.name || c.title || c.id || '';
@@ -117,19 +129,14 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
     if (updatingField) return;
     const v = String(inpStation.value || '');
 
-    // If lastQuery was cleared (focus reset) but input still has old value, clear it
-    if (lastQuery === '' && v.trim().length >= 3 && !inpStation.dataset.stopId) {
-      inpStation.value = '';
-      lastQuery = '';
-      clearAutocomplete();
-      return;
-    }
-
     if (v === lastQuery) return;
     lastQuery = v;
     inpStation.dataset.stopId = '';
     clearTimeout(acTimer);
-    if (v.trim().length < 3) { clearAutocomplete(); return; }
+    if (v.trim().length < 3) {
+      clearAutocomplete();
+      return;
+    }
 
     lastCandidates = []; // clear stale results immediately
 
@@ -140,7 +147,12 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
       _searchAbortCtrl = new AbortController();
       const { signal } = _searchAbortCtrl;
       try {
-        const cands = await searchStations({ text: searchQuery, limit: 5, fetchFn: window.fetch, signal });
+        const cands = await searchStations({
+          text: searchQuery,
+          limit: 5,
+          fetchFn: window.fetch,
+          signal,
+        });
         // Guard: panel may have been destroyed while the fetch was in-flight
         if (_destroyed) return;
         if (inpStation.value === searchQuery) showCandidates(cands);
@@ -161,13 +173,19 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
         highlighted = Math.min(items.length - 1, highlighted + 1);
-        items.forEach(it => it.classList.remove('highlighted'));
-        if (items[highlighted]) { items[highlighted].classList.add('highlighted'); items[highlighted].scrollIntoView({ block: 'nearest' }); }
+        items.forEach((it) => it.classList.remove('highlighted'));
+        if (items[highlighted]) {
+          items[highlighted].classList.add('highlighted');
+          items[highlighted].scrollIntoView({ block: 'nearest' });
+        }
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         highlighted = Math.max(0, highlighted - 1);
-        items.forEach(it => it.classList.remove('highlighted'));
-        if (items[highlighted]) { items[highlighted].classList.add('highlighted'); items[highlighted].scrollIntoView({ block: 'nearest' }); }
+        items.forEach((it) => it.classList.remove('highlighted'));
+        if (items[highlighted]) {
+          items[highlighted].classList.add('highlighted');
+          items[highlighted].scrollIntoView({ block: 'nearest' });
+        }
       } else if (e.key === 'Enter') {
         e.preventDefault();
         const indexToSelect = highlighted >= 0 ? highlighted : 0;
@@ -198,7 +216,12 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
     clearTimeout(blurTimer);
     blurTimer = setTimeout(() => {
       if (_destroyed) return;
-      if (acList && acList.classList.contains('open') && lastCandidates.length > 0 && !inpStation.dataset.stopId) {
+      if (
+        acList &&
+        acList.classList.contains('open') &&
+        lastCandidates.length > 0 &&
+        !inpStation.dataset.stopId
+      ) {
         selectCandidateIndex(0);
       }
       clearAutocomplete();
@@ -206,10 +229,16 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
   });
 
   // Public API
-  function getValue() { return inpStation.value; }
-  function getStopId() { return inpStation.dataset.stopId || ''; }
+  function getValue() {
+    return inpStation.value;
+  }
+  function getStopId() {
+    return inpStation.dataset.stopId || '';
+  }
   /** Returns true when the autocomplete dropdown is currently visible. */
-  function isOpen() { return !!(acList && acList.classList.contains('open')); }
+  function isOpen() {
+    return !!(acList && acList.classList.contains('open'));
+  }
 
   function reset() {
     lastQuery = '';
@@ -230,9 +259,22 @@ export function createStationAutocomplete(defaults, { onSelect, t }) {
     _destroyed = true;
     clearTimeout(acTimer);
     clearTimeout(blurTimer);
-    if (_searchAbortCtrl) { _searchAbortCtrl.abort(); _searchAbortCtrl = null; }
+    if (_searchAbortCtrl) {
+      _searchAbortCtrl.abort();
+      _searchAbortCtrl = null;
+    }
     clearAutocomplete();
   }
 
-  return { rowStation, acWrap, inpStation, getValue, getStopId, isOpen, reset, updateField, destroy };
+  return {
+    rowStation,
+    acWrap,
+    inpStation,
+    getValue,
+    getStopId,
+    isOpen,
+    reset,
+    updateField,
+    destroy,
+  };
 }
