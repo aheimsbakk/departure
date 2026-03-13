@@ -48,6 +48,7 @@ const ROOT = document.getElementById('app');
  */
 let _teardownBoard = null;
 let _teardownGpsRef = null;
+let _teardownScrollMoreRef = null;
 
 async function init() {
   // 1. Load persisted settings
@@ -139,6 +140,7 @@ async function init() {
   // on page unload / BFCache entry, preventing listener accumulation.
   _teardownBoard = board;
   _teardownGpsRef = gpsRef;
+  _teardownScrollMoreRef = scrollMoreRef;
 
   // 8. Header gear icon (opens options from the station header)
   const headerControls = createHeaderToggle(() => opts.open());
@@ -214,6 +216,9 @@ window.addEventListener('pagehide', () => {
   }
   if (_teardownGpsRef?.current?.destroy) {
     _teardownGpsRef.current.destroy();
+  }
+  if (_teardownScrollMoreRef?.current?.destroy) {
+    _teardownScrollMoreRef.current.destroy();
   }
 });
 
