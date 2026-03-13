@@ -76,11 +76,22 @@ export function loadSettings() {
 }
 
 /**
- * Persist the current DEFAULTS object to localStorage.
+ * Persist only user-preference keys to localStorage.
+ * Runtime/config constants (CLIENT_NAME, API_URL, GITHUB_URL, NUM_FAVORITES)
+ * are intentionally excluded — serialising them would cause stale values to
+ * override the correct config.js defaults on the next load.
  */
 export function saveSettings() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULTS));
+    const toSave = {
+      STATION_NAME: DEFAULTS.STATION_NAME,
+      STOP_ID: DEFAULTS.STOP_ID,
+      NUM_DEPARTURES: DEFAULTS.NUM_DEPARTURES,
+      FETCH_INTERVAL: DEFAULTS.FETCH_INTERVAL,
+      TRANSPORT_MODES: DEFAULTS.TRANSPORT_MODES,
+      TEXT_SIZE: DEFAULTS.TEXT_SIZE,
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
   } catch (_) {
     /* ignore */
   }

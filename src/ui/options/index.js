@@ -1,7 +1,8 @@
 // options/index.js — orchestrator: assembles the options panel from focused sub-modules
 // Public API is identical to the former monolithic options.js.
 import { t } from '../../i18n.js';
-import { loadSettings, saveSettings, validateOptions, diffOptions } from './settings-store.js';
+import { APP_NAME } from '../../config.js';
+import { saveSettings, validateOptions, diffOptions } from './settings-store.js';
 import { createModesSection } from './transport-modes.js';
 import { createStationAutocomplete } from './station-autocomplete.js';
 import { createLanguageSwitcher } from './language-switcher.js';
@@ -22,7 +23,7 @@ export function createOptionsPanel(defaults, onApply, onLanguageChange) {
   panel.setAttribute('inert', '');
 
   const title = document.createElement('h3');
-  title.textContent = 'Kollektiv.Sanntid.org';
+  title.textContent = APP_NAME; // intentionally not translated — brand name
   panel.appendChild(title);
 
   // ── Station autocomplete row ─────────────────────────────────────────────
@@ -37,31 +38,43 @@ export function createOptionsPanel(defaults, onApply, onLanguageChange) {
   const { rowStation, inpStation } = stationAC;
 
   // ── Number of departures row ─────────────────────────────────────────────
-  const rowNum = document.createElement('div'); rowNum.className = 'options-row';
-  const lblNum = document.createElement('label'); lblNum.textContent = t('numberOfDepartures');
+  const rowNum = document.createElement('div');
+  rowNum.className = 'options-row';
+  const lblNum = document.createElement('label');
+  lblNum.textContent = t('numberOfDepartures');
   const inpNum = document.createElement('input');
-  inpNum.type = 'number'; inpNum.min = 1; inpNum.value = defaults.NUM_DEPARTURES || 2;
+  inpNum.type = 'number';
+  inpNum.min = 1;
+  inpNum.value = defaults.NUM_DEPARTURES || 2;
   rowNum.append(lblNum, inpNum);
 
   // ── Fetch interval row ───────────────────────────────────────────────────
-  const rowInt = document.createElement('div'); rowInt.className = 'options-row';
-  const lblInt = document.createElement('label'); lblInt.textContent = t('fetchInterval');
+  const rowInt = document.createElement('div');
+  rowInt.className = 'options-row';
+  const lblInt = document.createElement('label');
+  lblInt.textContent = t('fetchInterval');
   const inpInt = document.createElement('input');
-  inpInt.type = 'number'; inpInt.min = 20; inpInt.value = defaults.FETCH_INTERVAL || 60;
+  inpInt.type = 'number';
+  inpInt.min = 20;
+  inpInt.value = defaults.FETCH_INTERVAL || 60;
   rowInt.append(lblInt, inpInt);
 
   // ── Text size row ────────────────────────────────────────────────────────
-  const rowSize = document.createElement('div'); rowSize.className = 'options-row';
-  const lblSize = document.createElement('label'); lblSize.textContent = t('textSize');
+  const rowSize = document.createElement('div');
+  rowSize.className = 'options-row';
+  const lblSize = document.createElement('label');
+  lblSize.textContent = t('textSize');
   const selSize = document.createElement('select');
   [
-    { value: 'tiny',   label: t('tiny') },
-    { value: 'small',  label: t('small') },
+    { value: 'tiny', label: t('tiny') },
+    { value: 'small', label: t('small') },
     { value: 'medium', label: t('medium') },
-    { value: 'large',  label: t('large') },
+    { value: 'large', label: t('large') },
     { value: 'xlarge', label: t('extraLarge') },
-  ].forEach(s => {
-    const o = document.createElement('option'); o.value = s.value; o.textContent = s.label;
+  ].forEach((s) => {
+    const o = document.createElement('option');
+    o.value = s.value;
+    o.textContent = s.label;
     selSize.appendChild(o);
   });
   selSize.value = defaults.TEXT_SIZE || 'medium';
@@ -85,8 +98,14 @@ export function createOptionsPanel(defaults, onApply, onLanguageChange) {
     onLanguageChange: () => {
       langSwitcher.updateTranslations({
         lblStation: rowStation.querySelector('label'),
-        lblNum, lblInt, lblSize, lblModes,
-        toggleAllCb, btnClose, selSize, modesWrap,
+        lblNum,
+        lblInt,
+        lblSize,
+        lblModes,
+        toggleAllCb,
+        btnClose,
+        selSize,
+        modesWrap,
       });
       if (typeof onLanguageChange === 'function') onLanguageChange();
     },
@@ -97,15 +116,16 @@ export function createOptionsPanel(defaults, onApply, onLanguageChange) {
   // ── Assemble panel ───────────────────────────────────────────────────────
   panel.append(rowStation, rowNum, rowInt, rowSize, rowModes, rowLang, actions);
 
-  // ── Restore persisted settings ───────────────────────────────────────────
-  const saved = loadSettings();
-  if (saved) {
-    if (Array.isArray(saved.TRANSPORT_MODES)) modes.setChecked(saved.TRANSPORT_MODES);
-    if (saved.STATION_NAME) stationAC.updateField(saved.STATION_NAME, saved.STOP_ID || '');
-    if (saved.NUM_DEPARTURES) inpNum.value = saved.NUM_DEPARTURES;
-    if (saved.FETCH_INTERVAL) inpInt.value = saved.FETCH_INTERVAL;
-    if (saved.TEXT_SIZE) selSize.value = saved.TEXT_SIZE;
-  }
+  // ── Restore persisted settings from already-merged defaults ─────────────
+  // app.js → app/settings.js:loadSettings() already merged localStorage into
+  // DEFAULTS before createOptionsPanel is called — read initial field values
+  // directly from the `defaults` parameter to avoid a second localStorage read
+  // (which could diverge in private-browsing mode or after a SecurityError).
+  modes.setChecked(defaults.TRANSPORT_MODES || []);
+  stationAC.updateField(defaults.STATION_NAME || '', defaults.STOP_ID || '');
+  inpNum.value = defaults.NUM_DEPARTURES || 2;
+  inpInt.value = defaults.FETCH_INTERVAL || 60;
+  selSize.value = defaults.TEXT_SIZE || 'medium';
   modes.updateToggleAllState();
 
   // ── Change tracking ──────────────────────────────────────────────────────
@@ -115,7 +135,7 @@ export function createOptionsPanel(defaults, onApply, onLanguageChange) {
     NUM_DEPARTURES: Number(inpNum.value) || defaults.NUM_DEPARTURES,
     FETCH_INTERVAL: Number(inpInt.value) || defaults.FETCH_INTERVAL,
     TRANSPORT_MODES: modes.getChecked().slice(),
-    TEXT_SIZE: selSize.value || (defaults.TEXT_SIZE || 'large'),
+    TEXT_SIZE: selSize.value || defaults.TEXT_SIZE || 'large',
   };
 
   // ── applyChanges ─────────────────────────────────────────────────────────
@@ -135,7 +155,11 @@ export function createOptionsPanel(defaults, onApply, onLanguageChange) {
     if (Number(inpInt.value) < 20) inpInt.value = newOpts.FETCH_INTERVAL;
 
     if (diffOptions(newOpts, initialValues)) {
-      try { onApply && onApply(newOpts); } catch (e) { console.warn('onApply failed', e); }
+      try {
+        onApply && onApply(newOpts);
+      } catch (e) {
+        console.warn('onApply failed', e);
+      }
       saveSettings(newOpts);
       initialValues = {
         STATION_NAME: newOpts.STATION_NAME,
@@ -181,7 +205,10 @@ export function createOptionsPanel(defaults, onApply, onLanguageChange) {
   });
 
   selSize.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') { e.preventDefault(); btnClose.focus(); }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      btnClose.focus();
+    }
   });
 
   // Blur: validate then apply — covers mobile Chrome where the numeric keyboard
@@ -205,7 +232,10 @@ export function createOptionsPanel(defaults, onApply, onLanguageChange) {
   inpInt.addEventListener('focus', () => inpInt.select());
 
   // Text size: apply immediately
-  selSize.addEventListener('change', () => { applyChanges(); lifecycle.showToast(t('textSizeUpdated')); });
+  selSize.addEventListener('change', () => {
+    applyChanges();
+    lifecycle.showToast(t('textSizeUpdated'));
+  });
 
   // ── updateFields (called on panel open to sync with runtime defaults) ────
   function updateFields() {
@@ -222,7 +252,7 @@ export function createOptionsPanel(defaults, onApply, onLanguageChange) {
       NUM_DEPARTURES: Number(inpNum.value) || defaults.NUM_DEPARTURES,
       FETCH_INTERVAL: Number(inpInt.value) || defaults.FETCH_INTERVAL,
       TRANSPORT_MODES: chosen.slice(),
-      TEXT_SIZE: selSize.value || (defaults.TEXT_SIZE || 'large'),
+      TEXT_SIZE: selSize.value || defaults.TEXT_SIZE || 'large',
     };
   }
 

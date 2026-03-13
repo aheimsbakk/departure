@@ -11,24 +11,24 @@
 
 | #                                                                                          | File                      | Category                                                                        | Severity  | Status   |
 | ------------------------------------------------------------------------------------------ | ------------------------- | ------------------------------------------------------------------------------- | --------- | -------- |
-| [1](#1-appjs--duplicate-import-statements-from-fetch-loopjs)                               | `src/app.js`              | Duplicate `import` from same module — Rule §8                                   | 🟢 Minor  | 🔴 Open  |
-| [2](#2-handlersjs--duplicate-import-statements-from-fetch-loopjs)                          | `src/app/handlers.js`     | Duplicate `import` from same module — Rule §8                                   | 🟢 Minor  | 🔴 Open  |
+| [1](#1-appjs--duplicate-import-statements-from-fetch-loopjs)                               | `src/app.js`              | Duplicate `import` from same module — Rule §8                                   | 🟢 Minor  | ✅ Fixed |
+| [2](#2-handlersjs--duplicate-import-statements-from-fetch-loopjs)                          | `src/app/handlers.js`     | Duplicate `import` from same module — Rule §8                                   | 🟢 Minor  | ✅ Fixed |
 | [3](#3-share-buttonjs--alert-blocks-the-ui-thread)                                         | `src/ui/share-button.js`  | `alert()` freezes JS thread and all timers — Rule §9                            | 🟠 Medium | ✅ Fixed |
-| [4](#4-geocoderjs--searchstations-outer-catch-is-silent)                                   | `src/entur/geocoder.js`   | Silent `catch (_)` hides all errors — Rule §9                                   | 🟡 Low    | 🔴 Open  |
-| [5](#5-gps-searchjs--fetchnearbystops-outer-catch-is-silent)                               | `src/entur/gps-search.js` | Silent `catch (_)` hides all errors — Rule §9                                   | 🟡 Low    | 🔴 Open  |
-| [6](#6-swjs--silent-cachepatch-failures)                                                   | `src/sw.js`               | `cache.put(…).catch(() => {})` swallows quota errors — Rule §9                  | 🟡 Low    | 🔴 Open  |
+| [4](#4-geocoderjs--searchstations-outer-catch-is-silent)                                   | `src/entur/geocoder.js`   | Silent `catch (_)` hides all errors — Rule §9                                   | 🟡 Low    | ✅ Fixed |
+| [5](#5-gps-searchjs--fetchnearbystops-outer-catch-is-silent)                               | `src/entur/gps-search.js` | Silent `catch (_)` hides all errors — Rule §9                                   | 🟡 Low    | ✅ Fixed |
+| [6](#6-swjs--silent-cachepatch-failures)                                                   | `src/sw.js`               | `cache.put(…).catch(() => {})` swallows quota errors — Rule §9                  | 🟡 Low    | ✅ Fixed |
 | [7](#7-fetch-loopjs--defaults-read-live-inside-async-gap-race-condition)                   | `src/app/fetch-loop.js`   | `DEFAULTS` read live across `await` — race condition — Rule §12                 | 🟠 Medium | ✅ Fixed |
-| [8](#8-optionsindexjs--dual-loadsettings-call-paths)                                       | `src/ui/options/index.js` | Two separate `loadSettings()` paths to same key — Rule §9                       | 🟡 Low    | 🔴 Open  |
+| [8](#8-optionsindexjs--dual-loadsettings-call-paths)                                       | `src/ui/options/index.js` | Two separate `loadSettings()` paths to same key — Rule §9                       | 🟡 Low    | ✅ Fixed |
 | [9](#9-uijs--footer-factory-mixed-into-createboardelements)                                | `src/ui/ui.js`            | Footer DOM built inside `createBoardElements` — Rule §8 §13                     | 🟡 Low    | 🔴 Open  |
 | [10](#10-gps-dropdownjs--innerhtml--does-not-remove-item-listeners)                        | `src/ui/gps-dropdown.js`  | `innerHTML = ''` without explicit listener removal — Rule §11                   | 🟡 Low    | 🔴 Open  |
 | [11](#11-configjs--mutable-defaults-written-by-multiple-modules)                           | `src/config.js`           | Mutable `DEFAULTS` mutated by 5 modules — Rule §12                              | 🟠 Medium | ✅ Fixed |
-| [12](#12-settingsjs--savesettings-serialises-all-of-defaults-including-non-persisted-keys) | `src/app/settings.js`     | `saveSettings()` serialises entire `DEFAULTS` including runtime keys — Rule §6  | 🟡 Low    | 🔴 Open  |
-| [13](#13-optionsindexjs--panel-title-is-a-hardcoded-string-not-a-constant)                 | `src/ui/options/index.js` | `'Kollektiv.Sanntid.org'` hardcoded, not from `config.js` — Rule §21            | 🟡 Low    | 🔴 Open  |
-| [14](#14-sitemapxml--lastmod-not-updated-on-release)                                       | `src/sitemap.xml`         | `<lastmod>` not updated on release — `docs/PROJECT_RULES.md` §1                 | 🟡 Low    | 🔴 Open  |
-| [15](#15-action-barjs--duplicate-import-of-config-and-i18n)                                | `src/app/action-bar.js`   | Two separate `import` statements from `config.js` and `i18n.js` — Rule §8       | 🟢 Minor  | 🔴 Open  |
-| [16](#16-parserjs--bare-catch-discards-error-context)                                      | `src/entur/parser.js`     | Bare `catch (_)` silently resets `explicitMode` and `publicCode` — Rule §9      | 🟡 Low    | 🔴 Open  |
-| [17](#17-departurejs--silent-empty-catch-on-aria-label-assignment)                         | `src/ui/departure.js`     | Empty `catch (e) {}` on `aria-label` attribution — Rule §9                      | 🟡 Low    | 🔴 Open  |
-| [18](#18-appjs--domcontentloaded-callback-is-never-removed)                                | `src/app.js`              | `DOMContentLoaded` listener never removed — Rule §11                            | 🟢 Minor  | 🔴 Open  |
+| [12](#12-settingsjs--savesettings-serialises-all-of-defaults-including-non-persisted-keys) | `src/app/settings.js`     | `saveSettings()` serialises entire `DEFAULTS` including runtime keys — Rule §6  | 🟡 Low    | ✅ Fixed |
+| [13](#13-optionsindexjs--panel-title-is-a-hardcoded-string-not-a-constant)                 | `src/ui/options/index.js` | `'Kollektiv.Sanntid.org'` hardcoded, not from `config.js` — Rule §21            | 🟡 Low    | ✅ Fixed |
+| [14](#14-sitemapxml--lastmod-not-updated-on-release)                                       | `src/sitemap.xml`         | `<lastmod>` not updated on release — `docs/PROJECT_RULES.md` §1                 | 🟡 Low    | ✅ Fixed |
+| [15](#15-action-barjs--duplicate-import-of-config-and-i18n)                                | `src/app/action-bar.js`   | Two separate `import` statements from `config.js` and `i18n.js` — Rule §8       | 🟢 Minor  | ✅ Fixed |
+| [16](#16-parserjs--bare-catch-discards-error-context)                                      | `src/entur/parser.js`     | Bare `catch (_)` silently resets `explicitMode` and `publicCode` — Rule §9      | 🟡 Low    | ✅ Fixed |
+| [17](#17-departurejs--silent-empty-catch-on-aria-label-assignment)                         | `src/ui/departure.js`     | Empty `catch (e) {}` on `aria-label` attribution — Rule §9                      | 🟡 Low    | ✅ Fixed |
+| [18](#18-appjs--domcontentloaded-callback-is-never-removed)                                | `src/app.js`              | `DOMContentLoaded` listener never removed — Rule §11                            | 🟢 Minor  | ✅ Fixed |
 | [19](#19-scroll-morejs--mousemove-and-mouseup-on-window-never-removed-on-pagehide)         | `src/app/scroll-more.js`  | `window.mousemove/mouseup/wheel` listeners not removed on `pagehide` — Rule §11 | 🟠 Medium | ✅ Fixed |
 | [20](#20-appjs--scrollmoreref-destroy-not-called-on-pagehide)                              | `src/app.js`              | `scrollMoreRef` not torn down in `pagehide` handler — Rule §11                  | 🟠 Medium | ✅ Fixed |
 
@@ -36,13 +36,16 @@
 
 ## Open Issues
 
+Only issues #9 and #10 remain open (architectural refactors deferred).
+
 ---
 
 ### 1. `app.js` — Duplicate `import` statements from `fetch-loop.js`
 
 **Severity:** 🟢 Minor  
 **File:** `src/app.js` lines 27, 33  
-**Rule:** §8 (code hygiene)
+**Rule:** §8 (code hygiene)  
+**Status:** ✅ Fixed — merged into one `import { doRefresh, startRefreshLoop, tickCountdowns, data, setNumDeparturesOverride }` statement.
 
 **Problem:**  
 Two separate `import` statements pull from the same module:
@@ -75,7 +78,8 @@ import {
 
 **Severity:** 🟢 Minor  
 **File:** `src/app/handlers.js` lines 23–24  
-**Rule:** §8 (code hygiene)
+**Rule:** §8 (code hygiene)  
+**Status:** ✅ Fixed — merged into `import { doRefresh, startRefreshLoop, setNumDeparturesOverride }` statement.
 
 **Problem:**  
 Same pattern as #1:
@@ -109,7 +113,8 @@ import { doRefresh, startRefreshLoop, setNumDeparturesOverride } from './fetch-l
 
 **Severity:** 🟡 Low  
 **File:** `src/entur/geocoder.js` line 124  
-**Rule:** §9 (no silent failures)
+**Rule:** §9 (no silent failures)  
+**Status:** ✅ Fixed — `catch (_)` replaced with `catch (err) { console.warn('[geocoder] searchStations failed', err); return []; }`.
 
 **Problem:**  
 The outer `catch` returns `[]` for **any** failure — including unexpected runtime errors — with no logging:
@@ -137,7 +142,8 @@ Network timeouts, JSON parse errors, and programming bugs are all indistinguisha
 
 **Severity:** 🟡 Low  
 **File:** `src/entur/gps-search.js` line 137  
-**Rule:** §9 (no silent failures)
+**Rule:** §9 (no silent failures)  
+**Status:** ✅ Fixed — `catch (_)` replaced with `catch (err) { console.warn('[gps-search] fetchNearbyStops failed', err); return []; }`.
 
 **Problem:**  
 Same pattern as #4:
@@ -166,7 +172,8 @@ Re-throw or at minimum log, so the calling code in `gps-dropdown.js` correctly h
 
 **Severity:** 🟡 Low  
 **File:** `src/sw.js` lines 128, 161  
-**Rule:** §9 (no silent failures)
+**Rule:** §9 (no silent failures)  
+**Status:** ✅ Fixed — both `.catch(() => {})` calls replaced with `.catch((err) => console.warn('[SW] cache.put failed', err))`.
 
 **Problem:**  
 Two `cache.put(req, netRes.clone()).catch(() => {})` calls silently swallow cache-write failures. If the storage quota is exceeded, offline support degrades with no diagnostic signal.
@@ -192,7 +199,8 @@ cache.put(req, netRes.clone()).catch((err) => console.warn('[SW] cache.put faile
 
 **Severity:** 🟡 Low  
 **File:** `src/ui/options/index.js` lines 101–108  
-**Rule:** §9 (reliability)
+**Rule:** §9 (reliability)  
+**Status:** ✅ Fixed — removed the `loadSettings()` call; initial field values are now read directly from the `defaults` parameter (which already reflects the merged localStorage state loaded by `app.js → app/settings.js`).
 
 **Problem:**  
 `app.js` calls `app/settings.js:loadSettings()` at startup, merging `localStorage` into `DEFAULTS`. Then `options/index.js` line 101 calls `ui/options/settings-store.js:loadSettings()` — a **different** function that also reads the same `localStorage` key. There are two separate read paths to the same `departure:settings` key. If one fails (e.g. `SecurityError` in private browsing), the panel could display stale defaults while `DEFAULTS` already has the updated values.
@@ -261,7 +269,8 @@ menu.addEventListener('click', (e) => {
 
 **Severity:** 🟡 Low  
 **File:** `src/app/settings.js` line 83  
-**Rule:** §6 (data hygiene), §11 (data lifecycle)
+**Rule:** §6 (data hygiene), §11 (data lifecycle)  
+**Status:** ✅ Fixed — `saveSettings()` now serialises only the six user-preference keys (`STATION_NAME`, `STOP_ID`, `NUM_DEPARTURES`, `FETCH_INTERVAL`, `TRANSPORT_MODES`, `TEXT_SIZE`). Runtime/config constants are excluded.
 
 **Problem:**  
 `saveSettings()` serialises the entire `DEFAULTS` object:
@@ -297,7 +306,8 @@ export function saveSettings() {
 
 **Severity:** 🟡 Low  
 **File:** `src/ui/options/index.js` line 25  
-**Rule:** §21 (synchronized docs / constants)
+**Rule:** §21 (synchronized docs / constants)  
+**Status:** ✅ Fixed — `APP_NAME = 'Kollektiv.Sanntid.org'` exported from `config.js`; `options/index.js` now imports and uses it.
 
 **Problem:**
 
@@ -325,7 +335,8 @@ title.textContent = APP_NAME; // intentionally not translated — brand name
 
 **Severity:** 🟡 Low  
 **File:** `src/sitemap.xml`  
-**Rule:** `docs/PROJECT_RULES.md` §1
+**Rule:** `docs/PROJECT_RULES.md` §1  
+**Status:** ✅ Fixed — `scripts/bump-version.sh` now runs `sed` to update `<lastmod>` to today's date every time the version is bumped.
 
 **Problem:**  
 `docs/PROJECT_RULES.md` §1 requires updating `<lastmod>` whenever files under `src/` are changed and released. This has been missed across recent releases. `CONTEXT.md` acknowledges it but it is not automated.
@@ -344,7 +355,8 @@ sed -i "s|<lastmod>.*</lastmod>|<lastmod>${TODAY}</lastmod>|g" src/sitemap.xml
 
 **Severity:** 🟢 Minor  
 **File:** `src/app/action-bar.js` lines 11–14  
-**Rule:** §8 (code hygiene)
+**Rule:** §8 (code hygiene)  
+**Status:** ✅ Fixed — merged into `import { UI_EMOJIS, DEFAULTS } from '../config.js'` and `import { t, getLanguage } from '../i18n.js'`.
 
 **Problem:**  
 Two separate `import` statements pull from the same modules:
@@ -375,7 +387,8 @@ import { t, getLanguage } from '../i18n.js';
 
 **Severity:** 🟡 Low  
 **File:** `src/entur/parser.js` lines 114–116  
-**Rule:** §9 (no silent failures)
+**Rule:** §9 (no silent failures)  
+**Status:** ✅ Fixed — `catch (_)` replaced with `catch (err) { console.warn('[parser] mode/publicCode extraction failed', err); ... }`.
 
 **Problem:**  
 The mode/publicCode extraction block silently swallows any exception:
@@ -405,7 +418,8 @@ If a programming error or unexpected API shape causes a throw inside this block 
 
 **Severity:** 🟡 Low  
 **File:** `src/ui/departure.js` line 142  
-**Rule:** §9 (no silent failures)
+**Rule:** §9 (no silent failures)  
+**Status:** ✅ Fixed — `catch (e) {}` replaced with `catch (err) { console.warn('[departure] aria-label assignment failed', err); }`.
 
 **Problem:**  
 The ARIA label assignment block has an empty catch:
@@ -433,7 +447,8 @@ A failure here silently degrades accessibility without any diagnostic signal.
 
 **Severity:** 🟢 Minor  
 **File:** `src/app.js` line 225  
-**Rule:** §11 (resource lifecycle)
+**Rule:** §11 (resource lifecycle)  
+**Status:** ✅ Fixed — `addEventListener('DOMContentLoaded', init)` updated to `addEventListener('DOMContentLoaded', init, { once: true })`.
 
 **Problem:**
 
