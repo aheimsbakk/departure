@@ -191,12 +191,14 @@ export function createShareButton(getSettings) {
     urlInput.select();
   }
 
+  let _resetTimer = null;
+
   /** Show a temporary error label on the button without blocking the JS thread */
   function showButtonError(msg) {
-    const prev = button.textContent;
+    clearTimeout(_resetTimer);
     button.textContent = msg;
-    setTimeout(() => {
-      button.textContent = prev;
+    _resetTimer = setTimeout(() => {
+      button.textContent = UI_EMOJIS.share;
     }, 2500);
   }
 
@@ -227,11 +229,13 @@ export function createShareButton(getSettings) {
       console.warn('clipboard.writeText failed:', e);
     }
 
-    // Show brief success indicator
-    const originalText = button.textContent;
+    // Show brief success indicator; reset any in-flight timer so repeated
+    // clicks restart the 2-second window rather than stacking callbacks that
+    // would restore to the wrong (already-success) emoji.
+    clearTimeout(_resetTimer);
     button.textContent = UI_EMOJIS.shareSuccess;
-    setTimeout(() => {
-      button.textContent = originalText;
+    _resetTimer = setTimeout(() => {
+      button.textContent = UI_EMOJIS.share;
     }, 2000);
   });
 
