@@ -1,0 +1,64 @@
+/* ======================================================================
+   STATION AUTOCOMPLETE
+   Dropdown list for station search input inside the options panel.
+   Mirrors: src/ui/options/station-autocomplete.js
+   ====================================================================== */
+
+.station-autocomplete-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.station-autocomplete-wrap > input[type='text'] {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.station-autocomplete-list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: var(--z-autocomplete);
+  margin: 6px 0 0 0;
+  padding: 6px;
+  border-radius: var(--btn-border-radius);
+  overflow: auto;
+  max-height: 420px;
+  background: var(--overlay-medium);
+  box-shadow: 0 6px 18px var(--shadow-color);
+  display: none;
+  grid-auto-rows: min-content;
+  gap: var(--dropdown-item-gap);
+}
+
+.station-autocomplete-list.open {
+  display: grid;
+}
+
+.station-autocomplete-list button {
+  display: block;
+  width: 100%;
+  padding: 8px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  text-align: left;
+  border-radius: 4px;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.station-autocomplete-list button.highlighted,
+.station-autocomplete-list button:hover,
+.station-autocomplete-list button:focus-visible {
+  background: var(--highlight-bg);
+  color: var(--highlight-fg);
+  outline: none;
+}
+
+/* Locality suffix (e.g. ", Oslo") — visually de-emphasised */
+.autocomplete-locality {
+  opacity: 0.5;
+}
