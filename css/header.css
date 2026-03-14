@@ -94,7 +94,7 @@
 .station-dropdown-menu.open {
   display: grid;
   grid-auto-rows: min-content;
-  gap: 6px;
+  gap: var(--dropdown-item-gap);
 }
 
 .station-dropdown-item {
@@ -107,14 +107,18 @@
   text-align: left;
   cursor: pointer;
   border-radius: 4px;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
   white-space: nowrap;
 }
 
 .station-dropdown-item:hover:not(:disabled),
-.station-dropdown-item.selected {
+.station-dropdown-item.selected,
+.station-dropdown-item:focus-visible {
   background: var(--highlight-bg);
   color: var(--highlight-fg);
+  outline: none;
 }
 
 .station-dropdown-empty {

@@ -19,7 +19,6 @@
   left: 0;
   right: 0;
   z-index: var(--z-autocomplete);
-  list-style: none;
   margin: 6px 0 0 0;
   padding: 6px;
   border-radius: var(--btn-border-radius);
@@ -29,25 +28,34 @@
   box-shadow: 0 6px 18px var(--shadow-color);
   display: none;
   grid-auto-rows: min-content;
-  gap: var(--autocomplete-item-gap);
+  gap: var(--dropdown-item-gap);
 }
 
 .station-autocomplete-list.open {
   display: grid;
 }
 
-.station-autocomplete-list li {
+.station-autocomplete-list button {
+  display: block;
+  width: 100%;
   padding: 8px;
   cursor: pointer;
   background: transparent;
+  border: none;
   color: var(--text-primary);
+  text-align: left;
   border-radius: 4px;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
 }
 
-.station-autocomplete-list li.highlighted,
-.station-autocomplete-list li:hover {
+.station-autocomplete-list button.highlighted,
+.station-autocomplete-list button:hover,
+.station-autocomplete-list button:focus-visible {
   background: var(--highlight-bg);
   color: var(--highlight-fg);
+  outline: none;
 }
 
 /* Locality suffix (e.g. ", Oslo") — visually de-emphasised */

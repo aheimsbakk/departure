@@ -36,7 +36,7 @@
   --header-gap: 0.5em; /* Gap between header elements */
   --departure-padding: 0px 0px; /* Internal padding for each departure */
   --departure-max-width: 100vw; /* Maximum width of departure items */
-  --autocomplete-item-gap: 6px; /* Gap between autocomplete list items */
+  --dropdown-item-gap: 4px; /* Gap between items in all dropdown/autocomplete lists */
   --options-panel-width: min(360px, 100vw);
 
   /* --- Text size scale multipliers (.text-size-* classes on <html>) --- */

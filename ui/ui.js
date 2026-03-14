@@ -24,6 +24,7 @@ export function createBoardElements(stationName, onStationSelect, onFavoriteTogg
   // Favorite heart button in front of station name
   const favoriteBtn = document.createElement('button');
   favoriteBtn.type = 'button';
+  favoriteBtn.tabIndex = 5;
   favoriteBtn.className = 'favorite-heart-btn header-btn';
   favoriteBtn.title = t('saveToFavorites');
   favoriteBtn.setAttribute('aria-label', t('saveToFavorites'));
