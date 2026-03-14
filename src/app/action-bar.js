@@ -3,7 +3,8 @@
  *
  * Responsibilities:
  *   - Create the share button, theme toggle, and settings gear button
- *   - Bundle them into the fixed top-right `.global-gear` container
+ *   - Bundle theme+settings into the fixed top-right `.settings-bar` container (above panel)
+ *   - Bundle share into the separate `.share-bar` container (below panel, covered when open)
  *   - Append the share URL-display fallback box to the body
  *   - Return references needed by other modules (tooltips, theme callback)
  */
@@ -56,13 +57,27 @@ export function buildActionBar(board, onOpenSettings, onCloseSettings) {
     }
   });
 
-  // Bundle the three buttons into a fixed top-right container
-  const globalBar = document.createElement('div');
-  globalBar.className = 'global-gear';
-  globalBar.appendChild(shareComponents.button);
-  globalBar.appendChild(themeBtn);
-  globalBar.appendChild(settingsBtn);
-  document.body.appendChild(globalBar);
+  // .settings-bar: theme + settings gear — always above the options panel
+  const settingsBar = document.createElement('div');
+  settingsBar.className = 'settings-bar';
+  settingsBar.appendChild(themeBtn);
+  settingsBar.appendChild(settingsBtn);
+  document.body.appendChild(settingsBar);
+
+  // .share-bar: share button only — sits below the options panel (covered when open).
+  // Position is anchored to the left edge of .settings-bar so the gap is always exact,
+  // regardless of emoji rendering width. Measured once after first paint via rAF.
+  const shareBar = document.createElement('div');
+  shareBar.className = 'share-bar';
+  shareBar.appendChild(shareComponents.button);
+  document.body.appendChild(shareBar);
+
+  requestAnimationFrame(() => {
+    const rect = settingsBar.getBoundingClientRect();
+    // right = distance from viewport right edge to settings-bar left edge + gap
+    const rightOffset = window.innerWidth - rect.left + 8;
+    shareBar.style.right = `${rightOffset}px`;
+  });
 
   // Fallback URL-display box (shown when clipboard write is unavailable)
   document.body.appendChild(shareComponents.urlBox);

@@ -1,11 +1,14 @@
 /* ======================================================================
    GLOBAL TOOLBAR
-   Fixed top-right action bar (share, theme, settings).
-   Fixed top-left GPS bar (compass nearby-stops button).
+   Fixed top-right action bar: two separate stacking contexts.
+     .settings-bar  — theme + settings gear (always ABOVE options panel)
+     .share-bar     — share button only (BELOW options panel, covered when open)
+   Fixed top-left GPS bar (compass nearby-stops button, BELOW options panel).
    Mirrors: src/app/action-bar.js, src/app/gps-bar.js
    ====================================================================== */
 
-.global-gear {
+/* Theme + settings: always above the options panel */
+.settings-bar {
   position: fixed;
   right: 18px;
   top: 18px;
@@ -15,22 +18,39 @@
   align-items: center;
 }
 
-/* Toolbar buttons get .header-btn sizing from buttons.css.
-   Only the scale hover/active effects are unique to this context. */
-.global-gear button:hover:not(:disabled) {
+.settings-bar button:hover:not(:disabled) {
   transform: scale(1.05);
 }
 
-.global-gear button:active:not(:disabled) {
+.settings-bar button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* Share button: sits left of the settings bar, covered by options panel when open.
+   Exact right offset is set by action-bar.js via getBoundingClientRect after first paint. */
+.share-bar {
+  position: fixed;
+  top: 18px;
+  z-index: var(--z-share);
+  display: flex;
+  align-items: center;
+}
+
+.share-bar button:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.share-bar button:active:not(:disabled) {
   transform: scale(0.95);
 }
 
 /* ── Top-left GPS bar ───────────────────────────────────────────────── */
+/* Compass button: below the options panel */
 .gps-bar {
   position: fixed;
   left: 18px;
   top: 18px;
-  z-index: var(--z-global-gear);
+  z-index: var(--z-compass);
   display: flex;
   gap: 8px;
   align-items: center;
