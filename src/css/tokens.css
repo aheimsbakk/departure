@@ -61,7 +61,8 @@
   /* --- Z-index layers --- */
   --z-dropdown: 1000;
   --z-footer: 1000;
-  --z-toolbar-low: 1100; /* compass + share: covered by options panel */
+  --z-compass: 1100; /* gps-bar: below options panel */
+  --z-share: 1100; /* share button: below options panel */
   --z-options-panel: 1200;
   --z-global-gear: 1300; /* theme + settings: always above options panel */
   --z-share-modal: 2000;
