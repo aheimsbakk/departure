@@ -55,6 +55,7 @@ export function createGpsButton(onStationSelect) {
   const btn = document.createElement('button');
   btn.className = 'header-btn gps-btn';
   btn.type = 'button';
+  btn.tabIndex = 1;
   btn.textContent = UI_EMOJIS.compass;
   btn.title = t('gpsTooltip');
   btn.setAttribute('aria-label', t('gpsTooltip'));
@@ -67,6 +68,7 @@ export function createGpsButton(onStationSelect) {
   menu.setAttribute('role', 'listbox');
 
   let isOpen = false;
+  let highlightedIndex = -1;
 
   // Map from item element → stop data. Used by the delegated click handler so
   // individual item buttons carry no listeners of their own (Rule §11).
@@ -77,6 +79,7 @@ export function createGpsButton(onStationSelect) {
   function closeDropdown() {
     if (!isOpen) return;
     isOpen = false;
+    highlightedIndex = -1;
     btn.disabled = false;
     btn.setAttribute('aria-expanded', 'false');
     menu.classList.remove('open');
@@ -86,10 +89,29 @@ export function createGpsButton(onStationSelect) {
 
   function openWith(nodes) {
     isOpen = true;
+    highlightedIndex = -1;
     btn.setAttribute('aria-expanded', 'true');
     menu.innerHTML = '';
     nodes.forEach((n) => menu.appendChild(n));
     menu.classList.add('open');
+  }
+
+  function getItems() {
+    return Array.from(menu.querySelectorAll('.gps-dropdown-item'));
+  }
+
+  function setHighlight(index) {
+    const items = getItems();
+    if (items.length === 0) return;
+    highlightedIndex = Math.max(0, Math.min(index, items.length - 1));
+    items.forEach((it, i) => {
+      if (i === highlightedIndex) {
+        it.classList.add('highlighted');
+        it.scrollIntoView({ block: 'nearest' });
+      } else {
+        it.classList.remove('highlighted');
+      }
+    });
   }
 
   /** Build a plain status / error message node. */
@@ -224,7 +246,27 @@ export function createGpsButton(onStationSelect) {
   }
 
   function _onKeyDown(e) {
-    if (e.key === 'Escape' && isOpen) closeDropdown();
+    if (!isOpen) return;
+    const items = getItems();
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setHighlight(highlightedIndex < 0 ? 0 : highlightedIndex + 1);
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setHighlight(highlightedIndex <= 0 ? 0 : highlightedIndex - 1);
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (highlightedIndex >= 0 && items[highlightedIndex]) {
+          items[highlightedIndex].click();
+        }
+        break;
+      case 'Escape':
+        closeDropdown();
+        break;
+    }
   }
 
   document.addEventListener('click', _onDocClick);

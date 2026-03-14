@@ -182,9 +182,10 @@ export function createStationDropdown(currentStationName, onStationSelect) {
   const container = document.createElement('div');
   container.className = 'station-dropdown-container';
 
-  // Station title button
+  // Station title button; tabIndex=6 in the global tab order
   const titleBtn = document.createElement('button');
   titleBtn.className = 'station-title';
+  titleBtn.tabIndex = 6;
   titleBtn.setAttribute('aria-haspopup', 'true');
   titleBtn.setAttribute('aria-expanded', 'false');
   titleBtn.title = t('stationNameTooltip');

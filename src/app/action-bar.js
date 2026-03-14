@@ -25,6 +25,7 @@ import { updateFavoriteButton } from '../ui/ui.js';
  */
 export function buildActionBar(board, onOpenSettings, onCloseSettings) {
   // Share button — encodes current board config as a compact base64 URL
+  // tabIndex=2: second in the desired GPS→share→theme→settings→heart→station→footer order
   const shareComponents = createShareButton(() => {
     if (!DEFAULTS.STATION_NAME || !DEFAULTS.STOP_ID) return null;
     return {
@@ -38,15 +39,17 @@ export function buildActionBar(board, onOpenSettings, onCloseSettings) {
     };
   });
 
-  // Theme toggle button (light / auto / dark cycle)
+  // Theme toggle button (light / auto / dark cycle); tabIndex=3
   const themeBtn = createThemeToggle(() => {
     updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
   });
+  themeBtn.tabIndex = 3;
 
-  // Settings gear button (opens / closes the options panel)
+  // Settings gear button (opens / closes the options panel); tabIndex=4
   const settingsBtn = document.createElement('button');
   settingsBtn.className = 'header-btn gear-btn';
   settingsBtn.type = 'button';
+  settingsBtn.tabIndex = 4;
   settingsBtn.textContent = UI_EMOJIS.settings;
   settingsBtn.title = t('settingsTooltip');
   settingsBtn.addEventListener('click', () => {
@@ -63,6 +66,8 @@ export function buildActionBar(board, onOpenSettings, onCloseSettings) {
   settingsBar.appendChild(themeBtn);
   settingsBar.appendChild(settingsBtn);
   document.body.appendChild(settingsBar);
+
+  shareComponents.button.tabIndex = 2;
 
   // .share-bar: share button only — sits below the options panel (covered when open).
   // Position is anchored to the left edge of .settings-bar so the gap is always exact,
