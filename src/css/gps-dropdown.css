@@ -1,8 +1,4 @@
-/* ======================================================================
-   GPS DROPDOWN
-   Compass button and nearby-stops temporary dropdown.
-   Mirrors: src/ui/gps-dropdown.js  /  src/app/gps-bar.js
-   ====================================================================== */
+/* ======================================================================\n   GPS DROPDOWN\n   Compass button and nearby-stops temporary dropdown.\n   Mirrors: src/ui/gps-dropdown.js, src/app/gps-bar.js\n   ====================================================================== */
 
 /* Container is position:relative so the absolute menu aligns to the button */
 .gps-dropdown-container {
