@@ -3,7 +3,9 @@
  *
  * Responsibilities:
  *   - Create the share button, theme toggle, and settings gear button
- *   - Bundle them into the fixed top-right `.global-gear` container
+ *   - Share button lives in its own fixed .share-bar container (low z-index,
+ *     covered by the options panel when it opens)
+ *   - Theme and settings gear live in .global-gear (high z-index, always visible)
  *   - Append the share URL-display fallback box to the body
  *   - Return references needed by other modules (tooltips, theme callback)
  */
@@ -37,6 +39,12 @@ export function buildActionBar(board, onOpenSettings, onCloseSettings) {
     };
   });
 
+  // Share button lives in its own low-z container so the options panel covers it
+  const shareBar = document.createElement('div');
+  shareBar.className = 'share-bar';
+  shareBar.appendChild(shareComponents.button);
+  document.body.appendChild(shareBar);
+
   // Theme toggle button (light / auto / dark cycle)
   const themeBtn = createThemeToggle(() => {
     updateFavoriteButton(board.favoriteBtn, DEFAULTS.STOP_ID, DEFAULTS.TRANSPORT_MODES);
@@ -56,10 +64,9 @@ export function buildActionBar(board, onOpenSettings, onCloseSettings) {
     }
   });
 
-  // Bundle the three buttons into a fixed top-right container
+  // Theme + settings stay in the high-z container — always visible above the panel
   const globalBar = document.createElement('div');
   globalBar.className = 'global-gear';
-  globalBar.appendChild(shareComponents.button);
   globalBar.appendChild(themeBtn);
   globalBar.appendChild(settingsBtn);
   document.body.appendChild(globalBar);

@@ -1,6 +1,6 @@
 {
   "name": "departure-board",
-  "version": "1.38.8",
+  "version": "1.38.9",
   "type": "module",
   "description": "Pure JS/CSS client-side departure board",
   "main": "src/app.js",

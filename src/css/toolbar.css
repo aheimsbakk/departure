@@ -25,12 +25,33 @@
   transform: scale(0.95);
 }
 
-/* ── Top-left GPS bar ───────────────────────────────────────────────── */
+/* ── Share bar (top-right, below options panel) ─────────────────────── */
+/* Offset leftward so it sits to the left of .global-gear (theme + gear).
+   Two 34px buttons + 8px gap + 18px margin = ~100px. */
+.share-bar {
+  position: fixed;
+  right: 100px;
+  top: 18px;
+  z-index: var(--z-toolbar-low);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.share-bar button:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.share-bar button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+/* ── Top-left GPS bar (below options panel) ─────────────────────────── */
 .gps-bar {
   position: fixed;
   left: 18px;
   top: 18px;
-  z-index: var(--z-global-gear);
+  z-index: var(--z-toolbar-low);
   display: flex;
   gap: 8px;
   align-items: center;
