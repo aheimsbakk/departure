@@ -19,7 +19,6 @@
   border-radius: var(--btn-border-radius);
   padding: 6px;
   width: max-content;
-  max-width: min(340px, calc(100vw - 36px));
   max-height: 420px;
   overflow-y: auto;
   box-shadow: 0 6px 18px var(--shadow-color);
@@ -30,25 +29,28 @@
 .gps-dropdown-menu.open {
   display: grid;
   grid-auto-rows: min-content;
-  gap: 4px;
+  gap: var(--dropdown-item-gap);
 }
 
 /* ── Stop items ────────────────────────────────────────────────────── */
 .gps-dropdown-item {
   display: block;
   width: 100%;
-  padding: 8px 10px;
+  padding: 8px;
   background: transparent;
   border: none;
   color: var(--text-primary);
   text-align: left;
   cursor: pointer;
   border-radius: 4px;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
   white-space: nowrap;
 }
 
 .gps-dropdown-item:hover:not(:disabled),
+.gps-dropdown-item.highlighted,
 .gps-dropdown-item:focus-visible {
   background: var(--highlight-bg);
   color: var(--highlight-fg);
@@ -57,7 +59,7 @@
 
 /* ── Status / error messages ───────────────────────────────────────── */
 .gps-dropdown-status {
-  padding: 8px 10px;
+  padding: 8px;
   color: var(--text-secondary);
   font-style: italic;
   white-space: nowrap;
