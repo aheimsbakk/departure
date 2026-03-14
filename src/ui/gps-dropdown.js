@@ -55,6 +55,7 @@ export function createGpsButton(onStationSelect) {
   const btn = document.createElement('button');
   btn.className = 'header-btn gps-btn';
   btn.type = 'button';
+  btn.tabIndex = 1;
   btn.textContent = UI_EMOJIS.compass;
   btn.title = t('gpsTooltip');
   btn.setAttribute('aria-label', t('gpsTooltip'));

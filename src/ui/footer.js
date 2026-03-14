@@ -27,6 +27,7 @@ export function createFooter() {
   enturLink.href = 'https://data.entur.no/';
   enturLink.target = '_blank';
   enturLink.rel = 'noopener noreferrer';
+  enturLink.tabIndex = 7;
   enturLink.textContent = UI_EMOJIS.footerLink;
   dataLine.append(dataText, enturLink);
 
@@ -39,6 +40,7 @@ export function createFooter() {
   githubLink.href = DEFAULTS.GITHUB_URL || 'https://github.com/aheimsbakk/departure';
   githubLink.target = '_blank';
   githubLink.rel = 'noopener noreferrer';
+  githubLink.tabIndex = 8;
   githubLink.textContent = UI_EMOJIS.footerReadme;
   versionLine.append(versionText, githubLink);
 
