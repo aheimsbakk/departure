@@ -26,11 +26,12 @@
 }
 
 /* ── Share bar (top-right, below options panel) ─────────────────────── */
-/* Offset leftward so it sits to the left of .global-gear (theme + gear).
-   Two 34px buttons + 8px gap + 18px margin = ~100px. */
+/* Positioned to visually align with where share sat as the leftmost button
+   in the original 3-button .global-gear row (share | theme | gear).
+   Offset = right-margin + 2×(icon-size + 2×icon-padding) + 2×gap */
 .share-bar {
   position: fixed;
-  right: 100px;
+  right: calc(18px + 2 * (var(--btn-font-size-icon) + 2 * var(--btn-padding-icon)) + 2 * 8px);
   top: 18px;
   z-index: var(--z-toolbar-low);
   display: flex;
