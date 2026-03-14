@@ -266,6 +266,7 @@ export function createStationDropdown(currentStationName, onStationSelect) {
     if (isOpen) {
       populateMenu();
       selectedIndex = -1;
+      titleBtn.focus();
     }
   }
 
